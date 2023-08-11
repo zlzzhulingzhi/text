@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.TCourseMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.standard.entity.TCourse" id="TCourseMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="qrcodeUrl" column="qrcode_url" jdbcType="VARCHAR"/>
+        <result property="reportUrl" column="report_url" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_teach_course.t_course(org_id, course_id, qrcode_url, report_url, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.courseId}, #{entity.qrcodeUrl}, #{entity.reportUrl}, #{entity.createTime})
+        </foreach>
+    </insert>
+    
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_teach_course.t_course(org_id, course_id, qrcode_url, report_url, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.courseId}, #{entity.qrcodeUrl}, #{entity.reportUrl}, #{entity.createTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , course_id = values(course_id) , qrcode_url = values(qrcode_url) , report_url = values(report_url) , create_time = values(create_time)         $empty
+    </insert>
+
+    <select id="listCourse" resultType="cn.qbs.wa.teach.course.standard.pojo.tcourse.TCoursePageResponse">
+        select tc.*,co.course_name,co.deleted
+        from t_course tc
+        left join course co
+        on tc.course_id=co.id
+        <where>
+            co.deleted=0
+            <if test="params.orgId != null ">
+                and tc.org_id =  #{params.orgId}
+            </if>
+            <if test="params.courseIdList!=null and params.courseIdList.size() > 0 ">
+                and tc.course_id in
+                <foreach collection="params.courseIdList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+</mapper>
+

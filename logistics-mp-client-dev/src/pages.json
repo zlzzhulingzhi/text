@@ -1,0 +1,421 @@
+{
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^u-(.*)": "uview-ui/components/u-$1/u-$1.vue"
+    }
+  },
+  "pages": [
+    {
+      "path": "pages/tabNewHome/index",
+      "name": "NewHome",
+      "meta": {
+        "title": "首页",
+        "isNeedLogin": false
+      },
+      "style": {
+        "navigationBarTitleText": "首页"
+      }
+    },
+    {
+      "path": "pages/tabActivity/index",
+      "name": "Activity",
+      "meta": {
+        "title": "活动",
+        "isNeedLogin": false
+      },
+      "style": {
+        "navigationBarTitleText": "活动",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/tabHome/index",
+      "name": "Home",
+      "meta": {
+        "title": "课程",
+        "isNeedLogin": false
+      },
+      "style": {
+        "navigationBarTitleText": "课程"
+      }
+    },
+    {
+      "path": "pages/goods/activityDetail/index",
+      "name": "ActivityDetail",
+      "meta": {
+        "title": "课程详情",
+        "isNeedLogin": false
+      },
+      "style": {
+        "navigationBarTitleText": "课程详情"
+      }
+    },
+    {
+      "path": "pages/tabMine/index",
+      "name": "Mine",
+      "meta": {
+        "title": "我的",
+        "isNeedLogin": false
+      },
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/login/index",
+      "name": "Login",
+      "meta": {
+        "title": "登录",
+        "isNeedLogin": false
+      },
+      "style": {
+        "navigationBarTitleText": "登录"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "网安基地",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#666666",
+    "selectedColor": "#C63636",
+    "borderStyle": "black",
+    "backgroundColor": "#FFFFFF",
+    "list": [
+      {
+        "pagePath": "pages/tabNewHome/index",
+        "iconPath": "static/tab_home_n.png",
+        "selectedIconPath": "static/tab_home_p.png",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/tabHome/index",
+        "iconPath": "static/tab_course_n.png",
+        "selectedIconPath": "static/tab_course_p.png",
+        "text": "课程"
+      },
+      {
+        "pagePath": "pages/tabActivity/index",
+        "iconPath": "static/tab_activity_n.png",
+        "selectedIconPath": "static/tab_activity_p.png",
+        "text": "活动"
+      },
+      {
+        "pagePath": "pages/tabMine/index",
+        "iconPath": "static/tab_mine_n.png",
+        "selectedIconPath": "static/tab_mine_p.png",
+        "text": "我的"
+      }
+    ]
+  },
+  "subPackages": [
+    {
+      "root": "page_goods",
+      "pages": [
+        {
+          "path": "newActivityDetail/index",
+          "name": "NewActivityDetail",
+          "meta": {
+            "title": "活动详情",
+            "isNeedLogin": false
+          },
+          "style": {
+            "navigationBarTitleText": "活动详情"
+          }
+        },
+        {
+          "path": "orderCheck/index",
+          "name": "OrderCheck",
+          "meta": {
+            "title": "报名表单",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "报名表单"
+          }
+        },
+        {
+          "path": "orderDetail/index",
+          "name": "OrderDetail",
+          "meta": {
+            "title": "订单详情",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "订单详情"
+          }
+        }
+      ]
+    },
+    {
+      "root": "page_manage",
+      "pages": [
+        {
+          "path": "Statistics/index",
+          "name": "Statistics",
+          "meta": {
+            "title": "统计概览",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "统计概览"
+          }
+        },
+        {
+          "path": "AllTrainClasses/index",
+          "name": "AllTrainClasses",
+          "meta": {
+            "title": "培训班总览",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "培训班总览"
+          }
+        },
+        {
+          "path": "Query/index",
+          "name": "Query",
+          "meta": {
+            "title": "查询",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "查询"
+          }
+        },
+        {
+          "path": "Classroom/index",
+          "name": "Classroom",
+          "meta": {
+            "title": "教室导览",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "教室导览",
+            "navigationBarTextStyle": "white",
+            "navigationBarBackgroundColor": "#C63636"
+          }
+        },
+        {
+          "path": "Dormitory/index",
+          "name": "Dormitory",
+          "meta": {
+            "title": "宿舍导览",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "宿舍导览",
+            "navigationBarTextStyle": "white",
+            "navigationBarBackgroundColor": "#C63636"
+          }
+        },
+        {
+          "path": "WorkOrder/index",
+          "name": "WorkOrder",
+          "meta": {
+            "title": "报事报修",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "报事报修"
+          }
+        },
+        {
+          "path": "WorkOrderList/index",
+          "name": "WorkOrderList",
+          "meta": {
+            "title": "报事报修列表",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "报事报修列表"
+          }
+        },
+        {
+          "path": "OpenClass/index",
+          "name": "OpenClass",
+          "meta": {
+            "title": "开课信息",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "开课信息",
+            "navigationBarTextStyle": "white",
+            "navigationBarBackgroundColor": "#C63636"
+          }
+        },
+        {
+          "path": "WorkOrderDetail/index",
+          "name": "WorkOrderDetail",
+          "meta": {
+            "title": "报事报修详情",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "报事报修详情"
+          }
+        },
+        {
+          "path": "OrgCourse/index",
+          "name": "OrgCourse",
+          "meta": {
+            "title": "机构课程",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "机构课程"
+          }
+        },
+        {
+          "path": "ReserveStudent/index",
+          "name": "ReserveStudent",
+          "meta": {
+            "title": "预报学员",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "预报学员"
+          }
+        },
+        {
+          "path": "LocationSign/index",
+          "name": "LocationSign",
+          "meta": {
+            "title": "签到打卡",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "签到打卡",
+            "navigationBarBackgroundColor": "#fff"
+          }
+        },
+        {
+          "path": "SignRecord/index",
+          "name": "SignRecord",
+          "meta": {
+            "title": "打卡记录",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "打卡记录",
+            "navigationBarBackgroundColor": "#fff"
+          }
+        },
+        {
+          "path": "mine/myAccount/index",
+          "name": "MyAccount",
+          "meta": {
+            "title": "账号信息",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "账号信息"
+          }
+        },
+        {
+          "path": "mine/myProfile/index",
+          "name": "MyProfile",
+          "meta": {
+            "title": "账号信息",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "账号信息"
+          }
+        },
+        {
+          "path": "mine/updateProfile/index",
+          "name": "UpdateProfile",
+          "meta": {
+            "title": "修改资料",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "修改资料"
+          }
+        },
+        {
+          "path": "mine/myCourse/index",
+          "name": "MyCourse",
+          "meta": {
+            "title": "我的课程",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "我的课程"
+          }
+        },
+        {
+          "path": "mine/myVisit/index",
+          "name": "MyVisit",
+          "meta": {
+            "title": "访客登记",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "访客登记"
+          }
+        },
+        {
+          "path": "mine/addVisit/index",
+          "name": "AddVisit",
+          "meta": {
+            "title": "访客登记",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "访客登记"
+          }
+        },
+        {
+          "path": "SubHomePage/index",
+          "name": "SubHomePage",
+          "meta": {
+            "title": "培训中心",
+            "isNeedLogin": false
+          },
+          "style": {
+            "navigationBarTitleText": "培训中心",
+            "navigationBarBackgroundColor": "#fff"
+          }
+        },
+        {
+          "path": "CartPage/index",
+          "name": "CartPage",
+          "meta": {
+            "title": "购物车",
+            "isNeedLogin": true
+          },
+          "style": {
+            "navigationBarTitleText": "购物车",
+            "navigationBarBackgroundColor": "#fff"
+          }
+        }
+      ]
+    }
+  ],
+  "preloadRule": {
+    "page_manage/WorkOrderDetail/index": {
+      "network": "all",
+      "packages": [
+        "page_manage"
+      ]
+    },
+    "page_manage/LocationSign/index": {
+      "network": "all",
+      "packages": [
+        "__APP__"
+      ]
+    },
+    "page_manage/SubHomePage/index": {
+      "network": "all",
+      "packages": [
+        "page_manage"
+      ]
+    }
+  }
+}

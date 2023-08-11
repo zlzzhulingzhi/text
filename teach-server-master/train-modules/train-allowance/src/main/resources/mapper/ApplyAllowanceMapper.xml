@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.allowance.mapper.ApplyAllowanceMapper">
+
+    <resultMap type="cn.qbs.wa.train.allowance.entity.ApplyAllowance" id="ApplyAllowanceMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="applyId" column="apply_id" jdbcType="INTEGER"/>
+        <result property="projectNo" column="project_no" jdbcType="INTEGER"/>
+        <result property="projectName" column="project_name" jdbcType="VARCHAR"/>
+        <result property="totalAllowanceFee" column="total_allowance_fee" jdbcType="NUMERIC"/>
+        <result property="studentNum" column="student_num" jdbcType="INTEGER"/>
+        <result property="startDate" column="start_date" jdbcType="TIMESTAMP"/>
+        <result property="endDate" column="end_date" jdbcType="TIMESTAMP"/>
+        <result property="examNum" column="exam_num" jdbcType="INTEGER"/>
+        <result property="examDate" column="exam_date" jdbcType="TIMESTAMP"/>
+        <result property="classId" column="class_id" jdbcType="INTEGER"/>
+        <result property="className" column="class_name" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_allowance.apply_allowance(org_id, apply_id, project_no, project_name, total_allowance_fee,
+        student_num, start_date, end_date, exam_num, exam_date, class_id, class_name, create_by, create_time, update_by,
+        update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.applyId}, #{entity.projectNo}, #{entity.projectName},
+            #{entity.totalAllowanceFee}, #{entity.studentNum}, #{entity.startDate}, #{entity.endDate},
+            #{entity.examNum}, #{entity.examDate}, #{entity.classId}, #{entity.className}, #{entity.createBy},
+            #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_allowance.apply_allowance(org_id, apply_id, project_no, project_name, total_allowance_fee,
+        student_num, start_date, end_date, exam_num, exam_date, class_id, class_name, create_by, create_time, update_by,
+        update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.applyId}, #{entity.projectNo}, #{entity.projectName},
+            #{entity.totalAllowanceFee}, #{entity.studentNum}, #{entity.startDate}, #{entity.endDate},
+            #{entity.examNum}, #{entity.examDate}, #{entity.classId}, #{entity.className}, #{entity.createBy},
+            #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , apply_id = values(apply_id) , project_no = values(project_no) , project_name =
+        values(project_name) , total_allowance_fee = values(total_allowance_fee) , student_num = values(student_num) ,
+        start_date = values(start_date) , end_date = values(end_date) , exam_num = values(exam_num) , exam_date =
+        values(exam_date) , class_id = values(class_id) , class_name = values(class_name) , create_by =
+        values(create_by) , create_time = values(create_time) , update_by = values(update_by) , update_time =
+        values(update_time) $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.train.allowance.pojo.apply.ApplyPageResponse">
+        SELECT a.id, a.org_name, a.contact_person, a.contact_number, a.apply_date, a.apply_result, a.flow_code,
+        a.create_by,a.apply_reason,a.contact_email,a.create_time,a.process_no,a.flow_status,a.org_category,w.project_no,
+        w.project_name,w.total_allowance_fee,w.class_name,a.apply_status
+        FROM `apply` a
+        INNER join apply_allowance w on a.id=w.apply_id
+        <where>
+            a.deleted=0 and
+            a.apply_type = #{params.applyType}
+            <if test="params.flowCode != null and params.flowCode != '' ">
+                and a.flow_code = #{params.flowCode}
+            </if>
+            <if test="params.applyResult != null">
+                and a.apply_result = #{params.applyResult}
+            </if>
+            <if test="params.flag != null">
+                and (a.flow_status = 1 or a.flow_status=2)
+            </if>
+            <if test="params.applyDateStart != null">
+                and a.apply_date >= #{params.applyDateStart}
+            </if>
+            <if test="params.applyDateEnd != null">
+                and a.apply_date &lt;= #{params.applyDateEnd}
+            </if>
+            <if test="params.orgId != null">
+                and a.org_id = #{params.orgId}
+            </if>
+            <if test="params.processNos != null and params.processNos.size() > 0">
+                and a.process_no in
+                <foreach collection="params.processNos" item="processNo" open="(" separator="," close=")">
+                    #{processNo}
+                </foreach>
+            </if>
+            ORDER BY a.id DESC
+        </where>
+    </select>
+
+    <select id="selectDetailById"
+            resultType="cn.qbs.wa.train.allowance.pojo.applyallowance.ApplyAllowanceDetailResponse">
+        select *
+        from apply_allowance
+        where id = #{id}
+    </select>
+
+    <select id="listPassAllowanceFee" resultType="cn.qbs.wa.train.allowance.entity.StatCourseRecord">
+        SELECT
+            a.id AS apply_id, a.org_id, a.apply_date AS submit_date,
+            MAX(aa.student_num) AS total_student_num,
+            MAX(aa.total_allowance_fee) AS total_fund_fee,
+            MAX(IF(aaf.item_code = 'pxcszzzj', aaf.allowance_fee, 0)) AS site_fund_fee,
+            MAX(IF(aaf.item_code = 'xyjczz', aaf.allowance_fee, 0)) AS meal_fund_fee,
+            MAX(IF(aaf.item_code = 'xyzszz', aaf.allowance_fee, 0)) AS room_fund_fee,
+            MAX(IF(aaf.item_code = 'xyjtzz', aaf.allowance_fee, 0)) AS traffic_fund_fee,
+            MAX(IF(aaf.item_code = 'xyxfzz', aaf.allowance_fee, 0)) AS study_fund_fee
+        FROM
+            `apply` a
+            INNER JOIN apply_allowance aa ON aa.apply_id = a.id
+            INNER JOIN apply_allowance_fee aaf ON aaf.apply_allowance_id = aa.id
+        WHERE a.apply_result = 1 AND a.org_id = #{org}
+        GROUP BY a.id
+    </select>
+
+    <select id="listPassAllowanceLesson" resultType="cn.qbs.wa.train.allowance.entity.StatCourseRecord">
+        SELECT
+		    a.id AS apply_id, SUM(aas.lesson_num) AS total_lesson_num
+        FROM
+                `apply` a
+                INNER JOIN apply_allowance aa ON aa.apply_id = a.id
+                INNER JOIN apply_allowance_student aas ON aas.apply_allowance_id = aa.id
+        WHERE a.apply_result = 1 AND a.org_id = 118
+        GROUP BY a.id
+    </select>
+
+    <select id="pageList" resultType="cn.qbs.wa.train.allowance.pojo.apply.ApplyPageResponse">
+        SELECT
+            a.id,a.org_name,a.contact_person,a.contact_number,a.apply_date,a.create_by,
+            a.flow_code,a.process_no,a.flow_status, a.apply_status, a.apply_result,
+            w.project_no,w.project_name,w.total_allowance_fee,w.class_name, c.`status`, c.curNodeId
+        FROM
+            `apply` a
+            INNER JOIN apply_allowance w ON a.id = w.apply_id
+            INNER JOIN (
+            SELECT
+                    t.id, MIN( t.`status` ) `status`, MAX(t.curNodeId) curNodeId
+            FROM
+                (
+                SELECT a.id, n.`status`, n.id AS curNodeId
+                FROM
+                    `apply` a
+                    INNER JOIN workflow_instance_node n ON a.process_no = n.process_no AND n.`status` = 11
+                    AND n.manager_ref IN
+                    <foreach collection="params.roles" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                WHERE
+                    a.deleted = 0 AND a.flow_status IN ( 1, 2 ) AND a.apply_type = 'allowance'
+                    <if test="params.applyResult != null">
+                        and a.apply_result = #{params.applyResult}
+                    </if>
+                    <if test="params.applyDateStart != null">
+                        and a.apply_date >= #{params.applyDateStart}
+                    </if>
+                    <if test="params.applyDateEnd != null">
+                        and a.apply_date &lt;= #{params.applyDateEnd}
+                    </if>
+                    <if test="params.orgId != null">
+                        and a.org_id = #{params.orgId}
+                    </if>
+                    <if test="params.orgName != null and params.orgName != ''">
+                        and a.org_name like concat('%', #{params.orgName}, '%')
+                    </if>
+                UNION ALL
+                SELECT DISTINCT a.id, n.`status`, NULL
+                FROM
+                    `apply` a
+                    INNER JOIN workflow_instance_node n ON a.process_no = n.process_no AND n.`status` = 21
+                    AND n.manager_ref IN
+                    <foreach collection="params.roles" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                WHERE
+                    a.deleted = 0 AND a.flow_status IN ( 1, 2 ) AND a.apply_type = 'allowance'
+                    <if test="params.applyResult != null">
+                        and a.apply_result = #{params.applyResult}
+                    </if>
+                    <if test="params.applyDateStart != null">
+                        and a.apply_date >= #{params.applyDateStart}
+                    </if>
+                    <if test="params.applyDateEnd != null">
+                        and a.apply_date &lt;= #{params.applyDateEnd}
+                    </if>
+                    <if test="params.orgId != null">
+                        and a.org_id = #{params.orgId}
+                    </if>
+                    <if test="params.orgName != null and params.orgName != ''">
+                        and a.org_name like concat('%', #{params.orgName}, '%')
+                    </if>
+                ) t
+            GROUP BY t.id
+            LIMIT #{pageIdx}, #{pageSize}
+            ) c ON c.id = a.id
+        ORDER BY c.`status`, a.id DESC
+    </select>
+
+    <select id="pageV2" resultType="cn.qbs.wa.train.allowance.pojo.apply.ApplyPageResponse">
+        SELECT DISTINCT
+            a.id,a.org_name,a.contact_person,a.contact_number,a.apply_date,a.apply_result,a.flow_code,a.process_no,a.flow_status,
+            a.apply_status,w.project_no,w.project_name,w.total_allowance_fee,w.class_name, n.`status`, IF(n.status = 11, n.id, NULL) AS curNodeId
+        FROM
+            `apply` a
+            INNER JOIN apply_allowance w ON a.id = w.apply_id
+            INNER JOIN workflow_instance_node n ON a.process_no = n.process_no AND n.`status` = #{params.status}
+            AND n.manager_ref IN
+            <foreach collection="params.roles" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        WHERE
+            a.deleted = 0 AND a.flow_status IN ( 1, 2 ) AND a.apply_type = 'allowance'
+            <if test="params.applyResult != null">
+                and a.apply_result = #{params.applyResult}
+            </if>
+            <if test="params.applyDateStart != null">
+                and a.apply_date >= #{params.applyDateStart}
+            </if>
+            <if test="params.applyDateEnd != null">
+                and a.apply_date &lt;= #{params.applyDateEnd}
+            </if>
+            <if test="params.orgId != null">
+                and a.org_id = #{params.orgId}
+            </if>
+            <if test="params.orgName != null and params.orgName != ''">
+                and a.org_name like concat('%', #{params.orgName}, '%')
+            </if>
+        ORDER BY a.id DESC
+    </select>
+</mapper>
+

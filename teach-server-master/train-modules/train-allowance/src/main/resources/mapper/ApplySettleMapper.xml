@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.allowance.mapper.ApplySettleMapper">
+
+    <resultMap type="cn.qbs.wa.train.allowance.entity.ApplySettle" id="ApplySettleMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="applyId" column="apply_id" jdbcType="INTEGER"/>
+        <result property="useDateStart" column="use_date_start" jdbcType="TIMESTAMP"/>
+        <result property="useDateEnd" column="use_date_end" jdbcType="TIMESTAMP"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="courseName" column="course_name" jdbcType="VARCHAR"/>
+        <result property="classroomRemark" column="classroom_remark" jdbcType="VARCHAR"/>
+        <result property="dormitoryRemark" column="dormitory_remark" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="selectByApplyId" resultType="cn.qbs.wa.train.allowance.pojo.approve.ApplySettleDetailResponse">
+        SELECT se.id,
+               se.apply_id,
+               a.org_name,
+               a.contact_person,
+               a.contact_number,
+               a.apply_date,
+               a.apply_result,
+               se.use_date_start,
+               se.use_date_end,
+               se.course_name,
+               se.classroom_remark,
+               se.dormitory_remark,
+               a.apply_reason,
+               a.apply_remark,
+               a.approval_comment,
+               a.flow_status,
+               a.create_by
+        FROM apply_settle se
+                 INNER JOIN `apply` a
+                            ON a.id = se.apply_id
+        WHERE se.apply_id = #{applyId}
+    </select>
+
+    <select id="page" resultType="cn.qbs.wa.train.allowance.pojo.apply.ApplyPageResponse">
+        SELECT a.id, a.org_name, a.contact_person, a.contact_number, a.apply_date, a.apply_result, a.flow_code,a.apply_status,
+        a.create_by,a.apply_reason,a.contact_email,a.create_time,e.course_name,a.process_no,a.flow_status
+        FROM `apply` a
+        left join apply_settle e on a.id=e.apply_id
+        <where>
+            a.deleted=0 and a.apply_type = #{params.applyType}
+            <if test="params.flowCode != null and params.flowCode != '' ">
+                and a.flow_code = #{params.flowCode}
+            </if>
+            <if test="params.applyResult != null">
+                and a.apply_result = #{params.applyResult}
+            </if>
+            <if test="params.flag != null">
+                and (a.flow_status = 1 or a.flow_status=2)
+            </if>
+            <if test="params.applyDateStart != null">
+                and a.apply_date >= #{params.applyDateStart}
+            </if>
+            <if test="params.applyDateEnd != null">
+                and a.apply_date &lt;= #{params.applyDateEnd}
+            </if>
+            <if test="params.orgId != null">
+                and a.org_id = #{params.orgId}
+            </if>
+            <if test="params.courseName != null and params.courseName != '' ">
+                and e.course_name like concat('%', #{params.courseName}, '%')
+            </if>
+            <if test="params.processNos != null and params.processNos.size() > 0">
+                and a.process_no in
+                <foreach collection="params.processNos" item="processNo" open="(" separator="," close=")">
+                    #{processNo}
+                </foreach>
+            </if>
+            ORDER BY a.id DESC
+        </where>
+    </select>
+
+    <select id="pageRecord" resultType="cn.qbs.wa.train.allowance.pojo.apply.ApplyPageResponse">
+        SELECT a.id, a.org_name, a.contact_person, a.contact_number, a.apply_date, a.apply_result, a.flow_code,a.apply_status,
+        a.create_by,a.apply_reason,a.contact_email,a.create_time,e.course_name,a.process_no,a.flow_status
+        FROM `apply` a
+        left join apply_settle e on a.id=e.apply_id
+        <where>
+            a.deleted=0 and a.apply_type = #{params.applyType}
+            <if test="params.applyStatus != null">
+                and a.apply_status = #{params.applyStatus}
+            </if>
+            <if test="params.applyStatus == null">
+                and a.apply_status !=0
+            </if>
+            <if test="params.flowStatus != null">
+                and a.flow_status = #{params.flowStatus}
+            </if>
+            <if test="params.applyDateStart != null">
+                and a.apply_date >= #{params.applyDateStart}
+            </if>
+            <if test="params.applyDateEnd != null">
+                and a.apply_date &lt;= #{params.applyDateEnd}
+            </if>
+            <if test="params.orgId != null">
+                and a.org_id = #{params.orgId}
+            </if>
+            ORDER BY a.id DESC
+        </where>
+    </select>
+
+    <select id="listClassroomSchedule" resultType="cn.qbs.wa.train.allowance.entity.ApplySettleClassroom">
+        SELECT
+            sc.classroom_id, sc.room_no, sc.use_date_start, sc.use_date_end, sc.use_period
+        FROM
+            apply_settle s
+            INNER JOIN apply_settle_classroom sc ON sc.apply_settle_id = s.id
+        WHERE
+            s.apply_id IN
+            <foreach collection="applyIds" item="applyId" separator="," open="(" close=")">
+                #{applyId}
+            </foreach>
+            AND sc.classroom_id IN
+            <foreach collection="classroomIds" item="classroomId" separator="," open="(" close=")">
+                #{classroomId}
+            </foreach>
+    </select>
+
+</mapper>
+

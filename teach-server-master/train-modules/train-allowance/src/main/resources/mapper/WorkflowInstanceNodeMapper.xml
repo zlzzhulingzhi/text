@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.allowance.mapper.WorkflowInstanceNodeMapper">
+
+    <resultMap type="cn.qbs.wa.train.allowance.entity.WorkflowInstanceNode" id="WorkflowInstanceNodeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="workflowId" column="workflow_id" jdbcType="INTEGER"/>
+        <result property="processNo" column="process_no" jdbcType="VARCHAR"/>
+        <result property="nodeCode" column="node_code" jdbcType="VARCHAR"/>
+        <result property="nodeName" column="node_name" jdbcType="VARCHAR"/>
+        <result property="managerType" column="manager_type" jdbcType="VARCHAR"/>
+        <result property="managerRef" column="manager_ref" jdbcType="VARCHAR"/>
+        <result property="prevId" column="prev_id" jdbcType="INTEGER"/>
+        <result property="nextId" column="next_id" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="comment" column="comment" jdbcType="VARCHAR"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <select id="selectByParams" resultType="cn.qbs.wa.train.allowance.entity.WorkflowInstanceNode">
+        SELECT
+        n.*
+        FROM
+        workflow_instance_node n
+        <where>
+            <if test="params.roles != null and params.roles.size()> 0">
+                and n.manager_ref IN
+                <foreach collection="params.roles" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.status != null ">
+                and ( n.status=#{params.status})
+            </if>
+            <if test="params.status == null">
+                and (n.status=21 or n.status=11)
+            </if>
+        </where>
+
+    </select>
+
+    <select id="selectByApplyId"
+            resultType="cn.qbs.wa.train.allowance.pojo.workflownode.WorkflowInstanceNodeResponse">
+        SELECT n.*
+        FROM `apply` a
+        INNER JOIN
+        workflow_instance_node n on a.process_no=n.process_no
+        <where>
+            a.deleted=0 and a.id=#{id}
+            ORDER BY n.id ASC
+        </where>
+    </select>
+
+    <select id="selectByApplyIdAndNode"
+            resultType="cn.qbs.wa.train.allowance.pojo.workflownode.WorkflowInstanceNodeResponse">
+        SELECT n.*
+        FROM `apply` a
+        INNER JOIN
+        workflow_instance_node n on a.process_no=n.process_no
+        <where>
+            a.deleted=0 and a.id=#{id} and n.status=11
+        </where>
+    </select>
+
+</mapper>
+

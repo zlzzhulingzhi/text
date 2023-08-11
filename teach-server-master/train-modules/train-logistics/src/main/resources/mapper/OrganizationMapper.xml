@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.OrganizationMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.Organization" id="OrganizationMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="category" column="category" jdbcType="VARCHAR"/>
+        <result property="pcLogoUrl" column="pc_logo_url" jdbcType="VARCHAR"/>
+        <result property="h5LogoUrl" column="h5_logo_url" jdbcType="VARCHAR"/>
+        <result property="domain" column="domain" jdbcType="VARCHAR"/>
+        <result property="intro" column="intro" jdbcType="VARCHAR"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="companyName" column="company_name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="page" resultType="cn.qbs.wa.train.logistics.pojo.organization.OrganizationPageResponse">
+        SELECT
+        o.*
+        FROM
+        organization o
+        <where>
+            <!-- 示例代码，自行修改 -->
+
+            <if test="params.name != null and params.name != '' ">
+                and o.name like concat('%', #{params.name}, '%')
+            </if>
+            <if test="params.companyName != null and params.companyName != '' ">
+                and o.company_name like concat('%', #{params.companyName}, '%')
+            </if>
+            <if test="params.enabled != null ">
+                and o.enabled=#{params.enabled}
+            </if>
+
+        </where>
+        order by o.sort, o.id DESC
+    </select>
+
+    <select id="getIdByOrgName" resultType="java.lang.Long">
+        SELECT id FROM organization
+        where name=#{params.name}
+    </select>
+
+    <select id="shopGetOrgPage" resultType="cn.qbs.wa.train.logistics.pojo.organization.OrganizationPageResponse">
+        SELECT
+        o.*
+        FROM
+        organization o
+        <where>
+            <!-- 示例代码，自行修改 -->
+
+            <if test="params.name != null and params.name != '' ">
+                and o.name like concat('%', #{params.name}, '%')
+            </if>
+            <if test="params.companyName != null and params.companyName != '' ">
+                and o.company_name like concat('%', #{params.companyName}, '%')
+            </if>
+            <if test="params.enabled != null ">
+                and o.enabled=#{params.enabled}
+            </if>
+
+        </where>
+        order by sort
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.train.logistics.pojo.organization.OrganizationDetailResponse">
+        select *
+        from organization
+        where id = #{id}
+    </select>
+    <select id="getOrgDeptList"
+            resultMap="getOrgDeptListMap">
+        SELECT
+            o.id,
+            o.`name`,
+            d.id AS deptId,
+            d.dept_name as deptName,
+            d.parent_id as parentId
+        FROM
+            organization o
+                LEFT JOIN dept d ON d.org_id = o.id
+    </select>
+    <select id="listOrg"
+            resultType="cn.qbs.wa.train.logistics.pojo.organization.OrganizationSelectListResponse">
+        SELECT
+            o.*
+        FROM
+            organization o
+        WHERE
+            o.enabled = 1
+        ORDER BY convert(o.name using gbk) ASC
+    </select>
+
+    <resultMap id="getOrgDeptListMap" type="cn.qbs.wa.train.logistics.pojo.organization.OrganizationDeptResponse">
+        <id column="id" property="id"></id>
+        <result column="name" property="name"></result>
+        <collection property="deptList" ofType="cn.qbs.wa.train.logistics.pojo.dept.TreeDeptResponse">
+            <id column="deptId" property="id"></id>
+            <result column="parentId" property="parentId"></result>
+            <result column="deptName" property="deptName"></result>
+        </collection>
+
+    </resultMap>
+</mapper>
+

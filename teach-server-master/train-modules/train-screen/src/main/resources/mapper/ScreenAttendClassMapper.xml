@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.screen.mapper.ScreenAttendClassMapper">
+
+    <resultMap type="cn.qbs.wa.train.screen.entity.ScreenAttendClass" id="ScreenAttendClassMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="clazzId" column="clazz_id" jdbcType="INTEGER"/>
+        <result property="clazzName" column="clazz_name" jdbcType="VARCHAR"/>
+        <result property="orgName" column="org_name" jdbcType="VARCHAR"/>
+        <result property="classroom" column="classroom" jdbcType="VARCHAR"/>
+        <result property="studentNum" column="student_num" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="page" resultType="cn.qbs.wa.train.screen.pojo.screenattendclass.ScreenAttendClassPageResponse">
+        select *
+        from screen_attend_class
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+</mapper>
+

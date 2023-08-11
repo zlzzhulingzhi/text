@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.CourseStudentStudyExactRecordMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.CourseStudentStudyExactRecord" id="CourseStudentStudyExactRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="chapterId" column="chapter_id" jdbcType="INTEGER"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="lessonId" column="lesson_id" jdbcType="INTEGER"/>
+        <result property="componentId" column="component_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="playbackDevice" column="playback_device" jdbcType="VARCHAR"/>
+        <result property="playbackPosition" column="playback_position" jdbcType="INTEGER"/>
+        <result property="playbackProgress" column="playback_progress" jdbcType="INTEGER"/>
+        <result property="learningDuration" column="learning_duration" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="selectStatistic" resultType="cn.qbs.wa.teach.course.standard.pojo.playback.PlaybackStatistic">
+        SELECT
+            count(DISTINCT csser.user_id) AS cumulative_users,
+            count(csser.user_id) AS cumulative_times,
+            round(sum(csser.learning_duration) / count(DISTINCT csser.user_id)) AS avg_watch_time
+        FROM `course_student_study_exact_record` csser
+            INNER JOIN basic_live_business bl ON bl.business_id = csser.component_id
+        WHERE
+            bl.basic_live_id = #{basicLiveId}
+    </select>
+
+    <select id="page" resultType="cn.qbs.wa.teach.course.standard.pojo.playback.WatchPlaybackStudentPageResponse">
+        SELECT
+        csser.user_id,
+        count( csser.id ) AS joinTimes,
+        min( csser.create_time ) AS firstJoinTime,
+        sum( csser.learning_duration ) AS cumulativeWatchTime
+        FROM
+        `course_student_study_exact_record` csser
+        INNER JOIN basic_live_business bl ON bl.business_id = csser.component_id
+        <where>
+            bl.basic_live_id = #{params.basicLiveId}
+            <if test="params.userIdList != null and params.userIdList.size() > 0">
+                and csser.user_id in
+                <foreach collection="params.userIdList" item="userId" open="(" separator="," close=")">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
+        group by  csser.user_id
+    </select>
+
+</mapper>
+

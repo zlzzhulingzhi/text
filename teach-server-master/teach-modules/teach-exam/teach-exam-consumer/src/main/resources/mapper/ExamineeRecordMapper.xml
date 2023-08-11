@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.exam.consumer.mapper.ExamineeRecordMapper">
+
+    <resultMap type="cn.qbs.wa.teach.exam.common.entity.ExamineeRecord" id="ExamineeRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="examineeId" column="examinee_id" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="calculated" column="calculated" jdbcType="INTEGER"/>
+        <result property="score" column="score" jdbcType="NUMERIC"/>
+        <result property="startTime" column="start_time" jdbcType="TIMESTAMP"/>
+        <result property="submitTime" column="submit_time" jdbcType="TIMESTAMP"/>
+        <result property="useDuration" column="use_duration" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="selectScore" resultType="java.math.BigDecimal">
+        select sum(ifnull(score, 0)) from `examinee_record_question` where examinee_record_id = #{examineeRecordId}
+    </select>
+
+    <select id="selectByExamineeRecordQuestionId" resultType="cn.qbs.wa.teach.exam.common.entity.ExamineeRecord">
+        select er.*
+        from examinee_record_question erq
+            left join examinee_record er on erq.examinee_record_id = er.id
+        where erq.id = #{examineeRecordQuestionId}
+    </select>
+
+</mapper>
+

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.CourseDeptMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.CourseDept" id="CourseDeptMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="deptId" column="dept_id" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_dept(org_id, course_id, dept_id, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.courseId}, #{entity.deptId}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_dept(org_id, course_id, dept_id, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.courseId}, #{entity.deptId}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , course_id = values(course_id) , dept_id = values(dept_id) , create_by =
+        values(create_by) , create_time = values(create_time) $empty
+    </insert>
+
+    <select id="deptCount" resultType="java.lang.Long">
+        select count(DISTINCT cd.course_id) from course_dept cd
+        left join course co on cd.course_id = co.id
+        INNER JOIN course_info ci ON ci.course_id = co.id
+        where co.deleted = 0
+        <if test="deptIdList != null and deptIdList.size > 0">
+            and cd.dept_id in
+            <foreach collection="deptIdList" item="deptId" open="(" separator="," close=")">
+                #{deptId}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="pageByDept" resultType="cn.qbs.wa.teach.course.standard.pojo.course.CoursePageResponse">
+        SELECT
+        co.id, co.course_name, co.cover_url, co.shelf_status, co.shelf_time, co.create_by, co.create_time,
+        ca.id AS category_id, ca.category_name, IFNULL(cso.sign_up_num, 0) AS sign_up_num, co.course_type,
+        ci.sign_up_limit, ci.course_price, ci.start_time, ci.end_time, ci.gooded, ci.user_visible_status,
+        group_concat(cd.dept_id) deptIds, if(1=1, 1, 0) AS added
+        FROM
+        course co
+        INNER JOIN course_info ci ON ci.course_id = co.id
+        INNER JOIN course_category cc ON cc.course_id = co.id
+        INNER JOIN category ca ON ca.id = cc.category_id
+        LEFT JOIN course_statistic_overview cso ON cso.course_id = co.id
+        left join course_dept cd on co.id = cd.course_id
+        <where>
+            co.deleted = 0
+            <if test="params.deptIdList!=null and params.deptIdList.size()>0">
+                and cd.dept_id in
+                <foreach collection="params.deptIdList" item="deptId" open="(" separator="," close=")">
+                    #{deptId}
+                </foreach>
+            </if>
+            <if test="params.shelfStatus != null">
+                AND co.shelf_status = #{params.shelfStatus}
+            </if>
+            <if test="params.courseType != null and params.courseType != ''">
+                AND co.course_type = #{params.courseType}
+            </if>
+            <if test="params.categoryId != null">
+                AND ca.id = #{params.categoryId}
+            </if>
+            <if test="params.courseName != null and params.courseName != '' ">
+                AND co.course_name like concat('%', #{params.courseName}, '%')
+            </if>
+            <if test="params.gooded != null">
+                AND ci.gooded = #{params.gooded}
+            </if>
+            <if test="params.userVisibleStatus != null">
+                AND ci.user_visible_status = #{params.userVisibleStatus}
+            </if>
+
+            <if test="params.idList!=null and params.idList.size()>0">
+                and co.id in
+                <foreach collection="params.idList" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="params.categoryIdList != null and params.categoryIdList.size > 0">
+                AND ca.id IN
+                <foreach collection="params.categoryIdList" item="categoryId" open="(" separator="," close=")">
+                    #{categoryId}
+                </foreach>
+            </if>
+        </where>
+        group by co.id,ca.id,cso.sign_up_num,ci.sign_up_limit,ci.course_price,ci.start_time,ci.end_time,ci.gooded,ci.user_visible_status
+    </select>
+    <select id="pageByDeptAndLecturer" resultType="cn.qbs.wa.teach.course.standard.pojo.course.CoursePageResponse">
+        SELECT
+        co.id, co.course_name, co.cover_url, co.shelf_status, co.shelf_time, co.create_by, co.create_time,
+        ca.id AS category_id, ca.category_name, IFNULL(cso.sign_up_num, 0) AS sign_up_num, co.course_type,
+        ci.sign_up_limit, ci.course_price, ci.start_time, ci.end_time, ci.gooded, ci.user_visible_status,
+        group_concat(cd.dept_id) deptIds, if(1=1, 1, 0) AS added, cd.id cdId
+        FROM
+        course co
+        INNER JOIN course_info ci ON ci.course_id = co.id
+        INNER JOIN course_category cc ON cc.course_id = co.id
+        INNER JOIN category ca ON ca.id = cc.category_id
+        INNER JOIN course_lecturer cl ON cl.course_id = co.id
+        LEFT JOIN course_statistic_overview cso ON cso.course_id = co.id
+        left join course_dept cd on co.id = cd.course_id
+        <where>
+            co.deleted = 0
+            <if test="params.deptIdList!=null and params.deptIdList.size()>0">
+                and cd.dept_id in
+                <foreach collection="params.deptIdList" item="deptId" open="(" separator="," close=")">
+                    #{deptId}
+                </foreach>
+            </if>
+            <if test="params.shelfStatus != null">
+                AND co.shelf_status = #{params.shelfStatus}
+            </if>
+            <if test="params.courseType != null and params.courseType != ''">
+                AND co.course_type = #{params.courseType}
+            </if>
+            <if test="params.categoryId != null">
+                AND ca.id = #{params.categoryId}
+            </if>
+            <if test="params.courseName != null and params.courseName != '' ">
+                AND co.course_name like concat('%', #{params.courseName}, '%')
+            </if>
+            <if test="params.lecturerName != null and params.lecturerName != '' ">
+                AND cl.lecturer_name like concat('%', #{params.lecturerName}, '%')
+            </if>
+            <if test="params.gooded != null">
+                AND ci.gooded = #{params.gooded}
+            </if>
+            <if test="params.userVisibleStatus != null">
+                AND ci.user_visible_status = #{params.userVisibleStatus}
+            </if>
+            <if test="params.categoryIdList != null and params.categoryIdList.size > 0">
+                AND ca.id IN
+                <foreach collection="params.categoryIdList" item="categoryId" open="(" separator="," close=")">
+                    #{categoryId}
+                </foreach>
+            </if>
+        </where>
+        group by co.id,ca.id,cso.sign_up_num,ci.sign_up_limit,ci.course_price,ci.start_time,ci.end_time,ci.gooded,ci.user_visible_status
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.course.standard.pojo.coursedept.CourseDeptDetailResponse">
+        select *
+        from course_dept
+        where id = #{id}
+    </select>
+</mapper>
+

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.CourseAttachmentMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.CourseAttachment" id="CourseAttachmentMap">
+        <result property="id" column="id" jdbcType="BIGINT"/>
+        <result property="orgId" column="org_id" jdbcType="BIGINT"/>
+        <result property="courseId" column="course_id" jdbcType="BIGINT"/>
+        <result property="resourceFileId" column="resource_file_id" jdbcType="BIGINT"/>
+        <result property="resourceFileName" column="resource_file_name" jdbcType="VARCHAR"/>
+        <result property="resourceFileType" column="resource_file_type" jdbcType="VARCHAR"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="BIGINT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="commonSql">
+        select *
+        from course_attachment
+        <where>
+            <if test="params.courseId != null">
+                and course_id = #{params.courseId}
+            </if>
+            <if test="params.resourceFileName != null and params.resourceFileName != ''">
+                and resource_file_name like concat('%', #{params.resourceFileName}, '%')
+            </if>
+            <if test="params.resourceFileType != null and params.resourceFileType != ''">
+                and resource_file_type = #{params.resourceFileType}
+            </if>
+        </where>
+        order by sort, id desc
+    </sql>
+
+    <select id="page" resultType="cn.qbs.wa.teach.course.standard.pojo.courseattachment.CourseAttachmentPageResponse">
+        <include refid="commonSql"/>
+    </select>
+
+    <select id="list" resultType="cn.qbs.wa.teach.course.standard.pojo.courseattachment.CourseAttachmentPageResponse">
+        <include refid="commonSql"/>
+        limit 100
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.course.standard.pojo.courseattachment.CourseAttachmentDetailResponse">
+        select *
+        from course_attachment
+        where id = #{id}
+    </select>
+
+</mapper>
+

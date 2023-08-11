@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.union.auth.mapper.MemberLoginMapper">
+
+    <select id="getByOpenId" resultType="cn.qbs.wa.union.auth.pojo.member.MemberInfo">
+        SELECT id AS memberId, account, real_name, sex, head_img_url, enabled FROM uni_member WHERE open_id = #{openId}
+    </select>
+
+    <select id="getByAccount" resultType="cn.qbs.wa.union.auth.pojo.member.MemberInfo">
+        SELECT id AS memberId, account, real_name, open_id, sex, head_img_url, enabled FROM uni_member WHERE account = #{account}
+    </select>
+
+    <update id="updateByMemberId">
+        UPDATE uni_member
+        <set>
+            open_id = #{openId},
+            <if test="realName != null and realName != ''">
+                real_name = #{realName},
+            </if>
+        </set>
+        WHERE id = #{memberId}
+    </update>
+
+    <insert id="insert" parameterType="cn.qbs.wa.union.auth.pojo.member.MemberInfo" keyProperty="memberId" useGeneratedKeys="true">
+        INSERT INTO uni_member (account, phone, real_name, open_id) VALUES (#{account}, #{phone}, #{realName}, #{openId})
+    </insert>
+
+</mapper>
+

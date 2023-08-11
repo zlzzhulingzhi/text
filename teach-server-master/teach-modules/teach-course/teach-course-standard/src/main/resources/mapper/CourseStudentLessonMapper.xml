@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.CourseStudentLessonMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.CourseStudentLesson" id="CourseStudentLessonMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="chapterId" column="chapter_id" jdbcType="INTEGER"/>
+        <result property="lessonId" column="lesson_id" jdbcType="INTEGER"/>
+        <result property="componentId" column="component_id" jdbcType="INTEGER"/>
+        <result property="playbackPosition" column="playback_position" jdbcType="INTEGER"/>
+        <result property="playbackProgress" column="playback_progress" jdbcType="INTEGER"/>
+        <result property="learningCompletion" column="learning_completion" jdbcType="INTEGER"/>
+        <result property="learningCompletionTime" column="learning_completion_time" jdbcType="INTEGER"/>
+        <result property="learningDuration" column="learning_duration" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_student_lesson(org_id, user_id, course_id, chapter_id, lesson_id, playback_position, playback_progress, learning_completion, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.userId}, #{entity.courseId}, #{entity.chapterId}, #{entity.lessonId}, #{entity.playbackPosition}, #{entity.playbackProgress}, #{entity.learningCompletion}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_student_lesson(org_id, user_id, course_id, chapter_id, lesson_id, playback_position, playback_progress, learning_completion, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.userId}, #{entity.courseId}, #{entity.chapterId}, #{entity.lessonId}, #{entity.playbackPosition}, #{entity.playbackProgress}, #{entity.learningCompletion}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , user_id = values(user_id) , course_id = values(course_id) , chapter_id = values(chapter_id) , lesson_id = values(lesson_id) , playback_position = values(playback_position) , playback_progress = values(playback_progress) , learning_completion = values(learning_completion) , create_by = values(create_by) , create_time = values(create_time) , update_by = values(update_by) , update_time = values(update_time)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.course.standard.pojo.coursestudentlesson.CourseStudentLessonPageResponse">
+        select *
+        from course_student_lesson
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.course.standard.pojo.coursestudentlesson.CourseStudentLessonDetailResponse">
+        select *
+        from course_student_lesson
+        where id = #{id}
+    </select>
+
+    <select id="getUsefulCourseAllLesson" resultMap="CourseStudentLessonMap">
+        select csl.id, csl.course_id, csl.user_id, csl.lesson_id, csl.component_id, csl.playback_position, csl.playback_progress, csl.learning_completion, csl.learning_completion_time, csl.learning_duration
+        from course_student_lesson csl
+        inner join course_component cc on cc.id = csl.component_id
+        where csl.course_id = #{courseId} and csl.user_id = #{userId}
+    </select>
+
+    <select id="selectBusinessName" resultType="cn.qbs.wa.teach.course.standard.pojo.dto.LastLearnedDTO">
+        SELECT DISTINCT cc.chapter_name,cl.lesson_name
+        FROM `course_student_lesson` csl
+        left join course_chapter cc on csl.chapter_id = cc.id
+        left join course_lesson cl on csl.lesson_id = cl.id
+        where csl.component_id = #{componentId} and csl.user_id = #{userId} and csl.course_id = #{courseId}
+    </select>
+
+
+</mapper>
+

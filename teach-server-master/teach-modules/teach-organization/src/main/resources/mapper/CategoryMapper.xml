@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.organization.mapper.CategoryMapper">
+
+    <resultMap type="cn.qbs.wa.teach.organization.entity.Category" id="CategoryMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="platformType" column="platform_type" jdbcType="INTEGER"/>
+        <result property="parentId" column="parent_id" jdbcType="INTEGER"/>
+        <result property="groupType" column="group_type" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="categoryCode" column="category_code" jdbcType="VARCHAR"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="deleted" column="deleted" jdbcType="INTEGER"/>
+        <result property="edited" column="edited" jdbcType="INTEGER"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="template" column="template" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_teach_organization.category(org_id, platform_type, parent_id, group_type, name, category_code,
+        remark, enabled, deleted, edited, sort, template, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.platformType}, #{entity.parentId}, #{entity.groupType}, #{entity.name},
+            #{entity.categoryCode}, #{entity.remark}, #{entity.enabled}, #{entity.deleted}, #{entity.edited},
+            #{entity.sort}, #{entity.template}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy},
+            #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_teach_organization.category(org_id, platform_type, parent_id, group_type, name, category_code,
+        remark, enabled, deleted, edited, sort, template, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.platformType}, #{entity.parentId}, #{entity.groupType}, #{entity.name},
+            #{entity.categoryCode}, #{entity.remark}, #{entity.enabled}, #{entity.deleted}, #{entity.edited},
+            #{entity.sort}, #{entity.template}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy},
+            #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , platform_type = values(platform_type) , parent_id = values(parent_id) , group_type =
+        values(group_type) , name = values(name) , category_code = values(category_code) , remark = values(remark) ,
+        enabled = values(enabled) , deleted = values(deleted) , edited = values(edited) , sort = values(sort) , template
+        = values(template) , create_by = values(create_by) , create_time = values(create_time) , update_by =
+        values(update_by) , update_time = values(update_time) $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.organization.pojo.category.CategoryPageResponse">
+        SELECT
+        c.*,IF( COUNT( co.id ) > 0, 1, 0 ) AS hasChildren
+        FROM
+        category c
+        LEFT JOIN category co ON c.id = co.parent_id
+        <where>
+            <if test="params.parentId!=null">
+                and parent_id=#{params.parentId}
+            </if>
+            <if test="params.enabled != null">
+                and enabled = #{params.enabled}
+            </if>
+            <if test="params.groupType!=null">
+                and group_type=#{params.groupType}
+            </if>
+            <if test="params.name != null and params.name != ''">
+                and `name` LIKE CONCAT('%',#{params.name},'%')
+            </if>
+        </where>
+        GROUP BY
+        c.id
+        order by c.sort
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.organization.pojo.category.CategoryDetailResponse">
+        select *
+        from category
+        where id = #{id}
+    </select>
+</mapper>
+

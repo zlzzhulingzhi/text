@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.NewsMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.News" id="NewsMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="title" column="title" jdbcType="VARCHAR"/>
+        <result property="summary" column="summary" jdbcType="VARCHAR"/>
+        <result property="author" column="author" jdbcType="VARCHAR"/>
+        <result property="topping" column="topping" jdbcType="INTEGER"/>
+        <result property="rolling" column="rolling" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="openUrl" column="open_url" jdbcType="VARCHAR"/>
+        <result property="group" column="group" jdbcType="VARCHAR"/>
+        <result property="content" column="content" jdbcType="VARCHAR"/>
+        <result property="coverUrl" column="cover_url" jdbcType="VARCHAR"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="shelfStatus" column="shelf_status" jdbcType="INTEGER"/>
+        <result property="publishTime" column="publish_time" jdbcType="TIMESTAMP"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="newsSource" column="news_source" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_train_organization.news(title, summary, author, topping, rolling, type, open_url, group, content,
+        cover_url, sort, shelf_status, publish_time, create_time, create_by, update_time, update_by, news_source)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.title}, #{entity.summary}, #{entity.author}, #{entity.topping}, #{entity.rolling}, #{entity.type},
+            #{entity.openUrl}, #{entity.group}, #{entity.content}, #{entity.coverUrl}, #{entity.sort},
+            #{entity.shelfStatus}, #{entity.publishTime}, #{entity.createTime}, #{entity.createBy},
+            #{entity.updateTime}, #{entity.updateBy}, #{entity.newsSource})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_train_organization.news(title, summary, author, topping, rolling, type, open_url, group, content,
+        cover_url, sort, shelf_status, publish_time, create_time, create_by, update_time, update_by, news_source)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.title}, #{entity.summary}, #{entity.author}, #{entity.topping}, #{entity.rolling}, #{entity.type},
+            #{entity.openUrl}, #{entity.group}, #{entity.content}, #{entity.coverUrl}, #{entity.sort},
+            #{entity.shelfStatus}, #{entity.publishTime}, #{entity.createTime}, #{entity.createBy},
+            #{entity.updateTime}, #{entity.updateBy}, #{entity.newsSource})
+        </foreach>
+        on duplicate key update
+        title = values(title) , summary = values(summary) , author = values(author) , topping = values(topping) ,
+        rolling = values(rolling) , type = values(type) , open_url = values(open_url) , group = values(group) , content
+        = values(content) , cover_url = values(cover_url) , sort = values(sort) , shelf_status = values(shelf_status) ,
+        publish_time = values(publish_time) , create_time = values(create_time) , create_by = values(create_by) ,
+        update_time = values(update_time) , update_by = values(update_by) , news_source = values(news_source) $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.train.logistics.pojo.news.NewsPageResponse">
+        select
+        <if test="params.categoryIdList!=null and params.categoryIdList.size() > 0 ">
+            distinct
+        </if>
+        n.*
+        from news n
+        <if test="params.categoryIdList!=null and params.categoryIdList.size() > 0 ">
+            inner join news_category nc on nc.news_id=n.id
+        </if>
+        <where>
+            <if test="params.title != null and params.title != '' ">
+                and n.title like concat('%', #{params.title}, '%')
+            </if>
+            <if test="params.categoryIdList!=null and params.categoryIdList.size() > 0 ">
+                and nc.category_id in
+                <foreach collection="params.categoryIdList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.shelfStatus != null  ">
+                and n.shelf_status =#{params.shelfStatus}
+            </if>
+        </where>
+        order by n.sort
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.train.logistics.pojo.news.NewsDetailResponse">
+        select *
+        from news
+        where id = #{id}
+    </select>
+</mapper>
+

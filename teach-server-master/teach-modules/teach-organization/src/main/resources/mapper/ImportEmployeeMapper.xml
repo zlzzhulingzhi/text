@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.organization.mapper.ImportEmployeeMapper">
+
+    <resultMap type="cn.qbs.wa.teach.organization.entity.ImportEmployee" id="ImportEmployeeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="realName" column="real_name" jdbcType="VARCHAR"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="sex" column="sex" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="eventId" column="event_id" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="idNumber" column="id_number" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_teach_organization.import_employee(real_name, phone, sex, remark, create_by, create_time, event_id, email, id_number)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.realName}, #{entity.phone}, #{entity.sex}, #{entity.remark}, #{entity.createBy}, #{entity.createTime}, #{entity.eventId}, #{entity.email}, #{entity.idNumber})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_teach_organization.import_employee(real_name, phone, sex, remark, create_by, create_time, event_id, email, id_number)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.realName}, #{entity.phone}, #{entity.sex}, #{entity.remark}, #{entity.createBy}, #{entity.createTime}, #{entity.eventId}, #{entity.email}, #{entity.idNumber})
+        </foreach>
+        on duplicate key update
+        real_name = values(real_name) , phone = values(phone) , sex = values(sex) , remark = values(remark) , create_by = values(create_by) , create_time = values(create_time) , event_id = values(event_id) , email = values(email) , id_number = values(id_number)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.organization.pojo.importemployee.ImportEmployeePageResponse">
+        select *
+        from import_employee
+        <where>
+            <if test="params.eventId != null and params.eventId != '' ">
+                and event_id= #{params.eventId}
+            </if>
+
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.organization.pojo.importemployee.ImportEmployeeDetailResponse">
+        select *
+        from import_employee
+        where id = #{id}
+    </select>
+</mapper>
+

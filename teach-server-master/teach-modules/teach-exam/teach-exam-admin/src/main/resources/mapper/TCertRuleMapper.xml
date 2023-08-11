@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.exam.admin.mapper.TCertRuleMapper">
+
+    <resultMap type="cn.qbs.wa.teach.exam.common.entity.TCertRule" id="TCertRuleMap">
+        <result property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="certId" column="cert_id" jdbcType="INTEGER"/>
+        <result property="ruleCode" column="rule_code" jdbcType="VARCHAR"/>
+        <result property="ruleValue" column="rule_value" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into t_cert_rule(org_id, cert_id, rule_code, rule_value, create_time, create_by, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.certId}, #{entity.ruleCode}, #{entity.ruleValue}, #{entity.createTime}, #{entity.createBy}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+    
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into t_cert_rule(org_id, cert_id, rule_code, rule_value, create_time, create_by, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.certId}, #{entity.ruleCode}, #{entity.ruleValue}, #{entity.createTime}, #{entity.createBy}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , cert_id = values(cert_id) , rule_code = values(rule_code) , rule_value = values(rule_value) , create_time = values(create_time) , create_by = values(create_by) , update_by = values(update_by) , update_time = values(update_time)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.exam.admin.pojo.tcertrule.TCertRulePageResponse">
+        select *
+        from t_cert_rule
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.exam.admin.pojo.tcertrule.TCertRuleDetailResponse">
+        select *
+        from t_cert_rule
+        where id = #{id}
+    </select>
+</mapper>
+

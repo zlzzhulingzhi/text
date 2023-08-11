@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.basic.mapper.DictMapper">
+
+    <resultMap type="cn.qbs.wa.teach.basic.entity.Dict" id="DictMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="parentId" column="parent_id" jdbcType="INTEGER"/>
+        <result property="code" column="code" jdbcType="VARCHAR"/>
+        <result property="dictKey" column="dict_key" jdbcType="INTEGER"/>
+        <result property="dictValue" column="dict_value" jdbcType="VARCHAR"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into dict(parent_id, code, dict_key, dict_value, sort, remark, enabled, create_time, create_by, update_time, update_by)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.parentId}, #{entity.code}, #{entity.dictKey}, #{entity.dictValue}, #{entity.sort}, #{entity.remark}, #{entity.enabled}, #{entity.createTime}, #{entity.createBy}, #{entity.updateTime}, #{entity.updateBy})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into dict(parent_id, code, dict_key, dict_value, sort, remark, enabled, create_time, create_by, update_time, update_by)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.parentId}, #{entity.code}, #{entity.dictKey}, #{entity.dictValue}, #{entity.sort}, #{entity.remark}, #{entity.enabled}, #{entity.createTime}, #{entity.createBy}, #{entity.updateTime}, #{entity.updateBy})
+        </foreach>
+        on duplicate key update
+        parent_id = values(parent_id) , code = values(code) , dict_key = values(dict_key) , dict_value = values(dict_value) , sort = values(sort) , remark = values(remark) , enabled = values(enabled) , create_time = values(create_time) , create_by = values(create_by) , update_time = values(update_time) , update_by = values(update_by)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.basic.pojo.dict.DictPageResponse">
+        select
+        c.*,
+        IF
+        ( COUNT( co.id ) > 0, 1, 0 ) AS hasChildren
+        from dict c
+        LEFT JOIN dict co ON c.id = co.parent_id
+        where c.parent_id=0
+        <if test="params.enabled!=null">
+            and c.enabled=#{params.enabled}
+        </if>
+        group by c.id
+        order by c.sort
+    </select>
+
+    <select id="getDictKey" resultType="java.lang.String">
+        select
+        dict_key
+        from dict
+        where code=#{params.code} and dict_value=#{params.dictValue}
+    </select>
+
+    <select id="getDictValue" resultType="java.lang.String">
+        select
+        dict_value
+        from dict
+        where code=#{params.code} and dict_key=#{params.dictKey}
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.basic.pojo.dict.DictDetailResponse">
+        select *
+        from dict
+        where id = #{id}
+    </select>
+</mapper>
+

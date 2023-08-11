@@ -1,0 +1,195 @@
+version : '3.8'
+services:
+  nacos1:
+    hostname: nacos1
+    image: nacos/nacos-server:2.0.3
+    container_name: nacos1
+    privileged: true
+    volumes:
+      - ./nacos/logs:/home/nacos/logs
+    env_file:
+      - ./nacos/env/nacos-ip.env
+
+  nacos2:
+    hostname: nacos2
+    image: nacos/nacos-server:2.0.3
+    container_name: nacos2
+    privileged: true
+    volumes:
+      - ./nacos/logs:/home/nacos/logs
+    env_file:
+      - ./nacos/env/nacos-ip1.env
+
+  nacos3:
+    hostname: nacos3
+    image: nacos/nacos-server:2.0.3
+    container_name: nacos3
+    privileged: true
+    volumes:
+      - ./nacos/logs:/home/nacos/logs
+    env_file:
+      - ./nacos/env/nacos-ip2.env
+
+  nginx:
+    container_name: nginx
+    image: ${prefix}${module}:${version}
+    environment:
+      - TZ=Asia/Shanghai
+    build:
+      context: ./nginx
+      dockerfile: dockerfile
+    privileged: true
+    volumes:
+      - ./nginx/dist:/mydata/nginx/dist
+      - ./nginx/conf/cert:/mydata/nginx/cert
+      - ./nginx/conf/teach.conf:/etc/nginx/teach.conf
+      - ./nginx/logs:/var/log/nginx
+      - ./nginx/conf.d:/etc/nginx/conf.d
+
+  es1:
+      hostname: es1
+      container_name: es1
+      build:
+        context: ./es
+        dockerfile: dockerfile
+      environment:
+        - TZ=Asia/Shanghai
+        - "ES_JAVA_OPTS=-Xms2g -Xmx4g"
+        - discovery.type=single-node
+
+      privileged: true    #环境变量
+
+
+  kibana:
+    image: kibana:7.17.2
+    container_name: kibana
+
+    environment:
+      - elasticsearch.url=http://172.16.0.14:9200
+      - elasticsearch.hosts=http://172.16.0.14:9200
+      - i18n.locale=zh-CN
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+
+  xxljob:
+    image: xuxueli/xxl-job-admin:2.3.0
+    container_name: xxljob
+    environment:
+      TZ: Asia/Shanghai
+      # 设置启动参数
+      PARAMS: '
+        --server.port=9400
+        --server.servlet.context-path=/xxl-job-admin
+        --spring.datasource.url=jdbc:mysql://192.168.90.11:3306/xxl_job?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai
+        --spring.datasource.username=root
+        --spring.datasource.password=Seczone@123
+        --spring.mail.host=smtp.exmail.qq.com
+        --spring.mail.port=465
+        --spring.mail.username=CBD@youthtrain.cn
+        --spring.mail.from=CBD@youthtrain.cn
+        --spring.mail.password=oGgQfonqk4sCeaHV
+        --spring.mail.properties.mail.smtp.starttls.enable=true
+        --spring.mail.properties.mail.smtp.starttls.required=true'
+    volumes:
+      - ./xxljob/logs:/data/applogs/xxl-job
+
+  sentinel:
+    container_name: sentinel
+    environment:
+        - TZ=Asia/Shanghai
+    build:
+        context: ./sentinel
+        dockerfile: dockerfile
+
+
+  seata-server1:
+    image: seataio/seata-server:1.4.2
+    environment:
+      # 指定seata服务启动端口
+      - SEATA_PORT=8091
+      # 注册到nacos上的ip。客户端将通过该ip访问seata服务。
+      # 注意公网ip和内网ip的差异。
+      #- SEATA_IP=119.29.146.67
+      - SEATA_CONFIG_NAME=file:/root/seata-config/registry
+    volumes:
+      # 需要把file.conf和registry.conf都放到./seata-server/config文件夹中
+      - ./seata/config:/root/seata-config
+
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    volumes:
+      - ./jenkins/:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+    ports:
+      - "8077:8080"
+    expose:
+      - "8080"
+      - "50000"
+    privileged: true
+    user: root
+
+  redis:
+    container_name: redis
+    image: redis:6.2.7
+    restart: always
+    ports:
+      - 6379:6379
+    volumes:
+      - ./redis/conf/redis.conf:/etc/redis/redis.conf
+      - ./redis/data:/data
+    command: redis-server /etc/redis/redis.conf --appendonly yes
+    privileged: true
+
+
+  nexus:
+    container_name: nexus
+    image: sonatype/nexus3
+    volumes:
+        - ./nexus/nexus-data:/nexus-data
+
+    privileged: true
+
+  mysql:
+    container_name: mysql
+    image: mysql:5.7
+    volumes:
+      - ./mysql/conf:/etc/mysql/conf.d
+      - ./mysql/logs:/logs
+      - ./mysql/data:/var/lib/mysql
+    command: [
+        'mysqld',
+        '--innodb-buffer-pool-size=80M',
+        '--character-set-server=utf8mb4',
+        '--collation-server=utf8mb4_unicode_ci',
+        '--default-time-zone=+8:00',
+        '--lower-case-table-names=1'
+    ]
+    environment:
+      MYSQL_ROOT_PASSWORD: oV4tHTQw
+
+  train-client:
+    container_name: train-client
+    image: ${prefix}${module}:${version}
+    environment:
+      - TZ=Asia/Shanghai
+    build:
+      context: ./nginx
+      dockerfile: dockerfile
+    privileged: true
+    volumes:
+      - ./nginx/dist:/mydata/nginx/dist
+      - ./nginx/conf/cert:/mydata/nginx/cert
+      - ./nginx/logs:/var/log/nginx
+      - ./nginx/conf.d:/etc/nginx/conf.d
+
+
+
+
+
+
+
+

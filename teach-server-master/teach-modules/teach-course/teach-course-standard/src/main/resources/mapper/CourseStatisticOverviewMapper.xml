@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.CourseStatisticOverviewMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.CourseStatisticOverview" id="CourseStatisticOverviewMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="score" column="score" jdbcType="VARCHAR"/>
+        <result property="totalScore" column="total_score" jdbcType="VARCHAR"/>
+        <result property="evaluatorNum" column="evaluator_num" jdbcType="INTEGER"/>
+        <result property="signUpNum" column="sign_up_num" jdbcType="INTEGER"/>
+        <result property="buyerNum" column="buyer_num" jdbcType="INTEGER"/>
+        <result property="studyTotalNum" column="study_total_num" jdbcType="INTEGER"/>
+        <result property="studyCompletedNum" column="study_completed_num" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_statistic_overview(org_id, course_id, score, total_score, evaluator_num, sign_up_num, buyer_num, study_total_num, study_completed_num, create_time, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId},
+            #{entity.courseId},
+            #{entity.score},
+            #{entity.totalScore},
+            #{entity.evaluatorNum},
+            #{entity.signUpNum},
+            #{entity.buyerNum},
+            #{entity.studyTotalNum},
+            #{entity.studyCompletedNum},
+            #{entity.createTime},
+            #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_statistic_overview(org_id, course_id, score, total_score, evaluator_num, sign_up_num, buyer_num, study_total_num, study_completed_num, create_time, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId},
+            #{entity.courseId},
+            #{entity.score},
+            #{entity.totalScore},
+            #{entity.evaluatorNum},
+            #{entity.signUpNum},
+            #{entity.buyerNum},
+            #{entity.studyTotalNum},
+            #{entity.studyCompletedNum},
+            #{entity.createTime},
+            #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , course_id = values(course_id) , score = values(score) , total_score = values(total_score) , evaluator_num = values(evaluator_num) , sign_up_num = values(sign_up_num) , buyer_num = values(buyer_num) , study_total_num = values(study_total_num) , study_completed_num = values(study_completed_num) , create_time = values(create_time) , update_time = values(update_time)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.course.standard.pojo.coursestatisticoverview.CourseStatisticOverviewPageResponse">
+        select *
+        from course_statistic_overview
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.course.standard.pojo.coursestatisticoverview.CourseStatisticOverviewDetailResponse">
+        select *
+        from course_statistic_overview
+        where id = #{id}
+    </select>
+
+    <update id="incrEvaluationInfo">
+        update course_statistic_overview
+        set total_score = IFNULL(total_score, 0) + #{score, jdbcType=DECIMAL}, evaluator_num = evaluator_num + #{evaluatorCount, jdbcType=INTEGER}, update_time = NOW()
+        where course_id = #{courseId}
+    </update>
+
+    <update id="incrSignUpNum">
+        update course_statistic_overview
+        set sign_up_num = IFNULL(sign_up_num, 0) + #{num, jdbcType=INTEGER}, update_time = NOW()
+        where course_id = #{courseId}
+    </update>
+
+    <update id="incrBuyerNum">
+        update course_statistic_overview
+        set buyer_num = IFNULL(buyer_num, 0) + #{num, jdbcType=INTEGER}, update_time = NOW()
+        where course_id = #{courseId}
+    </update>
+
+    <update id="incrStudyTotalNum">
+        update course_statistic_overview
+        set study_total_num = IFNULL(study_total_num, 0) + #{num, jdbcType=INTEGER}, update_time = NOW()
+        where course_id = #{courseId}
+    </update>
+
+    <update id="incrStudyCompletedNum">
+        update course_statistic_overview
+        set study_completed_num = IFNULL(study_completed_num, 0) + #{num, jdbcType=INTEGER}, update_time = NOW()
+        where course_id = #{courseId}
+    </update>
+
+    <update id="incrLessonNum">
+        update course_statistic_overview
+        set lesson_num = IFNULL(lesson_num, 0) + #{num, jdbcType=INTEGER}, update_time = NOW()
+        where course_id = #{courseId}
+    </update>
+
+    <update id="incrViews">
+        update course_statistic_overview
+        set views = IFNULL(views, 0) + #{num, jdbcType=INTEGER}, update_time = NOW()
+        where course_id = #{courseId}
+    </update>
+
+    <update id="refreshStatistic">
+        UPDATE course_statistic_overview
+        SET sign_up_num = #{overview.signUpNum}, update_time = NOW()
+        <if test="overview.buyerNum != null">
+            , buyer_num = #{overview.buyerNum}
+        </if>
+        WHERE course_id = #{courseId}
+    </update>
+
+    <select id="totalCourseView" resultMap ="CourseStatisticOverviewMap">
+        SELECT
+            course_id,
+            count(id) sign_up_num
+        FROM
+            course_student
+        WHERE
+            course_id = #{courseId}
+    </select>
+
+</mapper>
+

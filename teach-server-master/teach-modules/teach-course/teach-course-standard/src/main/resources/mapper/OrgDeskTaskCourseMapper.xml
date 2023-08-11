@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.OrgDeskTaskCourseMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.Course" id="OrgDeskTaskCourseMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="courseName" column="course_name" jdbcType="VARCHAR"/>
+        <result property="coverUrl" column="cover_url" jdbcType="VARCHAR"/>
+        <result property="introduction" column="introduction" jdbcType="VARCHAR"/>
+        <result property="shelfStatus" column="shelf_status" jdbcType="INTEGER"/>
+        <result property="shelfTime" column="shelf_time" jdbcType="TIMESTAMP"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="deleted" column="deleted" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="getCourseList" resultType="cn.qbs.wa.teach.course.standard.pojo.dto.orgdesk.OrgDeskTaskCourseInfoDTO">
+        select a.id courseId,a.course_name,a.cover_url courseCoverUrl,c.learning_rate courseRateProgress,
+               f.chapter_name lastLearned
+        from course a left join course_info b on a.id = b.course_id
+        left join course_student c on a.id = c.course_id
+        left join course_student_study_snapshot d on a.id = d.course_id
+        left join course_lesson e on d.course_id = e.course_id
+        left join course_chapter f on e.chapter_id = f.id
+        <where>
+            a.enabled = 1 and c.user_id = #{params.userId} and a.id in
+            <foreach collection="params.idList" item="courseId" open="(" close=")" separator=",">
+                #{courseId, jdbcType=BIGINT}
+            </foreach>
+        </where>
+    </select>
+
+</mapper>
+

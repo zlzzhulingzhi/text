@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.exam.answer.mapper.ExamRuleMapper">
+
+    <resultMap type="cn.qbs.wa.teach.exam.common.entity.ExamRule" id="ExamRuleMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="examId" column="exam_id" jdbcType="INTEGER"/>
+        <result property="ruleId" column="rule_id" jdbcType="INTEGER"/>
+        <result property="extraContent" column="extra_content" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+</mapper>
+

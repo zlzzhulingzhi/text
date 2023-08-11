@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.question.mapper.QuestionImportRecordMapper">
+
+    <resultMap type="cn.qbs.wa.teach.question.entity.QuestionImportRecord" id="QuestionImportRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="importTime" column="import_time" jdbcType="TIMESTAMP"/>
+        <result property="total" column="total" jdbcType="INTEGER"/>
+        <result property="success" column="success" jdbcType="INTEGER"/>
+        <result property="failure" column="failure" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="page" resultType="cn.qbs.wa.teach.question.pojo.question.QuestionImportRecordPageResponse">
+        select * from question_import_record
+    </select>
+
+</mapper>
+

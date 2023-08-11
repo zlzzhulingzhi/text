@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.InvitationMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.Invitation" id="InvitationMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="businessType" column="business_type" jdbcType="INTEGER"/>
+        <result property="startTime" column="start_time" jdbcType="TIMESTAMP"/>
+        <result property="endTime" column="end_time" jdbcType="TIMESTAMP"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="invitationKey" column="invitation_key" jdbcType="VARCHAR"/>
+        <result property="invitationPassword" column="invitation_password" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <resultMap type="cn.qbs.wa.train.logistics.pojo.invitation.InvitationPageResponse" id="InvitationPage">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="deptId" column="deptId" jdbcType="INTEGER"/>
+        <result property="invDeptId" column="invDeptId" jdbcType="INTEGER"/>
+        <result property="orgName" column="orgName" jdbcType="VARCHAR"/>
+        <result property="fullName" column="full_name" jdbcType="VARCHAR"/>
+        <result property="businessType" column="business_type" jdbcType="INTEGER"/>
+        <result property="startTime" column="start_time" jdbcType="TIMESTAMP"/>
+        <result property="endTime" column="end_time" jdbcType="TIMESTAMP"/>
+        <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="invitationKey" column="invitation_key" jdbcType="VARCHAR"/>
+        <result property="invitationPassword" column="invitation_password" jdbcType="VARCHAR"/>
+        <collection property="groupList" column="groupList" ofType="cn.qbs.wa.train.logistics.pojo.invitation.InvitationGroupResponse">
+            <result property="groupId" column="groupId" jdbcType="INTEGER"/>
+            <result property="invGroupId" column="invGroupId" jdbcType="INTEGER"/>
+            <result property="groupName" column="group_name" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+    <resultMap type="cn.qbs.wa.train.logistics.pojo.invitation.InvitationDetailResponse" id="InvitationDetail">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="deptId" column="deptId" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="invDeptId" column="invDeptId" jdbcType="INTEGER"/>
+        <result property="orgName" column="orgName" jdbcType="VARCHAR"/>
+        <result property="fullName" column="full_name" jdbcType="VARCHAR"/>
+        <result property="businessType" column="business_type" jdbcType="INTEGER"/>
+        <result property="startTime" column="start_time" jdbcType="TIMESTAMP"/>
+        <result property="endTime" column="end_time" jdbcType="TIMESTAMP"/>
+        <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="invitationKey" column="invitation_key" jdbcType="VARCHAR"/>
+        <result property="invitationPassword" column="invitation_password" jdbcType="VARCHAR"/>
+        <collection property="groupList" column="groupList" ofType="cn.qbs.wa.train.logistics.pojo.invitation.InvitationGroupResponse">
+            <result property="groupId" column="groupId" jdbcType="INTEGER"/>
+            <result property="invGroupId" column="invGroupId" jdbcType="INTEGER"/>
+            <result property="groupName" column="group_name" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_train_organization.invitation(org_id, business_type, start_time, end_time, enabled, remark,
+        invitation_key, invitation_password, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.businessType}, #{entity.startTime}, #{entity.endTime}, #{entity.enabled},
+            #{entity.remark}, #{entity.invitationKey}, #{entity.invitationPassword}, #{entity.createBy},
+            #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_train_organization.invitation(org_id, business_type, start_time, end_time, enabled, remark,
+        invitation_key, invitation_password, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.businessType}, #{entity.startTime}, #{entity.endTime}, #{entity.enabled},
+            #{entity.remark}, #{entity.invitationKey}, #{entity.invitationPassword}, #{entity.createBy},
+            #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , business_type = values(business_type) , start_time = values(start_time) , end_time =
+        values(end_time) , enabled = values(enabled) , remark = values(remark) , invitation_key = values(invitation_key)
+        , invitation_password = values(invitation_password) , create_by = values(create_by) , create_time =
+        values(create_time) , update_by = values(update_by) , update_time = values(update_time) $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.train.logistics.pojo.invitation.InvitationPageResponse">
+        select inv.id,inv.org_id,org.name orgName,inv.create_time,invDept.id invDeptId,invDept.dept_id deptId,dept.full_name,
+               inv.start_time,inv.end_time,inv.create_time createTime,
+               inv.remark,inv.enabled,inv.invitation_key,inv.invitation_password
+        from invitation inv
+            left join invitation_dept invDept on inv.id = invDept.invitation_id
+            left join dept dept on dept.id = invDept.dept_id
+            left join organization org on org.id = inv.org_id
+        <where>
+            <if test="params.enabled != null">
+                and inv.enabled = #{enabled}
+            </if>
+            <if test="params.businessType != null">
+                and inv.business_type = #{businessType}
+            </if>
+            <if test="params.fullName != null and params.fullName != ''">
+                and dept.full_name = #{fullName}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultMap="InvitationDetail">
+        select inv.id,inv.org_id,org.name orgName,inv.create_time,invDept.id invDeptId,invDept.dept_id deptId,dept.full_name,
+            invGroup.id invGroupId,invGroup.group_id groupId,gro.group_name,inv.start_time,inv.end_time,inv.create_time createTime,
+            inv.remark,inv.enabled,inv.invitation_key,inv.invitation_password,inv.create_by
+        from invitation inv
+            left join invitation_dept invDept on inv.id = invDept.invitation_id
+            left join invitation_group invGroup on inv.id = invGroup.invitation_id
+            left join dept dept on dept.id = invDept.dept_id
+            left join groups gro on gro.id = invGroup.group_id
+            left join organization org on org.id = inv.org_id
+        <where>
+            <if test="id != null">
+                and inv.id = #{id}
+            </if>
+            <if test="orgId != null">
+                and inv.org_id = #{orgId}
+            </if>
+            <if test="invitationKey != null and invitationKey != ''">
+                and inv.invitation_key = #{invitationKey}
+            </if>
+        </where>
+    </select>
+
+    <select id="invitationGroups" resultType="cn.qbs.wa.train.logistics.pojo.invitationgroup.InvitationGroupListResponse">
+        select inv.id invitaionId,g.id invGroupId, gs.id group_id,gs.group_name
+        from invitation_group g
+            left join groups gs on g.group_id = gs.id
+            left join invitation inv on inv.id = g.invitation_id
+        <where>
+            <if test="invitaionIdList != null || invitaionIdList.size() > 0">
+                and inv.id in
+                <foreach collection="invitaionIdList" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>
+

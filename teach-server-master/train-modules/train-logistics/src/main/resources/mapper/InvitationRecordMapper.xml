@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.InvitationRecordMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.InvitationRecord" id="InvitationRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="businessType" column="business_type" jdbcType="INTEGER"/>
+        <result property="businessId" column="business_id" jdbcType="INTEGER"/>
+        <result property="invitationId" column="invitation_id" jdbcType="INTEGER"/>
+        <result property="inviteBy" column="invite_by" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_train_organization.invitation_record(org_id, business_type, business_id, invitation_id,
+        invite_by, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.businessType}, #{entity.businessId}, #{entity.invitationId}, #{entity.inviteBy},
+            #{entity.createBy}, #{entity.createTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_train_organization.invitation_record(org_id, business_type, business_id, invitation_id,
+        invite_by, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.businessType}, #{entity.businessId}, #{entity.invitationId}, #{entity.inviteBy},
+            #{entity.createBy}, #{entity.createTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , business_type = values(business_type) , business_id = values(business_id) ,
+        invitation_id = values(invitation_id) , invite_by = values(invite_by) , create_by = values(create_by) ,
+        create_time = values(create_time) $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.train.logistics.pojo.invitationrecord.InvitationRecordPageResponse">
+        select *
+        from invitation_record
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById"
+            resultType="cn.qbs.wa.train.logistics.pojo.invitationrecord.InvitationRecordDetailResponse">
+        select *
+        from invitation_record
+        where id = #{id}
+    </select>
+</mapper>
+

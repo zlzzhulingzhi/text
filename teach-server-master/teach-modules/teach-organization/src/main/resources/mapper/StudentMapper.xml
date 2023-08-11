@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.organization.mapper.StudentMapper">
+
+    <resultMap type="cn.qbs.wa.teach.organization.entity.Student" id="StudentMap">
+        <result property="id" column="id" jdbcType="BIGINT"/>
+        <result property="orgId" column="org_id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="BIGINT"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="realName" column="real_name" jdbcType="VARCHAR"/>
+        <result property="nickName" column="nick_name" jdbcType="VARCHAR"/>
+        <result property="sex" column="sex" jdbcType="INTEGER"/>
+        <result property="headImgUrl" column="head_img_url" jdbcType="VARCHAR"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="BIGINT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="BIGINT"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="account" column="account" jdbcType="VARCHAR"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="idNumber" column="id_number" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="page" resultType="cn.qbs.wa.teach.organization.pojo.student.StudentPageResponse">
+        SELECT
+            distinct s.*, d.dept_name, d.id as deptId, d.full_name as deptFullName
+        FROM
+            student s
+            LEFT JOIN student_dept sd ON sd.student_id = s.id
+            LEFT JOIN dept d ON d.id = sd.dept_id
+            left join student_group sg on sg.student_id = s.id
+        <where>
+            <if test="params.orgId != null">
+                and s.org_id = #{params.orgId}
+            </if>
+            <if test="params.enabled != null">
+                and s.enabled = #{params.enabled}
+            </if>
+            <if test="params.sex != null">
+                and s.sex = #{params.sex}
+            </if>
+            <if test="params.phone != null and params.phone != '' ">
+                and s.phone = #{params.phone}
+            </if>
+            <if test="params.idNumber != null and params.idNumber != '' ">
+                and s.id_number = #{params.idNumber}
+            </if>
+            <if test="params.realName != null and params.realName != '' ">
+                and s.real_name like concat('%', #{params.realName}, '%')
+            </if>
+            <if test="params.deptId == -1">
+                and sd.dept_id IS NULL
+            </if>
+            <if test="params.regStartTime != null">
+                and s.create_time &gt;= #{params.regStartTime}
+            </if>
+            <if test="params.regEndTime != null">
+                and s.create_time &lt;= #{params.regEndTime}
+            </if>
+            <if test="params.deptIdList != null and params.deptIdList.size > 0">
+                and sd.dept_id IN
+                <foreach collection="params.deptIdList" item="deptId" open="(" close=")" separator=",">
+                    #{deptId, jdbcType=BIGINT}
+                </foreach>
+            </if>
+            <if test="params.groupIdList != null and params.groupIdList.size > 0">
+                and sg.group_id IN
+                <foreach collection="params.groupIdList" item="groupId" open="(" close=")" separator=",">
+                    #{groupId, jdbcType=BIGINT}
+                </foreach>
+            </if>
+            <if test="params.studentIdList != null and params.studentIdList.size>0">
+                and s.id in
+                <foreach collection="params.studentIdList" item="studentId" open="(" close=")" separator=",">
+                    #{studentId, jdbcType=BIGINT}
+                </foreach>
+            </if>
+            <if test="params.identity != null">
+                and s.identity = #{params.identity}
+            </if>
+        </where>
+        <if test="params.studentSortField != null and params.studentSortField=='realName' and params.studentSortOrder=='asc'">
+                ORDER BY CONVERT(s.real_name USING gbk ) asc
+        </if>
+        <if test="params.studentSortField != null and params.studentSortField=='realName' and params.studentSortOrder=='desc'">
+                ORDER BY CONVERT(s.real_name USING gbk ) desc
+        </if>
+        <if test="params.studentSortField != null and params.studentSortField=='createTime' and params.studentSortOrder=='asc'">
+                ORDER BY s.id asc
+        </if>
+        <if test="params.studentSortField != null and params.studentSortField=='createTime' and params.studentSortOrder=='desc'">
+                ORDER BY s.id desc
+        </if>
+        <if test="params.studentSortField == null">
+            ORDER BY s.id
+        </if>
+    </select>
+
+    <select id="pageByGroup" resultType="cn.qbs.wa.teach.organization.pojo.student.StudentPageResponse">
+        SELECT
+            s.*, d.dept_name, d.id as deptId, d.full_name as deptFullName
+        FROM
+            student s
+            INNER JOIN student_group sg ON sg.student_id = s.id AND sg.group_id = #{params.groupId}
+            LEFT JOIN student_dept sd ON sd.student_id = s.id
+            LEFT JOIN dept d ON d.id = sd.dept_id
+        <where>
+            <if test="params.orgId != null">
+                and s.org_id = #{params.orgId}
+            </if>
+            <if test="params.groupId != null">
+                and sg.group_id = #{params.groupId}
+            </if>
+            <if test="params.enabled != null">
+                and s.enabled = #{params.enabled}
+            </if>
+            <if test="params.sex != null">
+                and s.sex = #{params.sex}
+            </if>
+            <if test="params.phone != null and params.phone != '' ">
+                and s.phone = #{params.phone}
+            </if>
+            <if test="params.idNumber != null and params.idNumber != '' ">
+                and s.id_number = #{params.idNumber}
+            </if>
+            <if test="params.realName != null and params.realName != '' ">
+                and s.real_name like concat('%', #{params.realName}, '%')
+            </if>
+            <if test="params.deptId == -1">
+                and sd.dept_id IS NULL
+            </if>
+            <if test="params.regStartTime != null">
+                and s.create_time &gt;= #{params.regStartTime}
+            </if>
+            <if test="params.regEndTime != null">
+                and s.create_time &lt;= #{params.regEndTime}
+            </if>
+            <if test="params.deptIdList != null and params.deptIdList.size > 0">
+                and sd.dept_id IN
+                <foreach collection="params.deptIdList" item="deptId" open="(" close=")" separator=",">
+                    #{deptId, jdbcType=BIGINT}
+                </foreach>
+            </if>
+            <if test="params.studentIdList != null and params.studentIdList.size>0">
+                and s.id in
+                <foreach collection="params.studentIdList" item="studentId" open="(" close=")" separator=",">
+                    #{studentId, jdbcType=BIGINT}
+                </foreach>
+            </if>
+            <if test="params.identity != null">
+                and s.identity = #{params.identity}
+            </if>
+        </where>
+        <if test="params.studentSortField != null and params.studentSortField=='realName' and params.studentSortOrder=='asc'">
+            ORDER BY CONVERT(s.real_name USING gbk ) asc
+        </if>
+        <if test="params.studentSortField != null and params.studentSortField=='realName' and params.studentSortOrder=='desc'">
+            ORDER BY CONVERT(s.real_name USING gbk ) desc
+        </if>
+        <if test="params.studentSortField != null and params.studentSortField=='createTime' and params.studentSortOrder=='asc'">
+            ORDER BY s.id asc
+        </if>
+        <if test="params.studentSortField != null and params.studentSortField=='createTime' and params.studentSortOrder=='desc'">
+            ORDER BY s.id desc
+        </if>
+    </select>
+
+    <select id="pageNoTenant" resultType="cn.qbs.wa.teach.organization.pojo.student.StudentPageResponse">
+        select s.*, o.`name` as orgName
+        from student s inner join organization o on o.id = s.org_id
+        <if test="params.deptId != null or (params.deptIdList!=null and params.deptIdList.size() > 0)">
+            left join student_dept sd on sd.student_id = s.id
+        </if>
+        <where>
+            <if test="params.orgId != null">
+                and s.org_id = #{params.orgId}
+            </if>
+            <if test="params.deptId != null">
+                and sd.dept_id = #{params.deptId}
+            </if>
+            <if test="params.deptIdList!=null and params.deptIdList.size() > 0 ">
+                and sd.dept_id in
+                <foreach collection="params.deptIdList" index="index" item="item"  open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.enabled != null">
+                and s.enabled = #{params.enabled}
+            </if>
+            <if test="params.sex != null">
+                and s.sex = #{params.sex}
+            </if>
+            <if test="params.phone != null and params.phone != '' ">
+                and s.phone = #{params.phone}
+            </if>
+            <if test="params.realName != null and params.realName != '' ">
+                and s.real_name like concat('%', #{params.realName}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="list" resultMap="studentList">
+        select distinct s.*, sd.dept_id, d.full_name deptName, sg.group_id, gs.group_name
+        from student s
+            left join student_dept sd on s.id = sd.student_id
+            left join student_group sg on s.id = sg.student_id
+            left join `groups` gs on sg.group_id = gs.id
+            left join dept d on sd.dept_id = d.id
+        <where>
+            <if test="params.enabled != null">
+                and s.enabled = #{params.enabled}
+            </if>
+            <if test="params.sex != null">
+                and s.sex = #{params.sex}
+            </if>
+            <if test="params.phone != null and params.phone != '' ">
+                and s.phone = #{params.phone}
+            </if>
+            <if test="params.realName != null and params.realName != '' ">
+                and s.real_name like concat('%', #{params.realName}, '%')
+            </if>
+            <if test="params.idList != null and params.idList.size() != 0">
+                and s.id IN
+                <foreach collection="params.idList" item="id" open="(" close=")" separator=",">
+                    #{id, jdbcType=BIGINT}
+                </foreach>
+            </if>
+            <if test="params.userIds != null and params.userIds.size() != 0">
+                and s.user_id IN
+                <foreach collection="params.userIds" item="userId" open="(" close=")" separator=",">
+                    #{userId, jdbcType=BIGINT}
+                </foreach>
+            </if>
+            <if test="params.deptIdList != null and params.deptIdList.size() != 0">
+                and sd.dept_id IN
+                <foreach collection="params.deptIdList" item="deptId" open="(" close=")" separator=",">
+                    #{deptId, jdbcType=BIGINT}
+                </foreach>
+            </if>
+            <if test="params.groupIdList != null and params.groupIdList.size() != 0">
+                and sg.group_id IN
+                <foreach collection="params.groupIdList" item="groupId" open="(" close=")" separator=",">
+                    #{groupId, jdbcType=BIGINT}
+                </foreach>
+            </if>
+        </where>
+        <choose>
+            <when test="params.studentSortField != null">
+                <if test="params.studentSortField == 'realName'">
+                    <choose>
+                        <when test="params.studentSortOrder == 'desc'">
+                            order by convert(s.real_name using gbk) collate gbk_chinese_ci desc
+                        </when>
+                        <otherwise>
+                            order by convert(s.real_name using gbk) collate gbk_chinese_ci asc
+                        </otherwise>
+                    </choose>
+                </if>
+            </when>
+            <otherwise>
+                order by s.id desc
+            </otherwise>
+        </choose>
+    </select>
+    <resultMap id="studentList" type="cn.qbs.wa.teach.organization.pojo.student.StudentListResponse" extends="StudentMap">
+        <result column="dept_id" property="deptId"/>
+        <result column="deptName" property="deptName"/>
+        <collection property="groupList" ofType="cn.qbs.wa.teach.organization.pojo.student.StudentGroupList">
+            <result column="group_id" property="groupId"/>
+            <result column="group_name" property="groupName"/>
+        </collection>
+    </resultMap>
+
+    <select id="getStudentName" resultType="cn.qbs.wa.teach.organization.pojo.student.StudentDetailResponse">
+        select s.*
+        from student s
+        <where>
+            s.id = #{params.id}
+            <if test="params.phone != null and params.phone != '' ">
+                and s.phone = #{params.phone}
+            </if>
+            <if test="params.realName != null and params.realName != '' ">
+                and s.real_name like concat('%', #{params.realName}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.organization.pojo.student.StudentDetailResponse">
+        select s.*, ao.uid, IF(`password` IS NULL, 1, 0) AS pwdMiss
+        from student s
+                 left join app_oauth ao ON ao.user_id = s.user_id AND ao.org_id = s.org_id AND ao.platform = 'weixin'
+        where s.id = #{id}
+    </select>
+
+    <select id="selectDetailsById" resultType="cn.qbs.wa.teach.organization.pojo.student.StudentDetailResponse">
+        SELECT
+            GROUP_CONCAT(g.group_name SEPARATOR ',')group_name,GROUP_CONCAT(g.id SEPARATOR ',')group_id,s.*,any_value(d.dept_name) as deptName,any_value(d.id) as deptId
+        FROM
+            student s
+                LEFT JOIN student_group sg ON sg.student_id = s.id
+                LEFT JOIN `groups` g ON g.id =sg.group_id
+                LEFT JOIN student_dept sd ON sd.student_id = s.id
+                LEFT JOIN dept d ON d.id =sd.dept_id
+        where s.id = #{id}
+    </select>
+
+    <select id="getLoginInfo" resultType="cn.qbs.wa.teach.organization.pojo.student.LoginInfoResponse">
+        SELECT
+            s.*,
+            e.id AS employeeId
+        FROM
+            student s
+            LEFT JOIN employee e ON e.org_id = s.org_id AND e.user_id = s.user_id AND e.enabled = 1
+        WHERE
+            s.org_id = #{orgId} and s.account = #{account}
+    </select>
+
+    <select id="verifyPhone" resultType="cn.qbs.wa.teach.organization.entity.Student">
+        SELECT * FROM
+            student
+        WHERE
+            org_id = #{orgId} and phone = #{phone}
+    </select>
+
+    <select id="getPhoneBindingInfo" resultType="cn.qbs.wa.teach.organization.pojo.student.SocialLoginInfoResponse">
+        SELECT
+            s.*,
+            ao.uid
+        FROM
+            student s
+            INNER JOIN app_oauth ao ON ao.user_id = s.user_id AND ao.org_id = s.org_id AND ao.platform = 'weixin'
+        WHERE
+            s.org_id = #{orgId} and s.account = #{account}
+    </select>
+
+    <select id="pageWithStaff" resultType="cn.qbs.wa.teach.organization.pojo.student.StudentPageResponse">
+        SELECT DISTINCT
+            s.*
+        FROM
+            student s
+            INNER JOIN employee e ON e.user_id = s.user_id AND e.org_id = s.org_id
+            INNER JOIN employee_role er ON er.employee_id = e.id
+            INNER JOIN employee_dept ed ON ed.employee_id = e.id
+            LEFT JOIN student_group sg ON sg.student_id = s.id
+            LEFT JOIN `groups` g ON g.id =sg.group_id
+        <where>
+            s.enabled = 1
+            <if test="params.orgId != null">
+                and s.org_id = #{params.orgId}
+            </if>
+            <if test="params.phone != null and params.phone != '' ">
+                and s.phone = #{params.phone}
+            </if>
+            <if test="params.realName != null and params.realName != '' ">
+                and s.real_name like concat('%', #{params.realName}, '%')
+            </if>
+            <if test="params.groupName != null and params.groupName != '' ">
+                and g.group_name like concat('%', #{params.groupName}, '%')
+            </if>
+            <if test="params.roleId != null">
+                and er.role_id = #{params.roleId}
+            </if>
+            <if test="params.deptId != null">
+                and ed.dept_id = #{params.deptId}
+            </if>
+            <if test="params.deptIdList != null and params.deptIdList.size() > 0">
+                and ed.dept_id in
+                <foreach collection="params.deptIdList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.roleIdList != null and params.roleIdList.size() > 0">
+                and er.role_id in
+                <foreach collection="params.roleIdList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.idNumber != null and params.idNumber != '' ">
+                and s.id_number=#{params.idNumber}
+            </if>
+        </where>
+        ORDER BY CONVERT(s.real_name USING gbk )
+    </select>
+
+    <select id="pageWithPure" resultType="cn.qbs.wa.teach.organization.pojo.student.StudentPageResponse">
+        select DISTINCT
+            s.*
+        from student s
+        LEFT JOIN student_group sg ON sg.student_id = s.id
+        LEFT JOIN `groups` g ON g.id =sg.group_id
+        <where>
+            s.enabled = 1
+            <if test="params.orgId != null">
+                and s.org_id = #{params.orgId}
+            </if>
+            <if test="params.phone != null and params.phone != '' ">
+                and phone = #{params.phone}
+            </if>
+            <if test="params.realName != null and params.realName != '' ">
+                and real_name like concat('%', #{params.realName}, '%')
+            </if>
+            <if test="params.groupName != null and params.groupName != '' ">
+                and g.group_name like concat('%', #{params.groupName}, '%')
+            </if>
+            <if test="params.ignoreIdList != null and params.ignoreIdList.size() > 0">
+                and s.id not in
+                <foreach collection="params.ignoreIdList" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="params.idNumber != null and params.idNumber != '' ">
+                and s.id_number=#{params.idNumber}
+            </if>
+        </where>
+        ORDER BY CONVERT(s.real_name USING gbk )
+    </select>
+
+    <select id="selectDetailByIdNoTenant" resultType="cn.qbs.wa.teach.organization.pojo.student.StudentDetailResponse">
+        select s.*, ao.uid, IF(`password` IS NULL, 1, 0) AS pwdMiss
+        from student s
+                 left join app_oauth ao ON ao.user_id = s.user_id AND ao.org_id = s.org_id AND ao.platform = 'weixin'
+        where s.id = #{id}
+    </select>
+
+    <select id="countNotDeptNum" resultType="java.lang.Long">
+        select count(stu.id) from student stu
+            left join student_dept sd on stu.id = sd.student_id
+            left join dept d on d.id = sd.dept_id
+        where sd.dept_id IS NULL
+    </select>
+    <select id="pageByGroupIdList" resultType="cn.qbs.wa.teach.organization.pojo.student.StudentPageResponse">
+        SELECT
+        s.*, d.dept_name, d.id as deptId, d.full_name as deptFullName
+        FROM
+        student s
+        LEFT JOIN student_dept sd ON sd.student_id = s.id
+        LEFT JOIN dept d ON d.id = sd.dept_id
+        <where>
+            <if test="params.orgId != null">
+                and s.org_id = #{params.orgId}
+            </if>
+            <if test="params.enabled != null">
+                and s.enabled = #{params.enabled}
+            </if>
+            <if test="params.sex != null">
+                and s.sex = #{params.sex}
+            </if>
+            <if test="params.phone != null and params.phone != '' ">
+                and s.phone = #{params.phone}
+            </if>
+            <if test="params.idNumber != null and params.idNumber != '' ">
+                and s.id_number = #{params.idNumber}
+            </if>
+            <if test="params.realName != null and params.realName != '' ">
+                and s.real_name like concat('%', #{params.realName}, '%')
+            </if>
+            <if test="params.deptId == -1">
+                and sd.dept_id IS NULL
+            </if>
+            <if test="params.regStartTime != null and params.regStartTime != ''">
+                and s.create_time &gt;= #{params.regStartTime}
+            </if>
+            <if test="params.regEndTime != null and params.regEndTime != ''">
+                and s.create_time &lt;= #{params.regEndTime}
+            </if>
+            <if test="params.deptIdList != null and params.deptIdList.size > 0">
+                and sd.dept_id IN
+                <foreach collection="params.deptIdList" item="deptId" open="(" close=")" separator=",">
+                    #{deptId, jdbcType=BIGINT}
+                </foreach>
+            </if>
+            <if test="params.studentIdList != null and params.studentIdList.size>0">
+                and s.id in
+                <foreach collection="params.studentIdList" item="studentId" open="(" close=")" separator=",">
+                    #{studentId, jdbcType=BIGINT}
+                </foreach>
+            </if>
+            <if test="params.identity != null">
+                and s.identity = #{params.identity}
+            </if>
+            <if test="params.groupIdList != null and params.groupIdList.size > 0">
+             and s.id in
+                (
+                SELECT
+                distinct student_id
+                FROM
+                student_group sg
+                WHERE
+                sg.group_id IN
+                <foreach collection="params.groupIdList" item="groupId" open="(" close=")" separator=",">
+                    #{groupId, jdbcType=BIGINT}
+                </foreach>
+                    )
+            </if>
+        </where>
+        <if test="params.studentSortField != null and params.studentSortField=='realName' and params.studentSortOrder=='asc'">
+            ORDER BY CONVERT(s.real_name USING gbk ) asc
+        </if>
+        <if test="params.studentSortField != null and params.studentSortField=='realName' and params.studentSortOrder=='desc'">
+            ORDER BY CONVERT(s.real_name USING gbk ) desc
+        </if>
+        <if test="params.studentSortField != null and params.studentSortField=='createTime' and params.studentSortOrder=='asc'">
+            ORDER BY s.id asc
+        </if>
+        <if test="params.studentSortField != null and params.studentSortField=='createTime' and params.studentSortOrder=='desc'">
+            ORDER BY s.id desc
+        </if>
+    </select>
+
+    <select id="selectStu" resultType="cn.qbs.wa.teach.organization.pojo.student.StudentInfoResponse">
+        SELECT
+        b.*
+        FROM student b
+        <where>
+            <if test="request.orgId != null">
+                AND b.org_id = #{request.orgId}
+            </if>
+            <if test="request.unionId != null">
+                AND b.user_id = #{request.unionId}
+            </if>
+
+        </where>
+    </select>
+
+    <select id="selectOrgNameByUserId" resultType="String">
+        SELECT
+            o.name
+        FROM
+            student s
+            LEFT JOIN organization o ON o.id = s.org_id
+        <where>
+            <if test="id != null">
+                AND s.user_id = #{id}
+            </if>
+        </where>
+    </select>
+
+</mapper>
+

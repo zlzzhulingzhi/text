@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.union.auth.mapper.UniUserMiniappMapper">
+
+    <sql id="commonColumn">
+        u.id, u.account, u.phone, u.email, u.nick_name, u.real_name, u.head_img_url, u.sex, u.enabled, u.id_number, u.head_img_url
+    </sql>
+
+    <select id="sysUserInfoByOpenId" resultType="cn.qbs.wa.union.auth.pojo.uniuser.UniUserDTO">
+        SELECT <include refid="commonColumn" />
+        FROM uni_user_miniapp uum INNER JOIN `system_user` u ON uum.id = u.id
+        WHERE uum.open_id = #{openId}
+    </select>
+
+    <select id="orgUserInfoByOpenId" resultType="cn.qbs.wa.union.auth.pojo.uniuser.UniUserDTO">
+        SELECT <include refid="commonColumn" />
+        FROM uni_user_miniapp uum INNER JOIN `system_employee_user` u ON uum.id = u.id
+        WHERE uum.open_id = #{openId}
+    </select>
+
+    <select id="sysUserInfoByPhone" resultType="cn.qbs.wa.union.auth.entity.UniUserMiniapp">
+        SELECT u.id, uum.open_id
+        FROM `system_user` u LEFT JOIN uni_user_miniapp uum ON uum.id = u.id
+        WHERE u.phone = #{phone}
+    </select>
+
+
+    <select id="orgUserInfoByPhone" resultType="cn.qbs.wa.union.auth.entity.UniUserMiniapp">
+        SELECT u.id, uum.open_id
+        FROM `system_employee_user` u LEFT JOIN uni_user_miniapp uum ON uum.id = u.id
+        WHERE u.phone = #{phone}
+    </select>
+
+    <select id="getOrgInfo" resultType="cn.qbs.wa.union.auth.pojo.uniorg.UniOrg">
+        SELECT id, `name`, `enabled`
+        FROM `uni_organization`
+        WHERE id = #{orgId}
+    </select>
+</mapper>
+

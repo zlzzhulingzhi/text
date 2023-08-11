@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.organization.mapper.AppOauthMapper">
+
+    <resultMap type="cn.qbs.wa.teach.organization.entity.AppOauth" id="AppOauthMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="accountType" column="account_type" jdbcType="VARCHAR"/>
+        <result property="platform" column="platform" jdbcType="VARCHAR"/>
+        <result property="uid" column="uid" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="getStudentLoginInfo" resultType="cn.qbs.wa.teach.organization.pojo.student.LoginInfoResponse">
+        SELECT
+            s.*
+        FROM
+            app_oauth ao
+            INNER JOIN `student` s ON ao.user_id = s.user_id AND ao.org_id = s.org_id
+        WHERE
+            ao.org_id = #{params.orgId}
+            AND ao.uid = #{params.uid}
+            AND ao.platform = #{params.platform}
+    </select>
+
+    <select id="getEmployeeLoginInfo" resultType="cn.qbs.wa.teach.organization.pojo.student.LoginInfoResponse">
+        SELECT
+            s.*,
+            e.id AS employeeId
+        FROM
+            app_oauth ao
+            INNER JOIN employee e ON e.org_id = s.org_id AND e.user_id = s.user_id AND e.enabled = 1
+        WHERE
+            ao.org_id = #{params.orgId}
+            AND ao.uid = #{params.uid}
+            AND ao.platform = #{params.platform}
+    </select>
+
+</mapper>
+

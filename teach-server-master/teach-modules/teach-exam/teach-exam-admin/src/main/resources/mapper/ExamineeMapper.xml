@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.exam.admin.mapper.ExamineeMapper">
+
+    <resultMap type="cn.qbs.wa.teach.exam.common.entity.Examinee" id="ExamineeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="examId" column="exam_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="employeeId" column="employee_id" jdbcType="INTEGER"/>
+        <result property="remainingTimes" column="remaining_times" jdbcType="INTEGER"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="VARCHAR"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="page" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.ExamPageResponse">
+        select DISTINCT er.*, e.user_id,e.employee_id,erq.create_by,erq.correct_status
+        from examinee_record er
+        INNER join examinee e on er.examinee_id = e.id
+        INNER join examinee_record_question erq on er.id = erq.examinee_record_id
+        where er.status in (1,2)
+            <if test="params.examName != null">
+                and e.exam_name = #{params.examName}
+            </if>
+            <if test="params.examId != null">
+                and e.exam_id = #{params.examId}
+            </if>
+            <if test="params.correctStatus != null and params.correctStatus != -1">
+                and er.status = #{params.correctStatus}
+            </if>
+            <if test="params.userId != null">
+                and e.user_id = #{params.userId}
+            </if>
+    </select>
+
+</mapper>
+

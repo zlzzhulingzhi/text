@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.question.mapper.QuestionImportRecordDetailMapper">
+
+    <resultMap type="cn.qbs.wa.teach.question.entity.QuestionImportRecordDetail" id="QuestionImportRecordDetailMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="questionImportRecordId" column="question_import_record_id" jdbcType="INTEGER"/>
+        <result property="importData" column="import_data" jdbcType="VARCHAR"/>
+        <result property="success" column="success" jdbcType="INTEGER"/>
+        <result property="failureReason" column="failure_reason" jdbcType="VARCHAR"/>
+    </resultMap>
+    
+</mapper>
+

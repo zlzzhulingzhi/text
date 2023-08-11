@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.screen.mapper.ScreenStatDataDynamicMapper">
+
+    <resultMap type="cn.qbs.wa.train.screen.entity.ScreenStatDataDynamic" id="ScreenStatDataDynamicMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="module" column="module" jdbcType="VARCHAR"/>
+        <result property="dataName" column="data_name" jdbcType="VARCHAR"/>
+        <result property="usingNum" column="using_num" jdbcType="INTEGER"/>
+        <result property="freeNum" column="free_num" jdbcType="INTEGER"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="display" column="display" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="page" resultType="cn.qbs.wa.train.screen.pojo.screenstatdatadynamic.ScreenStatDataDynamicPageResponse">
+        select *
+        from screen_stat_data_dynamic
+        <where>
+            <if test="params.module != null and params.module != '' ">
+                module = #{params.module}
+            </if>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+        order by sort
+    </select>
+
+</mapper>
+

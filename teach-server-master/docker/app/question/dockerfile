@@ -1,0 +1,17 @@
+# 基础镜像
+FROM amazoncorretto:11.0.16
+# questionor
+MAINTAINER qbs
+
+# 挂载目录
+VOLUME /mydata/app
+# 创建目录
+RUN mkdir -p /mydata/app
+# 指定路径
+WORKDIR /mydata/app
+# 复制jar文件到路径
+COPY ./jar/teach-question.jar /mydata/app/teach-question.jar
+# 复制试题导入报告模板文件到路径
+COPY ./other/question_import_report.xlsx /mydata/app/question_import_report.xlsx
+# 启动认证服务
+ENTRYPOINT ["java","-jar","-Dspring.profiles.active=prod","-Dspring.cloud.nacos.discovery.server-addr=${nacos_address}","-Dspring.cloud.nacos.discovery.namespace=${nacos_namespace}","-Dspring.cloud.nacos.config.server-addr=${nacos_address}","-Dspring.cloud.nacos.config.namespace=${nacos_namespace}","-Xms500m", "-Xmx1000m","teach-question.jar"]

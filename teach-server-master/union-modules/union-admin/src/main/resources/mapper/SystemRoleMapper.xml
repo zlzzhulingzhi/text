@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.union.admin.mapper.SystemRoleMapper">
+
+    <resultMap type="cn.qbs.wa.union.admin.entity.SystemRole" id="SystemRoleMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="appId" column="app_id" jdbcType="INTEGER"/>
+        <result property="code" column="code" jdbcType="VARCHAR"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into system_role(app_id, code, name, remark, sort, enabled, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.appId}, #{entity.code}, #{entity.name}, #{entity.remark}, #{entity.sort}, #{entity.enabled}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into system_role(app_id, code, name, remark, sort, enabled, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.appId}, #{entity.code}, #{entity.name}, #{entity.remark}, #{entity.sort}, #{entity.enabled}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        app_id = values(app_id) , code = values(code) , name = values(name) , remark = values(remark) , sort = values(sort) , enabled = values(enabled) , create_by = values(create_by) , create_time = values(create_time) , update_by = values(update_by) , update_time = values(update_time)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.union.admin.pojo.systemrole.SystemRolePageResponse">
+        select *
+        from system_role
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+
+
+            -->
+            <if test="params.enabled != null">
+                and enabled = #{params.enabled}
+            </if>
+            <if test="params.priority != null">
+                and priority &lt;= #{params.priority}
+            </if>
+        </where>
+
+        order by sort
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.union.admin.pojo.systemrole.SystemRoleDetailResponse">
+        select *
+        from system_role
+        where id = #{id}
+    </select>
+</mapper>
+

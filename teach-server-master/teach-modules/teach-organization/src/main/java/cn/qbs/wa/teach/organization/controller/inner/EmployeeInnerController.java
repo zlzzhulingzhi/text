@@ -1,0 +1,76 @@
+package cn.qbs.wa.teach.organization.controller.inner;
+
+import cn.qbs.wa.teach.common.core.constant.Constants;
+import cn.qbs.wa.teach.common.core.constant.SecurityConstants;
+import cn.qbs.wa.teach.common.core.context.SecurityContextHolder;
+import cn.qbs.wa.teach.common.core.domain.IdRequest;
+import cn.qbs.wa.teach.common.core.domain.R;
+import cn.qbs.wa.teach.common.security.annotation.AccessAuth;
+import cn.qbs.wa.teach.organization.entity.Employee;
+import cn.qbs.wa.teach.organization.pojo.employee.*;
+import cn.qbs.wa.teach.organization.pojo.organization.inner.UpdateBindUserRequest;
+import cn.qbs.wa.teach.organization.pojo.student.LoginInfoResponse;
+import cn.qbs.wa.teach.organization.service.*;
+import cn.qbs.wa.teach.organization.service.inner.EmployeeInnerService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import javax.annotation.Resource;
+import java.util.List;
+
+/**
+ * 职工(Employee)表控制层
+ *
+ * @author makejava
+ * @since 2021-11-09 20:11:20
+ */
+@RestController
+@RequestMapping("employee/inner")
+@Api(tags = "职工用户管理")
+public class EmployeeInnerController {
+
+    /**
+     * 服务对象
+     */
+    @Resource
+    private EmployeeInnerService employeeInnerService;
+
+    @Resource
+    private DeptService deptService;
+
+    @AccessAuth({SecurityConstants.INNER})
+    @PostMapping("add")
+    @ApiOperation("新增职工")
+    public R<Employee> add(@RequestBody @Validated EmployeeAddRequest params) {
+        Employee employee = this.employeeInnerService.add(params);
+        deptService.asyncUpdatePeopleCount(params.getDeptIdList(), params.getOrgId());
+        return R.ok(employee);
+    }
+
+    @AccessAuth({SecurityConstants.INNER})
+    @PostMapping("/login-info")
+    R<LoginInfoResponse> getLoginInfo(@RequestBody IdRequest request) {
+        List<Employee> list = employeeInnerService.lambdaQuery().select(Employee::getId, Employee::getOrgId).eq(Employee::getUserId, request.getId()).eq(Employee::getEnabled, Constants.DB_TRUE).list();
+        if (!list.isEmpty()) {
+            Employee employee = list.get(0);
+            LoginInfoResponse response = new LoginInfoResponse();
+            response.setEmployeeId(employee.getId());
+            response.setOrgId(employee.getOrgId());
+            return R.ok(response);
+        }
+        return R.ok();
+    }
+
+    @AccessAuth({SecurityConstants.INNER})
+    @PostMapping("/updateBindUser")
+    public R<Boolean> updateBindUser(@RequestBody UpdateBindUserRequest params) {
+        SecurityContextHolder.setSelectOrgId(params.getOrgId().toString());
+        return R.ok(this.employeeInnerService.updateBindUser(params));
+    }
+
+}
+

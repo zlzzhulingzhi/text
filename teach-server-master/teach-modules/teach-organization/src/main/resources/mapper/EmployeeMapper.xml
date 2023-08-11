@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.organization.mapper.EmployeeMapper">
+
+    <resultMap type="cn.qbs.wa.teach.organization.entity.Employee" id="EmployeeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="realName" column="real_name" jdbcType="VARCHAR"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_teach_organization.employee(user_id, org_id, create_by, create_time, update_by, update_time, real_name, phone)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.userId}, #{entity.orgId}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime}, #{entity.realName}, #{entity.phone})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_teach_organization.employee(user_id, org_id, create_by, create_time, update_by, update_time, real_name, phone)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.userId}, #{entity.orgId}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime}, #{entity.realName}, #{entity.phone})
+        </foreach>
+        on duplicate key update
+        user_id = values(user_id) , org_id = values(org_id) , create_by = values(create_by) , create_time = values(create_time) , update_by = values(update_by) , update_time = values(update_time) , real_name = values(real_name) , phone = values(phone)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.organization.pojo.employee.EmployeePageResponse">
+        SELECT
+        e.*,
+        GROUP_CONCAT( distinct oor.NAME SEPARATOR ';' ) AS roleNames,
+        GROUP_CONCAT( distinct d.dept_name SEPARATOR ';' ) AS deptNames,
+        GROUP_CONCAT( distinct d.full_name SEPARATOR ';' ) AS deptFullName,
+        org.name orgName
+        FROM
+        employee e
+        LEFT JOIN employee_role er ON er.employee_id = e.id
+        LEFT JOIN organization_role oor ON oor.id = er.role_id
+        LEFT JOIN employee_dept ed ON ed.employee_id = e.id
+        LEFT JOIN dept d ON d.id = ed.dept_id
+        left join organization org on org.id = e.org_id
+
+        <where>
+             <if test="params.orgId!=null">
+               and e.org_id=#{params.orgId}
+             </if>
+            <if test="params.enabled != null  ">
+                and e.enabled=#{params.enabled}
+            </if>
+            <if test="params.roleId != null  ">
+                and oor.id=#{params.roleId}
+            </if>
+
+            <if test="params.deptId != null  ">
+                and d.id=#{params.deptId}
+            </if>
+
+            <if test="params.phone != null and params.phone != ''">
+                and e.phone=#{params.phone}
+            </if>
+
+            <if test="params.realName != null and params.realName != ''">
+                and e.real_name like concat('%', #{params.realName}, '%')
+            </if>
+
+             <if test="params.deptIdList!=null and params.deptIdList.size() > 0 ">
+               and d.id in
+                 <foreach collection="params.deptIdList" index="index" item="item"  open="(" close=")" separator=",">
+                     #{item}
+                 </foreach>
+             </if>
+
+
+            <if test="params.searchContent != null and params.searchContent != '' ">
+                and (e.real_name like concat('%', #{params.searchContent}, '%')
+                or e.phone =#{params.searchContent}
+                )
+            </if>
+
+            <if test="params.userIdList!=null and params.userIdList.size() > 0 ">
+                and e.user_id in
+                <foreach collection="params.userIdList" index="index" item="item"  open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+
+
+        </where>
+        GROUP BY
+        e.id
+        <if test="params.sortField != null and params.sortField=='realName' and params.sortOrder=='asc'">
+            ORDER BY CONVERT(e.real_name USING gbk ) asc
+        </if>
+        <if test="params.sortField != null and params.sortField=='realName' and params.sortOrder=='desc'">
+            ORDER BY CONVERT(e.real_name USING gbk ) desc
+        </if>
+        <if test="params.sortField != null and params.sortField=='createTime' and params.sortOrder=='asc'">
+            ORDER BY e.id asc
+        </if>
+        <if test="params.sortField != null and params.sortField=='createTime' and params.sortOrder=='desc'">
+            ORDER BY e.id desc
+        </if>
+
+    </select>
+
+    <select id="selectDetailById" resultMap="selectDetailByIdMap">
+        SELECT
+            e.*,
+            er.role_id as roleId
+        FROM
+            employee e
+                LEFT JOIN employee_role er ON er.employee_id = e.id
+                LEFT JOIN organization_role orr ON orr.id = er.role_id
+                AND orr.enabled = 1
+        WHERE
+            e.id =#{id}
+    </select>
+
+    <resultMap id="selectDetailByIdMap" type="cn.qbs.wa.teach.organization.pojo.employee.EmployeeDetailResponse">
+        <id property="id" column="id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="realName" column="real_name" jdbcType="VARCHAR"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="account" column="phone" jdbcType="VARCHAR"/>
+        <result property="sex" column="sex" />
+        <result property="enabled" column="enabled"/>
+        <collection property="roleIdList" ofType="long" javaType="ArrayList">
+            <id column="roleId" ></id>
+        </collection>
+    </resultMap>
+    <select id="listEmployee" resultType="cn.qbs.wa.teach.organization.pojo.employee.EmployeePageResponse">
+        select e.*,group_concat(role.`name`) roleName
+        from employee e
+            left join employee_role r on e.id = r.employee_id
+            left join organization_role role on r.role_id = role.id
+        <where>
+
+            <if test="idList!=null and idList.size() > 0 ">
+                and e.id in
+                <foreach collection="idList" index="index" item="item"  open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+
+            <if test="roleName != null and roleName != ''">
+                and role.`name` = #{roleName}
+            </if>
+            <if test="realName != null and realName != ''">
+                and e.real_name = #{realName}
+            </if>
+            <if test="phone != null and phone != ''">
+                and e.phone = #{phone}
+            </if>
+            <if test="enable != null">
+                and e.enable = #{enable}
+            </if>
+
+            <if test="orgId!=null">
+             and e.org_id = #{orgId}
+            </if>
+
+            <if test="searchContent != null and searchContent != '' ">
+                and (
+                       e.real_name like concat('%', #{searchContent}, '%')
+              or       e.phone like concat('%', #{searchContent}, '%')
+              or       e.user_id like concat('%', #{searchContent}, '%')
+                )
+            </if>
+
+            <if test="userIdList!=null and userIdList.size() > 0 ">
+                and e.user_id in
+                <foreach collection="userIdList" item="userId"  open="(" close=")" separator=",">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
+        group by e.id
+    </select>
+    <select id="listEmployeeWithRole"
+            resultType="cn.qbs.wa.teach.organization.pojo.employee.EmployeePageResponse">
+        SELECT
+        e.*,
+        GROUP_CONCAT(distinct oor.NAME SEPARATOR ';' ) AS roleNames,
+        GROUP_CONCAT(distinct d.dept_name SEPARATOR ';' ) AS deptNames
+        FROM
+        employee e
+        LEFT JOIN employee_role er ON er.employee_id = e.id
+        LEFT JOIN organization_role oor ON oor.id = er.role_id
+        LEFT JOIN employee_dept ed ON ed.employee_id = e.id
+        LEFT JOIN dept d ON d.id = ed.dept_id
+
+        <where>
+            <if test="params.orgId!=null">
+                and e.org_id=#{params.orgId}
+            </if>
+
+            <if test="params.idList!=null and params.idList.size() > 0 ">
+                and e.id in
+                <foreach collection="params.idList" index="index" item="item"  open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+
+
+
+        </where>
+        GROUP BY
+        e.id
+
+    </select>
+
+    <select id="listEmployeeRoleName" resultType="cn.qbs.wa.teach.organization.pojo.employee.EmployeePageResponse">
+        SELECT
+            er.employee_id as id,
+            GROUP_CONCAT( distinct oor.NAME SEPARATOR ';' ) AS roleNames
+        FROM
+            employee_role er
+            INNER JOIN organization_role oor ON oor.id = er.role_id AND oor.enabled = 1
+        WHERE
+            er.employee_id IN
+            <foreach collection="ids" item="id"  open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        GROUP BY er.employee_id
+    </select>
+</mapper>
+

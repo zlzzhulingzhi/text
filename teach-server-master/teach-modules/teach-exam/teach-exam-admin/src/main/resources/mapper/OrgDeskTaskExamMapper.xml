@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.exam.admin.mapper.OrgDeskTaskExamMapper">
+
+    <resultMap type="cn.qbs.wa.teach.exam.common.entity.Exam" id="OrgDeskTaskExamMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="examName" column="exam_name" jdbcType="VARCHAR"/>
+        <result property="paperId" column="paper_id" jdbcType="INTEGER"/>
+        <result property="paperScore" column="paper_score" jdbcType="NUMERIC"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="shelfStatus" column="shelf_status" jdbcType="INTEGER"/>
+        <result property="edited" column="edited" jdbcType="INTEGER"/>
+        <result property="startTime" column="start_time" jdbcType="TIMESTAMP"/>
+        <result property="endTime" column="end_time" jdbcType="TIMESTAMP"/>
+        <result property="difficulty" column="difficulty" jdbcType="INTEGER"/>
+        <result property="duration" column="duration" jdbcType="INTEGER"/>
+        <result property="limitCount" column="limit_count" jdbcType="INTEGER"/>
+        <result property="introduction" column="introduction" jdbcType="VARCHAR"/>
+        <result property="releaseMode" column="release_mode" jdbcType="INTEGER"/>
+        <result property="passScore" column="pass_score" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="userVisible" column="user_visible" jdbcType="INTEGER"/>
+        <result property="enabled" column="enabled"/>
+        <result property="releaseTime" column="release_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="getExamList" resultType="cn.qbs.wa.teach.exam.admin.pojo.dto.orgdesk.OrgDeskTaskExamInfoDTO">
+        select id,exam_name,`status`,exam_mode,start_time,end_time from exam where enabled = 1
+        and org_id = #{params.orgId} and id in
+        <foreach collection="params.idList" item="examId" open="(" separator="," close=")">
+            #{examId}
+        </foreach>
+    </select>
+
+</mapper>
+

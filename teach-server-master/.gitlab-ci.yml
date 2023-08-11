@@ -1,0 +1,61 @@
+#当Runner通过轮询检测到gitlab上有任务时，就会执行这个文件
+
+
+stages:
+  - sca
+  - sast
+
+variables:
+  IMAGE_PATH: "registry.lab.seczone.cn/qingshanglu/sast-test/ssp-command:2.1"
+  # 指定需要扫描的代码仓库
+  GIT_URL: "https://gitlab.lab.seczone.cn/wa-server/teach-server.git"
+  # git 仓库登录账号
+  GIT_ACCOUNT: "xuping tu"
+  # git 仓库登录 token
+  GIT_TOKEN: "NaGsyrU46_pWut9bLZGx"
+  # codesec 登录 token，需要联系相关负责人获取
+  CODESEC_TOKEN: "eyJhbGciOiJIUzUxMiJ9.eyJub25jZSI6IjFmYjJjMGM0LWMyMDktNGJiMy1hOGQ4LWY1MTk5YjAyOTEwMyIsInN1YiI6ImNmZjYwYzY1LTMyMGEtNDY2MS1iODk3LWQ0YmQ5MGJiNGY5NSJ9.AoVg_FCz15zMLEfjyg3iDqocyxDJ0SOyoYYn8y14HQt1KBY7RCjIzWZtd5aIEELuEx72d15lT9blp4iaEBsjKA"
+  # codesec 服务地址，需要联系相关负责人获取
+  CODESEC_ADDRESS: "https://codesec.seczone.cn"
+  # codesec 是否需要通过 https 访问
+  CS_HTTPS_ENABLE: "true"
+
+  # settings 检测job要使用
+  MAVEN_CLI_OPTS: "--settings settings.xml --batch-mode -DskipTests=true -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  MAVEN_REPO_PATH: $CI_PROJECT_DIR/.m2/repository
+
+
+
+#执行代码安全监测
+sast:
+  stage: sast
+  image: "$IMAGE_PATH"
+  script:
+    - /opt/seczone/codesec/ssp-command/jre/bin/java -Doperation=createGit -DgitUrl="$GIT_URL" -DgitAccount="$GIT_ACCOUNT" -DgitToken="$GIT_TOKEN" -DcsToken="$CODESEC_TOKEN" -DcsAddress="$CODESEC_ADDRESS" -DcsHttpsEnable="$CS_HTTPS_ENABLE" -jar /opt/seczone/codesec/ssp-command/lib/ssp-command-0.0.1-jar-with-dependencies.jar
+  artifacts:
+    reports:
+      sast: gl-sast-report.json
+    paths:
+      - gl-sast-report.json
+    expire_in: 3 day
+
+sca:
+  stage: sca
+  image: "registry.lab.seczone.cn/shiwenfu/ssdlc-msmc/sca_scanner:latest"
+  script:
+    -  pwd
+    -  find / -name 'teach-auth'
+    - java -jar /opt/seczone/scanner.jar --filePath /builds/Gwx1pv-U/0/wa-server/teach-server --parseFrom 4 --cliMode portal --projectName teach-server --phase Phase_1 --onCache true --mergeMode FULL --retrunCheckReport true --token c2NhZ2l0bGFiQHd3dy5jb206MTliYTJlNmY4ZGNiNGYwZGEzMGYxMTY5MGUwM2E2YmU= --groupName hf_seczone --portalIp https://sca.seczone.cn
+    - java -jar /opt/seczone/scanner.jar --filePath /builds/Gwx1pv-U/1/wa-server/teach-server --parseFrom 4 --cliMode portal --projectName teach-server --phase Phase_1 --onCache true --mergeMode FULL --retrunCheckReport true --token c2NhZ2l0bGFiQHd3dy5jb206MTliYTJlNmY4ZGNiNGYwZGEzMGYxMTY5MGUwM2E2YmU= --groupName hf_seczone --portalIp https://sca.seczone.cn
+    - ls;pwd
+  artifacts:
+    reports:
+      dependency_scanning: vulReport.json
+      license_scanning: licenseReport.json
+    paths:
+      - licenseReport.json
+      - vulReport.json
+    expire_in: 3 day
+
+
+

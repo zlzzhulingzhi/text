@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.union.auth.mapper.UniApplicationTypeMapper">
+
+    <resultMap type="cn.qbs.wa.union.auth.entity.UniApplicationType" id="UniApplicationTypeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="parentId" column="parent_id" jdbcType="INTEGER"/>
+        <result property="uniClientCode" column="uni_client_code" jdbcType="VARCHAR"/>
+        <result property="appTypeName" column="app_type_name" jdbcType="VARCHAR"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="enable" column="enable" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into uni_application_type(parent_id, uni_client_code, app_type_name, sort, enable, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.parentId}, #{entity.uniClientCode}, #{entity.appTypeName}, #{entity.sort}, #{entity.enable}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into uni_application_type(parent_id, uni_client_code, app_type_name, sort, enable, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.parentId}, #{entity.uniClientCode}, #{entity.appTypeName}, #{entity.sort}, #{entity.enable}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        parent_id = values(parent_id) , uni_client_code = values(uni_client_code) , app_type_name = values(app_type_name) , sort = values(sort) , enable = values(enable) , create_by = values(create_by) , create_time = values(create_time) , update_by = values(update_by) , update_time = values(update_time)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.union.auth.pojo.uniapplicationtype.UniApplicationTypePageResponse">
+        select *
+        from uni_application_type
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.union.auth.pojo.uniapplicationtype.UniApplicationTypeDetailResponse">
+        select *
+        from uni_application_type
+        where id = #{id}
+    </select>
+</mapper>
+

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.exam.answer.mapper.ExamInfoMapper">
+
+    <resultMap type="cn.qbs.wa.teach.exam.common.entity.ExamInfo" id="ExamInfoMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="examId" column="exam_id" jdbcType="INTEGER"/>
+        <result property="highestScore" column="highest_score" jdbcType="NUMERIC"/>
+        <result property="lowestScore" column="lowest_score" jdbcType="NUMERIC"/>
+        <result property="averageScore" column="average_score" jdbcType="NUMERIC"/>
+        <result property="userVisibleStatus" column="user_visible_status" jdbcType="INTEGER"/>
+        <result property="examineeCount" column="examinee_count" jdbcType="INTEGER"/>
+        <result property="releaseTime" column="release_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+    </resultMap>
+
+</mapper>
+

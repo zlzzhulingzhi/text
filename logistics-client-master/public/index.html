@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+  <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+  <link rel="stylesheet" href="https://at.alicdn.com/t/font_2283092_vp6e7pbtqd.css">
+  <!--网安开源管理后台-->
+  <link rel="stylesheet" href="https://at.alicdn.com/t/font_2908227_og7br8it8y.css">
+  <link rel="stylesheet" href="./static/iconfont/iconfont.css">
+  <!-- <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"> -->
+  <link rel="stylesheet" href="./static/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="./static/MaterialDesignIcon/index.css">
+  <!--腾讯云点播超级播放器TCPlayer-->
+  <link rel="stylesheet" href="./tcplayer/tcplayer.min.css">
+  <!--腾讯云点播超级播放器TCPlayer-->
+  <link href="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.2/tcplayer.min.css" rel="stylesheet"/>
+  <!--如果需要在 Chrome 和 Firefox 等现代浏览器中通过 H5 播放 Webrtc 视频，需要在 tcplayer.vx.x.x.min.js 之前引入 TXLivePlayer-x.x.x.min.js。-->
+  <!--有些浏览器环境不支持 Webrtc，播放器会将 Webrtc 流地址自动转换为 HLS 格式地址，因此快直播场景同样需要引入hls.min.x.xx.xm.js。-->
+  <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.1/libs/TXLivePlayer-1.2.0.min.js"></script>
+  <!--如果需要在 Chrome 和 Firefox 等现代浏览器中通过 H5 播放 HLS 协议的视频，需要在 tcplayer.vx.x.x.min.js 之前引入 hls.min.x.xx.xm.js。-->
+  <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.2/libs/hls.min.0.13.2m.js"></script>
+  <!--如果需要在 Chrome 和 Firefox 等现代浏览器中通过 H5 播放 FLV 格式的视频，需要在 tcplayer.vx.x.x.min.js 之前引入 flv.min.x.x.x.js。-->
+  <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.2/libs/flv.min.1.6.2.js"></script>
+  <!--播放器脚本文件-->
+  <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v4.5.2/tcplayer.v4.5.2.min.js"></script>
+
+  <script src="https://lf1-cdn-tos.bytegoofy.com/obj/iconpark/icons_11636_3.6bd501756d5c2fbdfd7aa6ad1eb8731b.js"></script>
+
+  <!--腾讯云 互动白板 TEduBoard 依赖 COS axios-->
+  <!-- 文件转码 SDK -->
+  <script src="https://res.qcloudtiw.com/board/third/ci/sdk-beta-v1.1.9.js"></script>
+  <!-- axios SDK -->
+  <script src="https://res.qcloudtiw.com/board/third/axios/axios.min.js"></script>
+  <!-- COS SDK -->
+  <script src="https://res.qcloudtiw.com/board/third/cos/5.1.0/cos.min.js"></script>
+  <!-- TEduBoard SDK -->
+  <script src="https://res.qcloudtiw.com/board/2.7.2/TEduBoard.min.js"></script>
+</head>
+<body>
+<div id="app"></div>
+<!--直播拉流-->
+<script src="https://web.sdk.qcloud.com/player/tcplayerlite/release/v2.4.1/TcPlayer-2.4.1.js" charset="utf-8"></script>
+<!--直播推流-->
+<script charset="utf-8" src="https://imgcache.qq.com/open/qcloud/live/webrtc/js/TXLivePusher-1.0.2.min.js"></script>
+</body>
+</html>

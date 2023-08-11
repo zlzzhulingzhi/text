@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.CourseInfoMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.CourseInfo" id="CourseInfoMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="courseContent" column="course_content" jdbcType="VARCHAR"/>
+        <result property="coursePoints" column="course_points" jdbcType="INTEGER"/>
+        <result property="courseDuration" column="course_duration" jdbcType="INTEGER"/>
+        <result property="coursePrice" column="course_price" jdbcType="INTEGER"/>
+        <result property="courseManage" column="course_manage" jdbcType="INTEGER"/>
+        <result property="courseMode" column="course_mode" jdbcType="INTEGER"/>
+        <result property="gooded" column="gooded" jdbcType="INTEGER"/>
+        <result property="signUpLimit" column="sign_up_limit" jdbcType="INTEGER"/>
+        <result property="startTime" column="start_time" jdbcType="TIMESTAMP"/>
+        <result property="endTime" column="end_time" jdbcType="TIMESTAMP"/>
+        <result property="playbackSpeed" column="playback_speed" jdbcType="INTEGER"/>
+        <result property="playbackDrag" column="playback_drag" jdbcType="INTEGER"/>
+        <result property="userVisibleStatus" column="user_visible_status" jdbcType="INTEGER"/>
+        <result property="discussStatus" column="discuss_status" jdbcType="INTEGER"/>
+        <result property="virtualStatus" column="virtual_status" jdbcType="INTEGER"/>
+        <result property="signUpAuthType" column="sign_up_auth_type" jdbcType="INTEGER"/>
+        <result property="signUpAuthValue" column="sign_up_auth_value" jdbcType="VARCHAR"/>
+        <result property="virtualSignUpNum" column="virtual_sign_up_num" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_info
+            (org_id, course_id, course_content, course_points, playback_speed, user_visible_status, discuss_status,
+             create_by, create_time, update_by, update_time, course_duration, course_price, course_manage, sign_up_limit,
+             start_time, end_time, sign_up_auth_type, sign_up_auth_value)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.courseId}, #{entity.courseContent}, #{entity.coursePoints}, #{entity.playbackSpeed},
+         #{entity.userVisibleStatus}, #{entity.discussStatus}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy},
+         #{entity.updateTime}, #{entity.courseDuration}, #{entity.coursePrice}, #{entity.courseManage}, #{entity.signUpLimit},
+         #{entity.startTime}, #{entity.endTime}, #{entity.signUpAuthType}, #{entity.signUpAuthValue})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_info
+            (org_id, course_id, course_content, course_points, playback_speed, user_visible_status, discuss_status,
+             create_by, create_time, update_by, update_time, course_duration, course_price, course_manage,
+             sign_up_limit, start_time, end_time, sign_up_auth_type, sign_up_auth_value)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.courseId}, #{entity.courseContent}, #{entity.coursePoints}, #{entity.playbackSpeed},
+             #{entity.userVisibleStatus}, #{entity.discussStatus}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy},
+             #{entity.updateTime}, #{entity.courseDuration}, #{entity.coursePrice}, #{entity.courseManage}, #{entity.signUpLimit},
+             #{entity.startTime}, #{entity.endTime}, #{entity.signUpAuthType}, #{entity.signUpAuthValue})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , course_id = values(course_id) , course_content = values(course_content) , course_points = values(course_points) ,
+         playback_speed = values(playback_speed) , user_visible_status = values(user_visible_status) ,
+         discuss_status = values(discuss_status) , create_by = values(create_by) , create_time = values(create_time) ,
+         update_by = values(update_by) , update_time = values(update_time) , course_duration = values(course_duration) ,
+         course_price = values(course_price) , course_manage = values(course_manage) , sign_up_limit = values(sign_up_limit) ,
+         start_time = values(start_time) , end_time = values(end_time) , sign_up_auth_type = values(sign_up_auth_type) ,
+         sign_up_auth_value = values(sign_up_auth_value)       $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.course.standard.pojo.courseinfo.CourseInfoPageResponse">
+        select *
+        from course_info
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.course.standard.pojo.courseinfo.CourseInfoDetailResponse">
+        select *
+        from course_info
+        where id = #{id}
+    </select>
+
+    <select id="getByCourseId" resultMap="CourseInfoMap">
+        select *
+        from course_info
+        where course_id = #{courseId}
+    </select>
+
+    <select id="selectDetailByCourseId" resultMap="courseDetailResultMap">
+        SELECT
+            co.course_name, co.cover_url, co.course_type, co.introduction, co.shelf_status, ci.*,
+            cso.score, cso.sign_up_num, cso.lesson_num, cso.views, cso.study_total_num,
+            cl.id AS course_lecturer_id, cl.lecturer_id, cl.lecturer_name, cl.lecturer_head_img_url, cl.lecturer_intro
+        FROM
+            course co
+            INNER JOIN course_info ci ON ci.course_id = co.id
+            INNER JOIN course_statistic_overview cso ON cso.course_id = co.id
+            INNER JOIN course_lecturer cl ON cl.course_id = co.id
+        WHERE co.id = #{courseId} AND co.deleted = 0
+    </select>
+
+    <resultMap id="courseDetailResultMap" type="cn.qbs.wa.teach.course.standard.pojo.courseinfo.CourseInfoDetailResponse">
+        <id column="id" property="id" />
+        <result column="course_id" property="courseId" />
+        <result column="org_id" property="orgId" />
+        <result column="course_name" property="courseName" />
+        <result column="cover_url" property="coverUrl" />
+        <result column="introduction" property="introduction" />
+        <result column="course_type" property="courseType" />
+        <result column="shelf_status" property="shelfStatus" />
+        <result column="gooded" property="gooded" />
+        <result column="playback_speed" property="playbackSpeed" />
+        <result column="playback_drag" property="playbackDrag" />
+        <result column="course_points" property="coursePoints" />
+        <result column="course_duration" property="courseDuration" />
+        <result column="course_manage" property="courseManage" />
+        <result column="course_mode" property="courseMode" />
+        <result column="discuss_status" property="discussStatus" />
+        <result column="score" property="score"/>
+        <result column="learningRate" property="learningRate"/>
+        <result column="sign_up_num" property="signUpNum"/>
+        <result column="course_price" property="coursePrice" />
+        <result column="sign_up_limit" property="signUpLimit" />
+        <result column="start_time" property="startTime" />
+        <result column="end_time" property="endTime" />
+        <result column="lesson_num" property="lessonNum"/>
+        <result column="views" property="views"/>
+        <result column="study_total_num" property="studyTotalNum"/>
+        <result column="user_visible_status" property="userVisibleStatus"/>
+        <result column="virtual_status" property="virtualStatus"/>
+        <result column="virtual_sign_up_num" property="virtualSignUpNum"/>
+        <collection property="lecturers" ofType="cn.qbs.wa.teach.course.standard.pojo.dto.CourseLecturerDTO">
+            <id column="course_lecturer_id" property="id" />
+            <result column="lecturer_id" property="lecturerId" />
+            <result column="lecturer_name" property="lecturerName" />
+            <result column="lecturer_head_img_url" property="lecturerHeadImgUrl" />
+            <result column="lecturer_intro" property="lecturerIntro" />
+        </collection>
+    </resultMap>
+
+    <update id="updateDurationByCourseId">
+        update course_info
+        set course_duration = IFNULL(course_duration, 0) + #{courseDuration, jdbcType=BIGINT}
+        where course_id = #{courseId}
+    </update>
+
+    <select id="baseInfo" resultType="cn.qbs.wa.teach.course.standard.pojo.dto.CourseInfoDTO">
+        SELECT
+            ci.*, co.course_name, co.cover_url, co.course_type, co.introduction, co.shelf_status
+        FROM
+            course co
+            INNER JOIN course_info ci ON ci.course_id = co.id
+        WHERE co.id = #{courseId} AND co.deleted = 0
+    </select>
+
+</mapper>
+

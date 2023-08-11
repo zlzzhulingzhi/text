@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.CategoryMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.Category" id="CategoryMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="parentId" column="parent_id" jdbcType="INTEGER"/>
+        <result property="categoryCode" column="category_code" jdbcType="VARCHAR"/>
+        <result property="categoryName" column="category_name" jdbcType="VARCHAR"/>
+        <result property="parentCode" column="parent_code" jdbcType="VARCHAR"/>
+        <result property="fullName" column="full_name" jdbcType="VARCHAR"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="deleted" column="deleted" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into category(org_id, parent_id, category_code, category_name, parent_code, full_name, remark, sort, enabled, deleted, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.parentId}, #{entity.categoryCode}, #{entity.categoryName}, #{entity.parentCode},#{entity.fullName},#{entity.remark}, #{entity.sort}, #{entity.enabled}, #{entity.deleted}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into category(org_id, parent_id, category_code, category_name, remark, sort, enabled, deleted, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.parentId}, #{entity.categoryCode}, #{entity.categoryName}, #{entity.remark}, #{entity.sort}, #{entity.enabled}, #{entity.deleted}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , parent_id = values(parent_id) , category_code = values(category_code) , category_name = values(category_name) , remark = values(remark) , sort = values(sort) , enabled = values(enabled) , deleted = values(deleted) , create_by = values(create_by) , create_time = values(create_time) , update_by = values(update_by) , update_time = values(update_time)         $empty
+    </insert>
+
+    <sql id="commonParentSql">
+        SELECT
+            c.id, c.parent_id, c.category_code,c.category_icon_url, c.category_name, c.enabled, c.remark, c.sort, c.create_time, cd.count,
+            c.parent_code, c.full_name,
+               IF
+        ( COUNT( co.id ) > 0, 1, 0 ) AS hasChildren
+        FROM
+            category c
+            INNER JOIN category_distribution cd ON c.id = cd.category_id
+            LEFT JOIN category co ON c.id = co.parent_id
+        <where>
+            c.parent_id = 0
+            <if test="params.enabled != null">
+                and c.enabled = #{params.enabled}
+            </if>
+            <if test="params.parentId != null">
+                and c.parent_id = #{params.parentId}
+            </if>
+            <if test="params.categoryName != null and params.categoryName != '' ">
+                and c.category_name like concat('%', #{params.categoryName}, '%')
+            </if>
+        </where>
+        group by c.id
+        ORDER BY c.sort, c.id
+    </sql>
+
+    <sql id="commonSql">
+        SELECT
+            c.id, c.parent_id, c.category_code,c.category_icon_url, c.category_name, c.enabled, c.remark, c.sort, c.create_time, cd.count,IF( COUNT( co.id ) > 0, 1, 0 ) AS hasChildren
+            ,c.parent_code, c.full_name
+        FROM
+            category c
+            INNER JOIN category_distribution cd ON c.id = cd.category_id
+        LEFT JOIN category co ON c.id = co.parent_id
+        <where>
+            <if test="params.enabled != null">
+                and c.enabled = #{params.enabled}
+            </if>
+            <if test="params.parentId != null">
+                and c.parent_id = #{params.parentId}
+            </if>
+            <if test="params.parentId != null">
+                and c.parent_id = #{params.parentId}
+            </if>
+            <if test="params.categoryName != null and params.categoryName != '' ">
+                and c.category_name like concat('%', #{params.categoryName}, '%')
+            </if>
+        </where>
+        GROUP BY c.id
+        ORDER BY c.sort, c.id
+    </sql>
+
+    <select id="page" resultType="cn.qbs.wa.teach.course.standard.pojo.category.CategoryPageResponse">
+        <include refid="commonParentSql"/>
+    </select>
+
+    <select id="list" resultType="cn.qbs.wa.teach.course.standard.pojo.category.CategoryListResponse">
+        <include refid="commonSql"/>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.course.standard.pojo.category.CategoryDetailResponse">
+        select c.*, cd.count
+        from category c inner join category_distribution cd ON c.id = cd.category_id
+        where c.id = #{id}
+    </select>
+</mapper>
+

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.GroupsMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.Groups" id="GroupsMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="parentId" column="parent_id" jdbcType="INTEGER"/>
+        <result property="businessCode" column="business_code" jdbcType="VARCHAR"/>
+        <result property="groupName" column="group_name" jdbcType="VARCHAR"/>
+        <result property="groupCode" column="group_code" jdbcType="VARCHAR"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_train_organization.groups(org_id, parent_id, business_code, group_name, group_code, enabled, sort, remark, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.parentId}, #{entity.businessCode}, #{entity.groupName}, #{entity.groupCode}, #{entity.enabled}, #{entity.sort}, #{entity.remark}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_train_organization.groups(org_id, parent_id, business_code, group_name, group_code, enabled, sort, remark, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.parentId}, #{entity.businessCode}, #{entity.groupName}, #{entity.groupCode}, #{entity.enabled}, #{entity.sort}, #{entity.remark}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , parent_id = values(parent_id) , business_code = values(business_code) , group_name = values(group_name) , group_code = values(group_code) , enabled = values(enabled) , sort = values(sort) , remark = values(remark) , create_by = values(create_by) , create_time = values(create_time)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.train.logistics.pojo.groups.GroupsPageResponse">
+        select *
+        from groups
+        <where>
+            <if test="params.groupName != null and params.groupName != '' ">
+                and group_name like concat('%', #{params.groupName}, '%')
+            </if>
+        </where>
+        ORDER BY sort,group_name
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.train.logistics.pojo.groups.GroupsDetailResponse">
+        select *
+        from groups
+        where id = #{id}
+    </select>
+
+    <select id="selectDetailByIds" resultType="cn.qbs.wa.train.logistics.pojo.groups.GroupsDetailResponse">
+        SELECT
+            g.group_name
+        FROM
+            groups g
+            INNER JOIN student_group sg ON sg.group_id = g.id
+        WHERE sg.student_id = #{id}
+    </select>
+
+    <select id="selectAll" resultType="cn.qbs.wa.train.logistics.pojo.groups.GroupsPageResponse">
+        select g.group_name,g.id groupId,g.sort,g.enabled
+        from groups g
+        where g.enabled=1
+        ORDER BY sort
+    </select>
+
+    <select id="selectListAll" resultType="cn.qbs.wa.train.logistics.pojo.groups.GroupsDetailResponse">
+        select g.group_name,g.id groupId,g.sort,g.enabled
+        from groups g
+        ORDER BY sort
+    </select>
+
+    <select id="detailList" resultType="cn.qbs.wa.train.logistics.pojo.groups.GroupsDetailResponse">
+        select group_name,id groupId
+        from groups
+        where id = #{id}
+    </select>
+</mapper>
+

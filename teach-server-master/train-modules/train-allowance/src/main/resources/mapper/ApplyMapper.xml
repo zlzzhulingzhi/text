@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.allowance.mapper.ApplyMapper">
+
+    <resultMap type="cn.qbs.wa.train.allowance.entity.Apply" id="ApplyMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="orgName" column="org_name" jdbcType="VARCHAR"/>
+        <result property="contactPerson" column="contact_person" jdbcType="VARCHAR"/>
+        <result property="contactNumber" column="contact_number" jdbcType="VARCHAR"/>
+        <result property="contactEmail" column="contact_email" jdbcType="VARCHAR"/>
+        <result property="applyType" column="apply_type" jdbcType="VARCHAR"/>
+        <result property="applyReason" column="apply_reason" jdbcType="VARCHAR"/>
+        <result property="applyDate" column="apply_date" jdbcType="TIMESTAMP"/>
+        <result property="applyRemark" column="apply_remark" jdbcType="VARCHAR"/>
+        <result property="applyResult" column="apply_result" jdbcType="INTEGER"/>
+        <result property="processNo" column="process_no" jdbcType="VARCHAR"/>
+        <result property="flowCode" column="flow_code" jdbcType="VARCHAR"/>
+        <result property="deleted" column="deleted" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="orgCategory" column="org_category" jdbcType="VARCHAR"/>
+        <result property="orgIntro" column="org_intro" jdbcType="VARCHAR"/>
+        <result property="legalPerson" column="legal_person" jdbcType="VARCHAR"/>
+        <result property="legalNumber" column="legal_number" jdbcType="VARCHAR"/>
+        <result property="legalEmail" column="legal_email" jdbcType="VARCHAR"/>
+        <result property="applyStatus" column="apply_status" jdbcType="INTEGER"/>
+        <result property="applyUser" column="apply_user" jdbcType="INTEGER"/>
+        <result property="approvalComment" column="approval_comment" jdbcType="VARCHAR"/>
+        <result property="flowStatus" column="flow_status" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_allowance.apply(org_id, org_name, contact_person, contact_number, contact_email, apply_type, apply_reason, apply_date, apply_remark, apply_result, process_no, flow_code, deleted, create_by, create_time, update_by, update_time, org_category, org_intro, legal_person, legal_number, legal_email, apply_status, apply_user, approval_comment, flow_status)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.orgName}, #{entity.contactPerson}, #{entity.contactNumber}, #{entity.contactEmail}, #{entity.applyType}, #{entity.applyReason}, #{entity.applyDate}, #{entity.applyRemark}, #{entity.applyResult}, #{entity.processNo}, #{entity.flowCode}, #{entity.deleted}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime}, #{entity.orgCategory}, #{entity.orgIntro}, #{entity.legalPerson}, #{entity.legalNumber}, #{entity.legalEmail}, #{entity.applyStatus}, #{entity.applyUser}, #{entity.approvalComment}, #{entity.flowStatus})
+        </foreach>
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.train.allowance.pojo.apply.ApplyPageResponse">
+        SELECT a.id, a.org_name, a.contact_person, a.contact_number, a.apply_date, a.apply_result, a.flow_code,
+        a.create_by,a.apply_reason,a.contact_email,a.create_time,a.process_no,a.flow_status,a.org_category,a.legal_person
+        ,a.legal_number,a.legal_email,a.apply_status
+        FROM `apply` a
+        <where>
+            a.deleted=0 and
+            a.apply_type = #{params.applyType}
+            <if test="params.flowCode != null and params.flowCode != '' ">
+                and a.flow_code = #{params.flowCode}
+            </if>
+            <if test="params.applyResult != null">
+                and a.apply_result = #{params.applyResult}
+            </if>
+            <if test="params.flag != null">
+                and (a.flow_status = 1 or a.flow_status=2)
+            </if>
+            <if test="params.applyDateStart != null">
+                and a.apply_date >= #{params.applyDateStart}
+            </if>
+            <if test="params.applyDateEnd != null">
+                and a.apply_date &lt;= #{params.applyDateEnd}
+            </if>
+            <if test="params.orgId != null">
+                and a.org_id = #{params.orgId}
+            </if>
+            <if test="params.processNos != null and params.processNos.size() > 0">
+                and a.process_no in
+                <foreach collection="params.processNos" item="processNo" open="(" separator="," close=")">
+                    #{processNo}
+                </foreach>
+            </if>
+            ORDER BY a.id DESC
+        </where>
+    </select>
+
+    <select id="pageCommonly" resultType="cn.qbs.wa.train.allowance.pojo.apply.ApplyPageResponse">
+        SELECT
+            id, org_id, org_name, org_category, org_intro, contact_person, contact_number, contact_email,
+            legal_person, legal_number, legal_email, apply_reason, apply_remark,
+            apply_status, apply_date, apply_user, apply_result, approval_comment, flow_status
+        FROM `apply`
+        <where>
+            apply_type = #{params.applyType} AND deleted = 0
+            <if test="params.orgId != null">
+                and org_id = #{params.orgId}
+            </if>
+            <if test="params.flowCode != null and params.flowCode != '' ">
+                and flow_code = #{params.flowCode}
+            </if>
+            <if test="params.applyResult != null">
+                and apply_result = #{params.applyResult}
+            </if>
+            <if test="params.applyDateStart != null">
+                and apply_date >= #{params.applyDateStart}
+            </if>
+            <if test="params.applyDateEnd != null">
+                and apply_date &lt;= #{params.applyDateEnd}
+            </if>
+            <if test="params.flowStatus != null">
+                and flow_status = #{params.flowStatus}
+            </if>
+            ORDER BY id DESC
+        </where>
+    </select>
+
+    <select id="collectOrg" resultType="java.lang.Long">
+        SELECT org_id FROM `apply`
+        <where>
+            apply_result = 1
+            AND apply_type IN
+            <foreach collection="applyTypes" item="applyType" open="(" separator="," close=")">
+                #{applyType}
+            </foreach>
+        </where>
+        GROUP BY org_id
+    </select>
+
+    <select id="pageCount" resultType="long">
+        SELECT COUNT(DISTINCT a.process_no)
+        FROM
+            `apply` a
+            INNER JOIN workflow_instance_node n ON a.process_no = n.process_no AND n.`status` IN (11, 21)
+            AND n.manager_ref IN
+            <foreach collection="params.roles" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        WHERE
+            a.deleted = 0 AND a.flow_status IN ( 1, 2 ) AND a.apply_type = #{params.applyType}
+            <if test="params.applyResult != null">
+                and a.apply_result = #{params.applyResult}
+            </if>
+            <if test="params.applyDateStart != null">
+                and a.apply_date >= #{params.applyDateStart}
+            </if>
+            <if test="params.applyDateEnd != null">
+                and a.apply_date &lt;= #{params.applyDateEnd}
+            </if>
+            <if test="params.orgId != null">
+                and a.org_id = #{params.orgId}
+            </if>
+            <if test="params.orgName != null and params.orgName != ''">
+                and a.org_name like concat('%', #{params.orgName}, '%')
+            </if>
+    </select>
+
+</mapper>
+

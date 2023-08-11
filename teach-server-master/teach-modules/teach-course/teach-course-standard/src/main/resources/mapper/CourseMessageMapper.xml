@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.CourseMessageMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.CourseMessage" id="CourseMessageMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="message" column="message" jdbcType="VARCHAR"/>
+        <result property="userNickName" column="user_nick_name" jdbcType="VARCHAR"/>
+        <result property="userHeadImgUrl" column="user_head_img_url" jdbcType="VARCHAR"/>
+        <result property="replyStatus" column="reply_status" jdbcType="INTEGER"/>
+        <result property="praiseNum" column="praise_num" jdbcType="INTEGER"/>
+        <result property="reportStatus" column="report_status" jdbcType="INTEGER"/>
+        <result property="deleted" column="deleted" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_message(org_id, course_id, message, user_nick_name, user_head_img_url, reply_status, praise_num, report_status, deleted, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.courseId}, #{entity.message}, #{entity.userNickName}, #{entity.userHeadImgUrl}, #{entity.replyStatus}, #{entity.praiseNum}, #{entity.reportStatus}, #{entity.deleted}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_message(org_id, course_id, message, user_nick_name, user_head_img_url, reply_status, praise_num, report_status, deleted, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.courseId}, #{entity.message}, #{entity.userNickName}, #{entity.userHeadImgUrl}, #{entity.replyStatus}, #{entity.praiseNum}, #{entity.reportStatus}, #{entity.deleted}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , course_id = values(course_id) , message = values(message) , user_nick_name = values(user_nick_name) , user_head_img_url = values(user_head_img_url) , reply_status = values(reply_status) , praise_num = values(praise_num) , report_status = values(report_status) , deleted = values(deleted) , create_by = values(create_by) , create_time = values(create_time) , update_by = values(update_by) , update_time = values(update_time)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.course.standard.pojo.coursemessage.CourseMessagePageResponse">
+        select *
+        from course_message cm
+        <where>
+            <if test="params.courseId != null">
+                and cm.course_id=#{params.courseId}
+            </if>
+            <if test="params.message != null and params.message != '' ">
+                and cm.message like concat('%', #{params.message}, '%')
+            </if>
+            <if test="params.userNickName != null and params.userNickName != '' ">
+                and cm.user_nick_name like concat('%', #{params.userNickName}, '%')
+            </if>
+            <if test="params.userHeadImgUrl != null and params.userHeadImgUrl != '' ">
+                and cm.user_head_img_url like concat('%', #{params.userHeadImgUrl}, '%')
+            </if>
+            <if test="params.replyStatus != null">
+                and cm.reply_status=#{params.replyStatus}
+            </if>
+            <if test="params.praiseNum != null">
+                and cm.praise_num=#{params.praiseNum}
+            </if>
+            <if test="params.reportStatus != null">
+                and cm.report_status=#{params.reportStatus}
+            </if>
+            <choose>
+                <when test="params.deleted != null">
+                    and cm.deleted = #{params.deleted}
+                </when>
+                <otherwise>
+                    and cm.deleted = 0
+                </otherwise>
+            </choose>
+        </where>
+        order by cm.create_time desc
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.course.standard.pojo.coursemessage.CourseMessageDetailResponse">
+        select *
+        from course_message
+        where id = #{id}
+    </select>
+</mapper>
+

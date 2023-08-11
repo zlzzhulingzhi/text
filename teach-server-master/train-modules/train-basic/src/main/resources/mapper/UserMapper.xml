@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.basic.mapper.UserMapper">
+
+    <resultMap type="cn.qbs.wa.train.basic.entity.User" id="UserMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="account" column="account" jdbcType="VARCHAR"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="salt" column="salt" jdbcType="VARCHAR"/>
+        <result property="nickName" column="nick_name" jdbcType="VARCHAR"/>
+        <result property="realName" column="real_name" jdbcType="VARCHAR"/>
+        <result property="headImgUrl" column="head_img_url" jdbcType="VARCHAR"/>
+        <result property="sex" column="sex" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="idNumber" column="id_number" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_basic.user(account, phone, email, password, salt, nick_name, real_name, head_img_url, sex,
+        create_time, update_time, enabled, id_number)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.account}, #{entity.phone}, #{entity.email}, #{entity.password}, #{entity.salt},
+            #{entity.nickName}, #{entity.realName}, #{entity.headImgUrl}, #{entity.sex}, #{entity.createTime},
+            #{entity.updateTime}, #{entity.enabled}, #{entity.idNumber})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_basic.user(account, phone, email, password, salt, nick_name, real_name, head_img_url, sex,
+        create_time, update_time, enabled, id_number)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.account}, #{entity.phone}, #{entity.email}, #{entity.password}, #{entity.salt},
+            #{entity.nickName}, #{entity.realName}, #{entity.headImgUrl}, #{entity.sex}, #{entity.createTime},
+            #{entity.updateTime}, #{entity.enabled}, #{entity.idNumber})
+        </foreach>
+        on duplicate key update
+        account = values(account) , phone = values(phone) , email = values(email) , password = values(password) , salt =
+        values(salt) , nick_name = values(nick_name) , real_name = values(real_name) , head_img_url =
+        values(head_img_url) , sex = values(sex) , create_time = values(create_time) , update_time = values(update_time)
+        , enabled = values(enabled) , id_number = values(id_number) $empty
+    </insert>
+
+
+    <select id="pageUser" resultType="cn.qbs.wa.train.basic.pojo.user.UserPageResponse">
+        SELECT
+        GROUP_CONCAT( r.name SEPARATOR ',' ) as roleName,
+        GROUP_CONCAT( r.code SEPARATOR ',' ) as roleCode,
+        MAX(r.priority) as priority,
+        u.*
+        FROM
+        user u
+        INNER JOIN user_role uro ON uro.user_id = u.id
+        LEFT JOIN role r ON r.id = uro.role_id
+        <where>
+            <if test="params.enabled != null">
+                and u.enabled = #{params.enabled}
+            </if>
+            <if test="params.searchContent != null and params.searchContent != '' ">
+                and (u.real_name like concat('%', #{params.searchContent}, '%') or u.account=#{params.searchContent} )
+            </if>
+
+        </where>
+        group by u.id
+    </select>
+    <select id="listUser" resultType="cn.qbs.wa.train.basic.pojo.user.UserListResponse">
+        SELECT
+        *
+        FROM
+        user u
+        <where>
+            <if test="params.enabled != null">
+                and u.enabled = #{params.enabled}
+            </if>
+            <if test="params.idList!=null and params.idList.size() > 0 ">
+                and u.id in
+                <foreach collection="params.idList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+
+        </where>
+    </select>
+    <select id="listUserByField" resultType="cn.qbs.wa.train.basic.pojo.user.UserListResponse">
+        SELECT
+        *
+        FROM
+        user u
+        <where>
+            <if test="params.realName != null and params.realName != '' ">
+                and u.real_name=#{params.realName}
+            </if>
+            <if test="params.phone != null and params.phone != '' ">
+                and u.phone=#{params.phone}
+            </if>
+            <if test="params.idNumber != null and params.idNumber != '' ">
+                and u.id_number=#{params.idNumber}
+            </if>
+
+        </where>
+
+    </select>
+    <select id="checkExistUser" resultType="cn.qbs.wa.train.basic.entity.User">
+SELECT
+	u.*
+FROM
+	`user` u
+	where u.account=#{account}
+
+    </select>
+
+    <select id="pageListUser" resultType="cn.qbs.wa.train.basic.pojo.user.UserPageResponse">
+        SELECT
+        GROUP_CONCAT( r.name SEPARATOR ',' ) as roleName,
+        GROUP_CONCAT( r.code SEPARATOR ',' ) as roleCode,
+        u.*
+        FROM
+        user u
+        INNER JOIN user_role uro ON uro.user_id = u.id
+        LEFT JOIN role r ON r.id = uro.role_id
+        <where>
+            r.code <![CDATA[ <> ]]> "admin"
+            <if test="params.enabled != null">
+                and u.enabled = #{params.enabled}
+            </if>
+        </where>
+        group by u.id
+    </select>
+
+</mapper>
+

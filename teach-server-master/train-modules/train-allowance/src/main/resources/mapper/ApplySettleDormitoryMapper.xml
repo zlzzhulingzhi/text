@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.allowance.mapper.ApplySettleDormitoryMapper">
+
+    <resultMap type="cn.qbs.wa.train.allowance.entity.ApplySettleDormitory" id="ApplySettleDormitoryMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="applySettleId" column="apply_settle_id" jdbcType="INTEGER"/>
+        <result property="useDateStart" column="use_date_start" jdbcType="TIMESTAMP"/>
+        <result property="useDateEnd" column="use_date_end" jdbcType="TIMESTAMP"/>
+        <result property="roomType" column="room_type" jdbcType="VARCHAR"/>
+        <result property="roomNum" column="room_num" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <insert id="copyByApplyId">
+        INSERT INTO apply_settle_dormitory(apply_settle_id, use_date_start, use_date_end,room_num, room_type, remark)
+        SELECT #{targetSettleId}, use_date_start, use_date_end, room_num, room_type, remark
+        FROM apply_settle_dormitory
+        WHERE `apply_settle_id` = #{sourceSettleId}
+    </insert>
+
+</mapper>
+

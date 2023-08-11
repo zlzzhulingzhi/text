@@ -1,0 +1,110 @@
+
+# Spring
+spring:
+  cloud:
+    nacos:
+      discovery:
+        # 服务注册地址
+        server-addr: 111.230.230.132:8848
+        namespace: train_dev
+      config:
+        # 配置中心地址
+        server-addr: 111.230.230.132:8848
+        # 配置文件格式
+        file-extension: yml
+        # 命名空间
+        namespace: train_dev
+        shared-configs:
+          - data-id: teach-common.yml
+
+  datasource:
+    url: jdbc:p6spy:mysql://111.230.230.132:3306/train_teach_question?characterEncoding=UTF8&allowMultiQueries=true&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: OucTr4LI
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+
+elasticsearch:
+  hostname: 111.230.230.132
+  port: 9200
+  scheme: http
+  username: elastic
+  password: qbs11111
+  # 连接超时时间
+  connectTimeOut: 1000
+  # Socket连接超时时间
+  socketTimeOut: 30000
+  # 获取连接的超时时间
+  connectionRequestTimeOut: 500
+  # 最大连接数
+  maxConnectNum: 100
+  # 最大路由连接数
+  maxConnectPerRoute: 100
+
+logging:
+  level:
+    # 关闭日志输出
+    com.qbs.canal.client.client: off
+
+redisson:
+  password: TlHMy4Z
+  singleServerConfig:
+    address: 111.230.230.132:6379
+    database: 3
+    idleConnectionTimeout: 10000
+    connectTimeout: 10000
+    timeout: 3000
+    retryAttempts: 3
+    retryInterval: 1500
+    subscriptionsPerConnection: 5
+    clientName: null
+    subscriptionConnectionMinimumIdleSize: 1
+    subscriptionConnectionPoolSize: 50
+    connectionMinimumIdleSize: 32
+    connectionPoolSize: 64
+    dnsMonitoringInterval: 5000
+  threads: 0
+  nettyThreads: 0
+  codec: 'cn.qbs.wa.teach.question.util.FastJsonCodec'
+  transportMode: "NIO"
+
+#线程池配置参数
+task:
+  pool:
+    corePoolSize: 10 #设置核心线程数
+    maxPoolSize: 30  #设置最大线程数
+    keepAliveSeconds: 300 #设置线程活跃时间（秒）
+    queueCapacity: 1000 #设置队列容量
+    threadNamePrefix: question-
+
+# TDMQ 配置
+tdmq:
+  # 服务器地址
+  serviceUrl: http://pulsar-qz45b2oav3nx.tdmq.ap-gz.public.tencenttdmq.com:8080
+  token: eyJrZXlJZCI6InB1bHNhci1xejQ1YjJvYXYzbngiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwdWxzYXItcXo0NWIyb2F2M254X2RldiJ9.-O83TmrtXHYGCe63M9IUeJrZFL4CBafhNHoCPNosqRM
+  appid: pulsar-qz45b2oav3nx
+  env: dev
+  producerOn: true
+  consumerOn: true
+  # io线程数默认10
+  ioThreads: 1
+  # listener线程数默认10
+  listenerThreads: 1
+  startConsuming: false
+
+xxl:
+  job:
+    accessToken:   # 访问token
+    enabled: true # 是否启用xxl-job
+    admin:
+      addresses: http://111.230.230.132:9400/xxl-job-admin
+      login-username: admin   #管理平台登录用户名
+      login-pwd: weESmr   #管理平台
+    executor:
+      port: 9620   #执行器端口
+      appname: question-admin  #执行器地址
+      logpath: logs/xxl-job/jobhandler  #日志路径
+      logretentiondays: 30   #日志保存天数
+
+# 试题导入报告模板
+question:
+  importReportTemplate: docker/app/question/question_import_report.xlsx

@@ -1,0 +1,383 @@
+/**
+* element-ui-custom 全部项目统一
+* element-ui 库 样式覆盖
+*/
+
+.el-tag
+  &:not(.el-tag--info)
+    height 22px
+    line-height 22px
+    font-size 12px
+    text-align center
+    padding 0
+    border none
+
+  &.el-tag--info .el-tag__close
+    color NEUTRAL_COLOR_E
+
+  &.level-tag
+    width 44px
+    height 24px
+    line-height 24px
+
+    &.style-1
+      background-color #FFEDEF
+      color #FF4B5B
+
+    &.style-2
+      background-color #DBFAFF
+      color #1BCEC8
+
+    &.style-3
+      background-color #FFF6E4
+      color #FE993A
+
+    &.style-4
+      background-color #EBF2FF
+      color #1D61F2
+
+    &.style-5
+      background-color #E8E1FF
+      color #702BD9
+
+.el-form-item
+  margin-bottom 24px
+
+  &.el-form-item--small, &.el-form-item--mini
+    margin-bottom 16px
+
+  &.margin-bottom-0
+    margin-bottom 0
+
+  &.inherit
+    .el-form-item__content
+      line-height inherit
+
+.el-button [class*=el-icon-] + span
+  margin-left 4px
+
+.el-image__inner--center
+  // IE兼容
+  transform translate(-50%, 0)
+
+.el-select-dropdown__item.hover, .el-select-dropdown__item:hover
+  background-color BACKGROUND_COLOR
+  color NORMAL_COLOR
+
+.el-input.el-input-group
+  .el-input-group__prepend
+    overflow hidden
+
+    .el-select
+      background-color NEUTRAL_COLOR_F
+      margin-bottom -11px
+      width 100px
+
+      input
+        color NEUTRAL_COLOR_6
+
+  .el-input-group__append
+    background-color NORMAL_COLOR
+    color NEUTRAL_COLOR_F
+    border-color NORMAL_COLOR
+
+// 扩大下拉菜单选择范围
+.el-dropdown-link
+  height 100%
+  display inline-block
+
+.el-message-box__errormsg, .el-message-box__title
+  user-select none
+
+.el-date-picker.has-sidebar
+  width 468px
+
+  .el-picker-panel__sidebar
+    width 140px
+
+  .el-picker-panel__sidebar + .el-picker-panel__body
+    margin-left 140px
+
+.el-tooltip__popper
+  max-width 465px
+  line-height 18px
+  text-align justify
+  color NEUTRAL_COLOR_6
+
+  &.is-dark
+    background-color #30323D
+
+// 弹窗样式 - 标准
+.el-dialog
+  min-width 375px
+  border-radius 10px
+
+  .el-dialog__header
+    padding 16px 0
+    margin 0 32px
+    border-bottom 1px solid NEUTRAL_COLOR_E6
+
+    .el-dialog__title
+      font-weight bold
+      color NEUTRAL_COLOR_3
+      font-size 16px
+
+    .el-dialog__headerbtn
+      top 16px
+      right 32px
+      line-height 24px
+      font-size 15px
+
+  .el-dialog__body
+    padding 24px 32px
+
+  .el-dialog__footer
+    padding 0 32px 32px
+
+    .el-button
+      font-size 14px
+
+// 弹窗样式 - 侧边弹窗
+.popover-dialog
+  &.dialog-fade-enter-active
+    animation slideInRight-enter .3s
+
+  &.dialog-fade-leave-active
+    animation slideInRight-leave .3s
+
+  .el-dialog
+    margin 0 0 0 auto !important
+    height 100%
+    border-radius 0
+    display flex
+    flex-direction column
+
+    .el-dialog__header
+      margin 0 24px
+
+    .el-dialog__body
+      padding 24px
+
+    .el-dialog__footer
+      margin-top auto
+      box-shadow 2px 0px 6px 1px #E6F3FF
+      padding 0
+      height 56px
+      display flex
+      justify-content center
+      align-items center
+
+.el-table
+  border 1px solid NEUTRAL_COLOR_E6
+  border-radius 4px
+  min-height 300px
+
+  &.auto
+    min-height auto
+
+  td
+    padding 8px 0
+
+  /*表头*/
+
+  .el-table__header-wrapper
+    .el-table__header
+      background-color NEUTRAL_COLOR_F2
+      font-size 14px
+      color NEUTRAL_COLOR_3
+
+      thead
+        color NEUTRAL_COLOR_3
+
+        tr
+          background-color transparent
+
+          th
+            background-color transparent
+            padding 0
+
+            .cell
+              //height 48px
+              //line-height 48px
+              height 44px
+              line-height 44px
+              font-weight normal
+
+            &:first-child
+              .cell
+                padding-left 16px
+
+  .el-table__body-wrapper
+    &::-webkit-scrollbar-corner
+      background NEUTRAL_COLOR_F2
+
+    tr
+      td:first-child
+        .cell
+          padding-left 16px
+
+      .el-table-column--selection .cell
+        padding-right 10px
+
+  // 表尾统计
+
+  .el-table__footer-wrapper
+    display block !important
+
+    table
+      tr
+        td, th
+          background-color EMBELLISH_LIGHT_COLOR
+          color ERROR_COLOR
+          font-weight bold
+
+  /*固定列*/
+
+  .el-table__fixed, .el-table__fixed-right
+    th
+      background-color NEUTRAL_COLOR_F2
+      padding 0
+
+      .cell
+        height 44px
+        line-height 44px
+        //height 48px
+        //line-height 48px
+        color NEUTRAL_COLOR_3
+        font-weight normal
+        padding-left 16px
+
+  .el-table__fixed-right-patch
+    background-color NEUTRAL_COLOR_F2
+
+.el-tabs
+  .el-tabs__header
+    margin-bottom 8px
+    padding-left 16px
+    border none
+    background-color NEUTRAL_COLOR_F
+    border-radius 4px
+
+    .el-tabs__nav-wrap
+      &::after
+        display none
+
+      .el-tabs__nav
+        border none
+
+        .el-tabs__active-bar
+          padding 0 12px
+          box-sizing content-box
+          left -12px
+
+        .el-tabs__item
+          //border none
+          height 44px
+          padding 0 12px
+          color NEUTRAL_COLOR_6
+
+          &.is-active
+            //background-color NEUTRAL_COLOR_F
+            font-weight bold
+            color MAIN_COLOR
+
+.el-collapse
+  border none
+
+  .el-collapse-item
+    .el-collapse-item__header
+      border none
+      background-color NEUTRAL_COLOR_F2
+      border-radius 4px 4px 0 0
+
+      .el-collapse-item__arrow
+        transform rotate(90deg)
+
+        &.is-active
+          transform rotate(-90deg)
+
+    .el-collapse-item__wrap
+      border-radius 0 0 4px 4px
+
+      .el-collapse-item__content
+        padding-bottom 0
+
+        .el-table
+          border-radius 0 0 4px 4px
+          border-bottom none
+          min-height auto
+
+          .el-table__header
+            background-color NEUTRAL_COLOR_F
+
+/*.el-switch
+  height 16px
+  line-height 16px
+
+  &.is-checked
+    .el-switch__core::after
+      margin-left -13px
+
+  .el-switch__core
+    height 16px
+
+    &:after
+      width 12px
+      height 12px
+
+  .el-switch__label
+    height 16px
+    margin-left 6px*/
+
+.el-card
+  &.is-always-shadow, &.is-hover-shadow:focus, &.is-hover-shadow:hover
+    border none
+    border-radius 4px
+    box-shadow none
+
+  .el-card__header
+    padding 16px
+    border-bottom none
+
+
+  .el-card__body
+    padding 0 16px
+
+  &.body-32
+    .el-card__body
+      padding: 0 32px
+
+.el-message-box
+  &.dark
+    background-color #30323D
+    border-color #30323D
+    color #959A9F
+
+    .el-message-box__header
+      padding 24px
+
+    .el-message-box__title
+      color #959A9F
+      font-size 16px
+
+    .el-message-box__content
+      padding 8px 24px 16px
+      color #959A9F
+
+    .el-message-box__btns
+      padding 0 24px 14px 0
+
+    .el-button
+      width 80px
+      height 36px
+      background-color #404352
+      border-color #404352
+      color #959A9F
+      font-size 13px
+
+      & + .el-button
+        margin-left 16px
+
+      &.el-button--primary
+        background-color #1D61F2
+        color #FFF

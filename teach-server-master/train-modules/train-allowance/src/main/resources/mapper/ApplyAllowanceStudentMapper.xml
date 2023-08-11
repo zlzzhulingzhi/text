@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.allowance.mapper.ApplyAllowanceStudentMapper">
+
+    <resultMap type="cn.qbs.wa.train.allowance.entity.ApplyAllowanceStudent" id="ApplyAllowanceStudentMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="applyAllowanceId" column="apply_allowance_id" jdbcType="INTEGER"/>
+        <result property="studentId" column="student_id" jdbcType="INTEGER"/>
+        <result property="studentName" column="student_name" jdbcType="VARCHAR"/>
+        <result property="unitId" column="unit_id" jdbcType="INTEGER"/>
+        <result property="unitName" column="unit_name" jdbcType="VARCHAR"/>
+        <result property="lessonNum" column="lesson_num" jdbcType="INTEGER"/>
+        <result property="payAmount" column="pay_amount" jdbcType="VARCHAR"/>
+        <result property="supplyAmount" column="supply_amount" jdbcType="VARCHAR"/>
+        <result property="examScore" column="exam_score" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_allowance.apply_allowance_student(apply_allowance_id, student_id, student_name, unit_id,
+        unit_name, lesson_num, pay_amount, supply_amount, exam_score, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.applyAllowanceId}, #{entity.studentId}, #{entity.studentName}, #{entity.unitId},
+            #{entity.unitName}, #{entity.lessonNum}, #{entity.payAmount}, #{entity.supplyAmount}, #{entity.examScore},
+            #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_allowance.apply_allowance_student(apply_allowance_id, student_id, student_name, unit_id,
+        unit_name, lesson_num, pay_amount, supply_amount, exam_score, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.applyAllowanceId}, #{entity.studentId}, #{entity.studentName}, #{entity.unitId},
+            #{entity.unitName}, #{entity.lessonNum}, #{entity.payAmount}, #{entity.supplyAmount}, #{entity.examScore},
+            #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        apply_allowance_id = values(apply_allowance_id) , student_id = values(student_id) , student_name =
+        values(student_name) , unit_id = values(unit_id) , unit_name = values(unit_name) , lesson_num =
+        values(lesson_num) , pay_amount = values(pay_amount) , supply_amount = values(supply_amount) , exam_score =
+        values(exam_score) , create_by = values(create_by) , create_time = values(create_time) , update_by =
+        values(update_by) , update_time = values(update_time) $empty
+    </insert>
+
+    <select id="page"
+            resultType="cn.qbs.wa.train.allowance.pojo.applyallowancestudent.ApplyAllowanceStudentPageResponse">
+        select *
+        from apply_allowance_student
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById"
+            resultType="cn.qbs.wa.train.allowance.pojo.applyallowancestudent.ApplyAllowanceStudentDetailResponse">
+        select *
+        from apply_allowance_student
+        where id = #{id}
+    </select>
+
+    <insert id="copyByApplyId">
+        INSERT INTO apply_allowance_student(apply_allowance_id, member_id, student_id, student_name, unit_id, unit_name, lesson_num, pay_amount, supply_amount, exam_score, exam_result,create_by, create_time)
+        SELECT #{targetAllowanceId}, member_id, student_id, student_name, unit_id, unit_name, lesson_num, pay_amount, supply_amount, exam_score, exam_result,create_by, NOW()
+        FROM apply_allowance_student
+        WHERE `apply_allowance_id` = #{sourceAllowanceId}
+    </insert>
+
+</mapper>
+

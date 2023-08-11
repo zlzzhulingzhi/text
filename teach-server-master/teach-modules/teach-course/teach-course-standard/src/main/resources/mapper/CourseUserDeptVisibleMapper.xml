@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.CourseUserDeptVisibleMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.CourseUserDeptVisible" id="CourseUserDeptVisibleMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="deptId" column="dept_id" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_user_dept_visible(org_id, course_id, dept_id, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.courseId}, #{entity.deptId}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_user_dept_visible(org_id, course_id, dept_id, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.courseId}, #{entity.deptId}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , course_id = values(course_id) , dept_id = values(dept_id) , create_by = values(create_by) , create_time = values(create_time)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.course.standard.pojo.courseuserdeptvisible.CourseUserDeptVisiblePageResponse">
+        select *
+        from course_user_dept_visible
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.course.standard.pojo.courseuserdeptvisible.CourseUserDeptVisibleDetailResponse">
+        select *
+        from course_user_dept_visible
+        where id = #{id}
+    </select>
+
+    <select id="listByCourseId" resultMap="CourseUserDeptVisibleMap">
+        select *
+        from course_user_dept_visible
+        where course_id = #{courseId}
+    </select>
+
+    <delete id="deptBatchRemove" parameterType="cn.qbs.wa.teach.course.standard.pojo.course.CourseRemoveDeptRequest">
+        delete from course_user_dept_visible
+        where org_id = #{params.orgId} and dept_id = #{params.deptId} and course_id
+        in
+        <foreach collection="params.courseIdList" item="courseId" open="(" separator="," close=")">
+            #{courseId}
+        </foreach>
+    </delete>
+</mapper>
+

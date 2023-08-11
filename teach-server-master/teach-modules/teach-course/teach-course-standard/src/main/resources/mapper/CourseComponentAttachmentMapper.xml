@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.CourseComponentAttachmentMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.CourseComponentAttachment" id="CourseComponentAttachmentMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="lessonId" column="lesson_id" jdbcType="INTEGER"/>
+        <result property="componentId" column="component_id" jdbcType="INTEGER"/>
+        <result property="resourceFileId" column="resource_file_id" jdbcType="INTEGER"/>
+        <result property="resourceFilePath" column="resource_file_path" jdbcType="VARCHAR"/>
+        <result property="resourceFileName" column="resource_file_name" jdbcType="VARCHAR"/>
+        <result property="resourceFileType" column="resource_file_type" jdbcType="VARCHAR"/>
+        <result property="resourceFileSize" column="resource_file_size" jdbcType="BIGINT"/>
+        <result property="resourceFileDuration" column="resource_file_duration" jdbcType="INTEGER"/>
+        <result property="deleted" column="deleted" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_component_attachment(org_id, course_id, lesson_id, component_id, resource_file_id, resource_file_path, resource_file_name, resource_file_type, resource_file_size, resource_file_duration, deleted, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.courseId}, #{entity.lessonId}, #{entity.componentId}, #{entity.resourceFileId}, #{entity.resourceFilePath}, #{entity.resourceFileName}, #{entity.resourceFileType}, #{entity.resourceFileSize}, #{entity.resourceFileDuration}, #{entity.deleted}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_component_attachment(org_id, course_id, lesson_id, component_id, resource_file_id, resource_file_path, resource_file_name, resource_file_type, resource_file_size, resource_file_duration, deleted, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.courseId}, #{entity.lessonId}, #{entity.componentId}, #{entity.resourceFileId}, #{entity.resourceFilePath}, #{entity.resourceFileName}, #{entity.resourceFileType}, #{entity.resourceFileSize}, #{entity.resourceFileDuration}, #{entity.deleted}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , course_id = values(course_id) , lesson_id = values(lesson_id) , component_id = values(component_id) , resource_file_id = values(resource_file_id) , resource_file_path = values(resource_file_path) , resource_file_name = values(resource_file_name) , resource_file_type = values(resource_file_type) , resource_file_size = values(resource_file_size) , resource_file_duration = values(resource_file_duration) , deleted = values(deleted) , create_by = values(create_by) , create_time = values(create_time) , update_by = values(update_by) , update_time = values(update_time)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.course.standard.pojo.coursecomponentattachment.CourseComponentAttachmentPageResponse">
+        select *
+        from course_component_attachment
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.course.standard.pojo.coursecomponentattachment.CourseComponentAttachmentDetailResponse">
+        select *
+        from course_component_attachment
+        where id = #{id}
+    </select>
+
+
+</mapper>
+

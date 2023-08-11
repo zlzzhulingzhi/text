@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.UnitMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.Unit" id="UnitMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="briefName" column="brief_name" jdbcType="VARCHAR"/>
+        <result property="address" column="address" jdbcType="VARCHAR"/>
+        <result property="creditCode" column="credit_code" jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="contactPerson" column="contact_person" jdbcType="VARCHAR"/>
+        <result property="contactNumber" column="contact_number" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="intro" column="intro" jdbcType="VARCHAR"/>
+        <result property="enabled" column="enabled" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into unit(name, brief_name, address, credit_code, type, contact_person, contact_number,
+        email, intro, enabled, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.name}, #{entity.briefName}, #{entity.address}, #{entity.creditCode}, #{entity.type},
+            #{entity.contactPerson}, #{entity.contactNumber}, #{entity.email}, #{entity.intro}, #{entity.enabled},
+            #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into unit(name, brief_name, address, credit_code, type, contact_person, contact_number,
+        email, intro, enabled, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.name}, #{entity.briefName}, #{entity.address}, #{entity.creditCode}, #{entity.type},
+            #{entity.contactPerson}, #{entity.contactNumber}, #{entity.email}, #{entity.intro}, #{entity.enabled},
+            #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        name = values(name) , brief_name = values(brief_name) , address = values(address) , credit_code =
+        values(credit_code) , type = values(type) , contact_person = values(contact_person) , contact_number =
+        values(contact_number) , email = values(email) , intro = values(intro) , enabled = values(enabled) , create_by =
+        values(create_by) , create_time = values(create_time) , update_by = values(update_by) , update_time =
+        values(update_time) $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.train.logistics.pojo.unit.UnitPageResponse">
+        select *
+        from unit
+        <where>
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            <if test="params.enabled != null and params.enabled != '' ">
+                and enabled = #{params.enabled}
+            </if>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.train.logistics.pojo.unit.UnitDetailResponse">
+        select *
+        from unit
+        where id = #{id}
+    </select>
+</mapper>
+

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>teach</artifactId>
+        <groupId>cn.qbs.wa</groupId>
+        <version>1.0.0-train</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>teach-auth</artifactId>
+    <version>1.0.0-train</version>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+
+        <!-- SpringCloud Alibaba Nacos -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+        </dependency>
+
+        <!-- SpringCloud Alibaba Nacos Config -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+        </dependency>
+
+        <!-- SpringBoot Web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- 微信公众号后端开发功能 -->
+        <dependency>
+            <groupId>com.github.binarywang</groupId>
+            <artifactId>weixin-java-mp</artifactId>
+        </dependency>
+
+         <!-- lombok-->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.qbs.wa</groupId>
+            <artifactId>teach-common-security</artifactId>
+            <version>1.0.0-train</version>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.qbs.wa</groupId>
+            <artifactId>teach-api-basic</artifactId>
+            <version>1.0.0-train</version>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.qbs.wa</groupId>
+            <artifactId>teach-api-organization</artifactId>
+            <version>1.0.0-train</version>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.qbs.wa</groupId>
+            <artifactId>teach-common-swagger</artifactId>
+            <version>1.0.0-train</version>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.qbs.wa</groupId>
+            <artifactId>teach-common-sms</artifactId>
+            <version>1.0.0-train</version>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.qbs.wa</groupId>
+            <artifactId>teach-common-oss</artifactId>
+            <version>1.0.0-train</version>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-captcha</artifactId>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                              <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <outputDirectory> /mydata/train/teach-server/docker/app/jar </outputDirectory>
+                </configuration>
+     <!--指定Maven打包目录位置-->
+
+
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+
+
+</project>

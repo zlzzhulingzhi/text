@@ -1,0 +1,601 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.allowance.mapper.StatAllowanceMapper">
+
+    <select id="orgAllowanceSummaryCourse" resultType="cn.qbs.wa.train.allowance.pojo.stat.SummaryAllowanceResponse">
+        SELECT
+            SUM(aa.student_num) AS totalStudentNum, SUM(aa.total_allowance_fee) AS totalFee
+        FROM
+            apply_allowance aa
+                INNER JOIN `apply` a ON aa.apply_id = a.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.flowStatus != null">
+                and a.flow_status = #{params.flowStatus}
+            </if>
+            <if test="params.flowStatusList!=null and params.flowStatusList.size() > 0 ">
+                and a.flow_status in
+                <foreach collection="params.flowStatusList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.orgId != null">
+                and a.org_id = #{params.orgId}
+            </if>
+        </where>
+    </select>
+
+    <select id="orgAllowanceSummaryCourse2" resultType="cn.qbs.wa.train.allowance.pojo.stat.SummaryAllowanceResponse">
+        SELECT
+        SUM(aas.lesson_num) AS totalLessonNum
+        FROM
+        apply_allowance aa
+        INNER JOIN `apply` a ON aa.apply_id = a.id
+        INNER JOIN apply_allowance_student aas ON aas.apply_allowance_id = aa.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.flowStatus != null">
+                and a.flow_status = #{params.flowStatus}
+            </if>
+            <if test="params.flowStatusList!=null and params.flowStatusList.size() > 0 ">
+                and a.flow_status in
+                <foreach collection="params.flowStatusList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.orgId != null">
+                and a.org_id = #{params.orgId}
+            </if>
+        </where>
+    </select>
+
+    <select id="orgAllowanceSummaryCourseFee" resultType="cn.qbs.wa.train.allowance.pojo.stat.AllowanceFeeResponse">
+        SELECT
+            aaf.item_code, SUM(aaf.allowance_fee) AS totalAllowanceFee
+        FROM
+            apply_allowance aa
+                INNER JOIN `apply` a ON aa.apply_id = a.id
+                INNER JOIN apply_allowance_fee aaf ON aaf.apply_allowance_id = aa.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.flowStatus != null">
+                and a.flow_status = #{params.flowStatus}
+            </if>
+            <if test="params.flowStatusList!=null and params.flowStatusList.size() > 0 ">
+                and a.flow_status in
+                <foreach collection="params.flowStatusList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.orgId != null">
+                and a.org_id = #{params.orgId}
+            </if>
+        </where>
+        GROUP BY aaf.item_code
+    </select>
+
+    <select id="orgAllowanceSummaryActivity" resultType="cn.qbs.wa.train.allowance.pojo.stat.SummaryAllowanceResponse">
+        SELECT
+        SUM(aa.budget_amount) AS totalFee
+        FROM
+        apply_activity aa
+        INNER JOIN `apply` a ON aa.apply_id = a.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.flowStatus != null">
+                and a.flow_status = #{params.flowStatus}
+            </if>
+            <if test="params.flowStatusList!=null and params.flowStatusList.size() > 0 ">
+                and a.flow_status in
+                <foreach collection="params.flowStatusList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.orgId != null">
+                and a.org_id = #{params.orgId}
+            </if>
+        </where>
+    </select>
+
+    <select id="pageActivity" resultType="cn.qbs.wa.train.allowance.pojo.stat.OrgAllowanceResponse">
+        SELECT
+        a.org_id,any_value(a.org_name) orgName,a.apply_type as applyType,SUM(aa.budget_amount) AS totalFee
+        FROM
+        apply_activity aa
+        INNER JOIN `apply` a ON aa.apply_id = a.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.flowStatus != null">
+                and a.flow_status = #{params.flowStatus}
+            </if>
+            <if test="params.flowStatusList!=null and params.flowStatusList.size() > 0 ">
+                and a.flow_status in
+                <foreach collection="params.flowStatusList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.orgId != null">
+                and a.org_id = #{params.orgId}
+            </if>
+        </where>
+        GROUP BY a.org_id,a.apply_type
+        ORDER BY convert(orgName using gbk) ASC
+    </select>
+
+    <select id="pageCourse" resultType="cn.qbs.wa.train.allowance.pojo.stat.OrgAllowanceResponse">
+        SELECT
+            a.org_id,any_value(a.org_name) orgName,a.apply_type,SUM(aa.student_num) AS totalStudentNum, SUM(aa.total_allowance_fee) AS totalFee, SUM(aas.lesson_num) AS totalLessonNum
+        FROM
+            apply_allowance aa
+                INNER JOIN `apply` a ON aa.apply_id = a.id
+                INNER JOIN apply_allowance_student aas ON aas.apply_allowance_id = aa.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.flowStatus != null">
+                and a.flow_status = #{params.flowStatus}
+            </if>
+            <if test="params.flowStatusList!=null and params.flowStatusList.size() > 0 ">
+                and a.flow_status in
+                <foreach collection="params.flowStatusList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.orgId != null">
+                and a.org_id = #{params.orgId}
+            </if>
+        </where>
+        GROUP BY a.org_id,a.apply_type
+        ORDER BY convert(orgName using gbk) ASC
+    </select>
+
+    <select id="pageCourse2" resultType="cn.qbs.wa.train.allowance.pojo.stat.OrgAllowanceResponse">
+        SELECT
+        a.org_id,SUM(aa.student_num) AS totalStudentNum, SUM(aa.total_allowance_fee) AS totalFee
+        FROM
+        apply_allowance aa
+        INNER JOIN `apply` a ON aa.apply_id = a.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.orgId != null">
+                and a.org_id = #{params.orgId}
+            </if>
+            <if test="params.flowStatus != null">
+                and a.flow_status = #{params.flowStatus}
+            </if>
+            <if test="params.flowStatusList!=null and params.flowStatusList.size() > 0 ">
+                and a.flow_status in
+                <foreach collection="params.flowStatusList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY a.org_id
+    </select>
+
+    <select id="pageActivityAndCourse" resultType="cn.qbs.wa.train.allowance.pojo.stat.OrgAllowanceResponse">
+        SELECT
+            a.org_id,any_value(a.org_name) orgName,a.apply_type,SUM(aa.budget_amount) AS totalFee,SUM(0) AS totalLessonNum
+        FROM
+            apply_activity aa
+                INNER JOIN `apply` a ON aa.apply_id = a.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.flowStatus != null">
+                and a.flow_status = #{params.flowStatus}
+            </if>
+            <if test="params.flowStatusList!=null and params.flowStatusList.size() > 0 ">
+                and a.flow_status in
+                <foreach collection="params.flowStatusList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.orgId != null">
+                and a.org_id = #{params.orgId}
+            </if>
+        </where>
+        GROUP BY a.org_id,a.apply_type
+        UNION ALL
+        SELECT
+            a.org_id,any_value(a.org_name) orgName,a.apply_type,SUM(aa.total_allowance_fee) AS totalFee,SUM(aas.lesson_num) AS totalLessonNum
+        FROM
+            apply_allowance aa
+                INNER JOIN `apply` a ON aa.apply_id = a.id
+                INNER JOIN apply_allowance_student aas ON aas.apply_allowance_id = aa.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.flowStatus != null">
+                and a.flow_status = #{params.flowStatus}
+            </if>
+            <if test="params.flowStatusList!=null and params.flowStatusList.size() > 0 ">
+                and a.flow_status in
+                <foreach collection="params.flowStatusList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.orgId != null">
+                and a.org_id = #{params.orgId}
+            </if>
+        </where>
+        GROUP BY a.org_id,a.apply_type
+        ORDER BY convert(orgName using gbk) ASC
+    </select>
+
+    <select id="pageCourseFee" resultType="cn.qbs.wa.train.allowance.pojo.stat.AllowanceFeeResponse">
+        SELECT
+        a.org_id,aaf.item_code, SUM(aaf.allowance_fee) AS totalAllowanceFee
+        FROM
+            apply_allowance aa
+                INNER JOIN `apply` a ON aa.apply_id = a.id
+                INNER JOIN apply_allowance_fee aaf ON aaf.apply_allowance_id = aa.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.orgId != null">
+                and a.org_id = #{params.orgId}
+            </if>
+            <if test="params.flowStatus != null">
+                and a.flow_status = #{params.flowStatus}
+            </if>
+            <if test="params.flowStatusList!=null and params.flowStatusList.size() > 0 ">
+                and a.flow_status in
+                <foreach collection="params.flowStatusList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY a.org_id,aaf.item_code
+    </select>
+
+    <select id="pageSubActivity" resultType="cn.qbs.wa.train.allowance.pojo.stat.OrgAllowanceSubResponse">
+        SELECT
+        a.apply_date,a.flow_status,aa.budget_amount AS totalFee,aa.apply_id ,aa.activity_name,aa.activity_theme
+        FROM
+        apply_activity aa
+        INNER JOIN `apply` a ON aa.apply_id = a.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.orgId != null">
+                and a.org_id = #{params.orgId}
+            </if>
+            <if test="params.flowStatus != null">
+                and a.flow_status = #{params.flowStatus}
+            </if>
+            <if test="params.flowStatusList!=null and params.flowStatusList.size() > 0 ">
+                and a.flow_status in
+                <foreach collection="params.flowStatusList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="pageSubCourse" resultType="cn.qbs.wa.train.allowance.pojo.stat.OrgAllowanceSubResponse">
+        SELECT
+            any_value(a.apply_date) applyDate,any_value(a.flow_status) flowStatus,any_value(aa.student_num)totalStudentNum, any_value(aa.total_allowance_fee)totalFee,
+            any_value(aa.apply_id)applyId,any_value(aa.project_no)projectNo,any_value(aa.project_name)projectName, SUM(aas.lesson_num)AS totalLessonNum,aa.id
+        FROM
+            apply_allowance aa
+                INNER JOIN `apply` a ON aa.apply_id = a.id
+                INNER JOIN apply_allowance_student aas ON aas.apply_allowance_id = aa.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.orgId != null">
+                and a.org_id = #{params.orgId}
+            </if>
+            <if test="params.flowStatus != null">
+                and a.flow_status = #{params.flowStatus}
+            </if>
+            <if test="params.flowStatusList!=null and params.flowStatusList.size() > 0 ">
+                and a.flow_status in
+                <foreach collection="params.flowStatusList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY aa.id
+    </select>
+
+    <select id="pageSubCourseFee" resultType="cn.qbs.wa.train.allowance.pojo.stat.AllowanceFeeResponse">
+        SELECT item_code, allowance_fee as totalAllowanceFee from apply_allowance_fee where apply_allowance_id=#{params.orgId}
+    </select>
+
+    <sql id="studentSearchCondition">
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.memberId != null">
+                AND aas.member_id = #{params.memberId}
+            </if>
+            <if test="params.flowStatusList != null and params.flowStatusList.size() > 0">
+                AND a.flow_status IN
+                <foreach collection="params.flowStatusList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.unitName != null and params.unitName != ''">
+                AND aas.unit_name LIKE concat('%', #{params.unitName}, '%')
+            </if>
+            <if test="params.studentName != null and params.studentName != ''">
+                AND aas.student_name LIKE concat('%', #{params.studentName}, '%')
+            </if>
+            <if test="params.minFee != null and params.maxFee != null">
+                AND aas.supply_amount BETWEEN #{params.minFee} AND #{params.maxFee}
+            </if>
+        </where>
+    </sql>
+
+    <select id="studentAllowanceSummary" resultType="cn.qbs.wa.train.allowance.pojo.stat.SummaryAllowanceResponse">
+        SELECT
+            COUNT(DISTINCT aas.member_id) AS total_student_num, SUM(aas.lesson_num) AS total_lesson_num, SUM(aas.supply_amount) AS totalFee
+        FROM
+            apply_allowance aa
+            INNER JOIN `apply` a ON aa.apply_id = a.id
+            INNER JOIN apply_allowance_student aas ON aas.apply_allowance_id = aa.id
+        <include refid="studentSearchCondition" />
+    </select>
+
+    <select id="studentAllowancePageCount" resultType="long">
+        SELECT
+            COUNT(DISTINCT aas.member_id)
+        FROM
+            apply_allowance aa
+            INNER JOIN `apply` a ON aa.apply_id = a.id
+            INNER JOIN apply_allowance_student aas ON aas.apply_allowance_id = aa.id
+        <include refid="studentSearchCondition" />
+    </select>
+
+    <select id="studentAllowancePage" resultType="cn.qbs.wa.train.allowance.pojo.stat.StudentAllowanceResponse">
+        SELECT
+            aas.member_id, ANY_VALUE(aas.student_name) studentName, ANY_VALUE(aas.unit_name) unit_name,
+            SUM(aas.lesson_num) AS lessonNum, SUM(aas.supply_amount) AS supplyAmount, SUM(aas.pay_amount) AS payAmount
+        FROM
+            apply_allowance aa
+            INNER JOIN `apply` a ON aa.apply_id = a.id
+            INNER JOIN apply_allowance_student aas ON aas.apply_allowance_id = aa.id
+        <include refid="studentSearchCondition" />
+        GROUP BY aas.member_id
+        ORDER BY convert(studentName USING gbk) ASC
+    </select>
+
+    <select id="studentAllowanceSubPage" resultType="cn.qbs.wa.train.allowance.pojo.stat.StudentAllowanceSubResponse">
+        SELECT
+            aa.project_name, aa.class_name, aas.unit_name, aas.lesson_num, aas.supply_amount, aas.pay_amount, aas.exam_score
+        FROM
+            apply_allowance aa
+            INNER JOIN `apply` a ON aa.apply_id = a.id
+            INNER JOIN apply_allowance_student aas ON aas.apply_allowance_id = aa.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.memberId != null">
+                AND aas.member_id = #{params.memberId}
+            </if>
+            <if test="params.flowStatusList != null and params.flowStatusList.size() > 0">
+                AND a.flow_status IN
+                <foreach collection="params.flowStatusList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.minFee != null and params.maxFee != null">
+                AND aas.supply_amount BETWEEN #{params.minFee} AND #{params.maxFee}
+            </if>
+        </where>
+    </select>
+
+    <select id="listAllowanceOrg" resultType="java.lang.Long">
+        SELECT
+            a.org_id
+        FROM `apply` a
+        WHERE a.flow_status IN (1, 2)
+        GROUP BY a.org_id
+    </select>
+
+    <select id="listActivityAllowanceOrg" resultType="java.lang.Long">
+        SELECT
+            a.org_id
+        FROM
+            apply_activity aa
+            INNER JOIN `apply` a ON aa.apply_id = a.id
+        WHERE a.flow_status IN (1, 2)
+        GROUP BY a.org_id
+    </select>
+
+    <select id="listCourseAllowanceOrg" resultType="java.lang.Long">
+        SELECT
+            a.org_id
+        FROM
+            apply_allowance aa
+            INNER JOIN `apply` a ON aa.apply_id = a.id
+        WHERE a.flow_status IN (1, 2)
+        GROUP BY a.org_id
+    </select>
+
+    <select id="classAllowanceSummary" resultType="cn.qbs.wa.train.allowance.pojo.stat.SummaryAllowanceResponse">
+        SELECT
+            SUM(aaf.allowance_fee) AS total_fee,
+            SUM(IF(aaf.item_code = 'pxcszzzj', aaf.allowance_fee, 0)) AS site_fund_fee,
+            SUM(IF(aaf.item_code = 'xyjczz', aaf.allowance_fee, 0)) AS meal_fund_fee,
+            SUM(IF(aaf.item_code = 'xyzszz', aaf.allowance_fee, 0)) AS room_fund_fee,
+            SUM(IF(aaf.item_code = 'xyjtzz', aaf.allowance_fee, 0)) AS traffic_fund_fee,
+            SUM(IF(aaf.item_code = 'xyxfzz', aaf.allowance_fee, 0)) AS study_fund_fee
+        FROM
+            `apply` a
+            INNER JOIN apply_allowance aa ON aa.apply_id = a.id
+            INNER JOIN apply_allowance_fee aaf ON aaf.apply_allowance_id = aa.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.orgId != null">
+                AND a.org_id = #{params.orgId}
+            </if>
+            <if test="params.flowStatusList != null and params.flowStatusList.size() > 0">
+                AND a.flow_status IN
+                <foreach collection="params.flowStatusList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.minFee != null and params.maxFee != null">
+                AND aa.total_allowance_fee BETWEEN #{params.minFee} AND #{params.maxFee}
+            </if>
+            <if test="params.projectName != null and params.projectName != ''">
+                AND aa.project_name LIKE concat('%', #{params.projectName}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="classStudentSummary" resultType="cn.qbs.wa.train.allowance.pojo.stat.SummaryStudentResponse">
+        SELECT
+            COUNT(aas.id) AS totalStudentNum, SUM(aas.lesson_num) AS totalLessonNum
+        FROM
+            apply_allowance aa
+            INNER JOIN apply a ON aa.apply_id = a.id
+            INNER JOIN apply_allowance_student aas ON aas.apply_allowance_id = aa.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.orgId != null">
+                AND a.org_id = #{params.orgId}
+            </if>
+            <if test="params.flowStatusList != null and params.flowStatusList.size() > 0">
+                AND a.flow_status IN
+                <foreach collection="params.flowStatusList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.minFee != null and params.maxFee != null">
+                AND aa.total_allowance_fee BETWEEN #{params.minFee} AND #{params.maxFee}
+            </if>
+            <if test="params.projectName != null and params.projectName != ''">
+                AND aa.project_name LIKE concat('%', #{params.projectName}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="classAllowancePageCount" resultType="long">
+        SELECT
+            COUNT(aa.id)
+        FROM
+            `apply` a
+            INNER JOIN apply_allowance aa ON aa.apply_id = a.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.orgId != null">
+                AND a.org_id = #{params.orgId}
+            </if>
+            <if test="params.flowStatusList != null and params.flowStatusList.size() > 0">
+                AND a.flow_status IN
+                <foreach collection="params.flowStatusList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.minFee != null and params.maxFee != null">
+                AND aa.total_allowance_fee BETWEEN #{params.minFee} AND #{params.maxFee}
+            </if>
+            <if test="params.projectName != null and params.projectName != ''">
+                AND aa.project_name LIKE concat('%', #{params.projectName}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="classAllowancePage" resultType="cn.qbs.wa.train.allowance.pojo.stat.ClazzAllowanceResponse">
+        SELECT
+            aa.id, a.org_id, a.apply_date, a.flow_status, aa.project_no, aa.project_name,
+            MAX(aa.total_allowance_fee) AS total_fee,
+            MAX(IF(aaf.item_code = 'pxcszzzj', aaf.allowance_fee, 0)) AS site_fund_fee,
+            MAX(IF(aaf.item_code = 'xyjczz', aaf.allowance_fee, 0)) AS meal_fund_fee,
+            MAX(IF(aaf.item_code = 'xyzszz', aaf.allowance_fee, 0)) AS room_fund_fee,
+            MAX(IF(aaf.item_code = 'xyjtzz', aaf.allowance_fee, 0)) AS traffic_fund_fee,
+            MAX(IF(aaf.item_code = 'xyxfzz', aaf.allowance_fee, 0)) AS study_fund_fee
+        FROM
+            `apply` a
+            INNER JOIN apply_allowance aa ON aa.apply_id = a.id
+            INNER JOIN apply_allowance_fee aaf ON aaf.apply_allowance_id = aa.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.orgId != null">
+                AND a.org_id = #{params.orgId}
+            </if>
+            <if test="params.flowStatusList != null and params.flowStatusList.size() > 0">
+                AND a.flow_status IN
+                <foreach collection="params.flowStatusList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.minFee != null and params.maxFee != null">
+                AND aa.total_allowance_fee BETWEEN #{params.minFee} AND #{params.maxFee}
+            </if>
+            <if test="params.projectName != null and params.projectName != ''">
+                AND aa.project_name LIKE concat('%', #{params.projectName}, '%')
+            </if>
+        </where>
+        GROUP BY a.id, aa.id
+        ORDER BY apply_date DESC
+    </select>
+
+    <select id="studentLessonSummaryByIds" resultType="cn.qbs.wa.train.allowance.pojo.stat.ClazzAllowanceStuResponse">
+        SELECT
+            aas.apply_allowance_id AS id, COUNT(aas.id) AS totalStudentNum, SUM(aas.lesson_num) AS totalLessonNum
+        FROM
+            apply_allowance_student aas
+        WHERE aas.apply_allowance_id IN
+        <foreach collection="allowanceIds" item="allowanceId" open="(" close=")" separator=",">
+            #{allowanceId}
+        </foreach>
+        GROUP BY aas.apply_allowance_id
+    </select>
+
+    <select id="classAllowanceSubPage" resultType="cn.qbs.wa.train.allowance.pojo.stat.ClazzAllowanceSubResponse">
+        SELECT member_id, student_name, unit_name, lesson_num, pay_amount, supply_amount, exam_score
+        FROM apply_allowance_student
+        WHERE apply_allowance_id = #{applyAllowanceId}
+    </select>
+
+    <select id="activityAllowanceSummary" resultType="cn.qbs.wa.train.allowance.pojo.stat.SummaryAllowanceResponse">
+        SELECT
+            SUM(aa.budget_amount) AS totalFee
+        FROM
+            apply_activity aa
+            INNER JOIN `apply` a ON aa.apply_id = a.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.orgId != null">
+                AND a.org_id = #{params.orgId}
+            </if>
+            <if test="params.flowStatusList != null and params.flowStatusList.size() > 0">
+                AND a.flow_status IN
+                <foreach collection="params.flowStatusList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.minFee != null and params.maxFee != null">
+                AND aa.budget_amount BETWEEN #{params.minFee} AND #{params.maxFee}
+            </if>
+            <if test="params.projectName != null and params.projectName != ''">
+                AND aa.activity_name LIKE concat('%', #{params.projectName}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="activityAllowancePage" resultType="cn.qbs.wa.train.allowance.pojo.stat.ActivityAllowanceResponse">
+        SELECT
+            aa.apply_id, aa.activity_name, aa.activity_theme, aa.budget_amount, a.contact_person, a.contact_number, a.apply_date, a.flow_status
+        FROM
+            apply_activity aa
+            INNER JOIN `apply` a ON aa.apply_id = a.id
+        <where>
+            a.apply_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+            <if test="params.orgId != null">
+                AND a.org_id = #{params.orgId}
+            </if>
+            <if test="params.flowStatusList != null and params.flowStatusList.size() > 0">
+                AND a.flow_status IN
+                <foreach collection="params.flowStatusList" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="params.minFee != null and params.maxFee != null">
+                AND aa.budget_amount BETWEEN #{params.minFee} AND #{params.maxFee}
+            </if>
+            <if test="params.projectName != null and params.projectName != ''">
+                AND aa.activity_name LIKE concat('%', #{params.projectName}, '%')
+            </if>
+        </where>
+        ORDER BY a.apply_date DESC
+    </select>
+</mapper>
+

@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.question.mapper.QuestionMapper">
+
+    <resultMap type="cn.qbs.wa.teach.question.entity.Question" id="QuestionMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="questionTypeId" column="question_type_id" jdbcType="INTEGER"/>
+        <result property="useCount" column="use_count" jdbcType="INTEGER"/>
+        <result property="difficultyId" column="difficulty_id" jdbcType="INTEGER"/>
+        <result property="score" column="score" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="parentFlag" column="parent_flag" jdbcType="INTEGER"/>
+        <result property="enabled" column="enabled"/>
+        <result property="editable" column="editable"/>
+    </resultMap>
+
+    <select id="pageId" resultType="java.lang.Long">
+        select q.id
+        from question q
+            left join question_category qc on q.id = qc.question_id
+        <where>
+            <if test="params.enabled != null">
+                and q.enabled = #{params.enabled}
+            </if>
+            <if test="params.difficultyIds != null and params.difficultyIds.size() > 0">
+                and q.difficulty_id in
+                <foreach collection="params.difficultyIds" item="difficultyId" open="(" separator="," close=")">
+                    #{difficultyId}
+                </foreach>
+            </if>
+            <if test="params.questionTypeIds != null and params.questionTypeIds.size() > 0">
+                and q.question_type_id in
+                <foreach collection="params.questionTypeIds" item="questionTypeId" open="(" separator="," close=")">
+                    #{questionTypeId}
+                </foreach>
+            </if>
+            <if test="params.categoryIds != null and params.categoryIds.size() > 0">
+                and qc.category_id in
+                <foreach collection="params.categoryIds" item="categoryId" open="(" separator="," close=")">
+                    #{categoryId}
+                </foreach>
+            </if>
+        </where>
+        order by q.id desc
+    </select>
+
+    <sql id="detailCommon">
+        select q.*,
+               qb.*,
+               qo.id      as option_id,
+               qo.`option`,
+               qo.content as option_content,
+               qo.remark  as option_remark,
+               qt.name    as questionTypeName,
+               d.name     as difficultyName,
+               c.id       as categoryId,
+               c.name     as categoryName,
+               c.sort_num as categorySortNum
+        from question q
+            left join question_body qb on q.id = qb.id
+            left join question_option qo on q.id = qo.question_id
+            left join question_type qt on q.question_type_id = qt.id
+            left join difficulty d on q.difficulty_id = d.id
+            left join question_category qc on q.id = qc.question_id
+            left join category c on (qc.category_id = c.id and c.group_id = 1)
+    </sql>
+
+    <select id="selectDetailById" resultMap="DetailMap">
+        <include refid="detailCommon"/>
+        where q.id = #{id}
+        order by qo.`option`
+    </select>
+    <select id="selectDetailsByIdList" resultMap="DetailMap">
+        <include refid="detailCommon"/>
+        where q.id in
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        order by qo.`option`
+    </select>
+
+    <select id="selectByCategoryIdList" resultType="java.lang.Long">
+        select q.*
+        from question_category qc
+        left join question q on qc.question_id = q.id
+        where qc.category_id in
+        <foreach collection="categoryIdList" item="categoryId" open="(" separator="," close=")">
+            #{categoryId}
+        </foreach>
+        and q.enabled = 1
+    </select>
+
+    <select id="selectQuestion" resultType="cn.qbs.wa.teach.question.entity.Question">
+        select q.*
+        from question_type qt
+            left join question q on qt.id = q.question_type_id
+        <where>
+            <if test="questionIdList != null and questionIdList.size() > 0">
+                q.id in
+                <foreach collection="questionIdList" item="questionId" open="(" separator="," close=")">
+                    #{questionId}
+                </foreach>
+            </if>
+        </where>
+        order by q.id
+        limit #{size}
+    </select>
+
+    <select id="selectMinLevelCategory" resultType="cn.qbs.wa.teach.question.entity.Category">
+        SELECT c.*
+        FROM `question_category` qc
+            left join category c on qc.category_id = c.id
+        where qc.question_id = #{questionId}
+        order by c.level asc
+        limit 1
+    </select>
+
+    <select id="selectDetailsByIdListByOrder" resultMap="DetailMap">
+        <include refid="detailCommon"/>
+        where q.id in
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        order by field(q.id, <foreach collection="idList" item="id" open="" separator="," close="">#{id}</foreach>)
+            ,qo.`option`
+    </select>
+
+    <resultMap id="DetailMap" type="cn.qbs.wa.teach.question.pojo.question.QuestionDetailResponse" extends="QuestionMap">
+        <result property="content" column="content"/>
+        <result property="answer" column="answer"/>
+        <result property="answerDesc" column="answer_desc"/>
+        <result property="questionTypeName" column="questionTypeName"/>
+        <result property="difficultyName" column="difficultyName"/>
+        <collection property="options" javaType="java.util.ArrayList" ofType="cn.qbs.wa.teach.question.pojo.question.option.QuestionOptionTo">
+            <id property="id" column="option_id"/>
+            <result property="option" column="option"/>
+            <result property="questionId" column="question_id"/>
+            <result property="content" column="option_content"/>
+            <result property="remark" column="remark"/>
+        </collection>
+        <collection property="categoryList" javaType="java.util.ArrayList" ofType="cn.qbs.wa.teach.question.entity.Category">
+            <id property="id" column="categoryId"/>
+            <result property="name" column="categoryName"/>
+            <result property="sortNum" column="categorySortNum"/>
+        </collection>
+    </resultMap>
+
+</mapper>
+

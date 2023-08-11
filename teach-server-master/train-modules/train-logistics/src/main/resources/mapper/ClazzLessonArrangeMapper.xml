@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.ClazzLessonArrangeMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.ClazzLessonArrange" id="ClazzLessonArrangeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="clazzId" column="clazz_id" jdbcType="INTEGER"/>
+        <result property="lessonId" column="lesson_id" jdbcType="INTEGER"/>
+        <result property="contentName" column="content_name" jdbcType="VARCHAR"/>
+        <result property="startDate" column="start_date" jdbcType="TIMESTAMP"/>
+        <result property="endDate" column="end_date" jdbcType="TIMESTAMP"/>
+        <result property="classroomId" column="classroom_id" jdbcType="INTEGER"/>
+        <result property="lecturerId" column="lecturer_id" jdbcType="INTEGER"/>
+        <result property="lecturerName" column="lecturer_name" jdbcType="VARCHAR"/>
+        <result property="contentDescription" column="content_description" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_logistics.clazz_lesson_arrange(org_id, clazz_id, lesson_id, content_name, start_date,
+        end_date, classroom_id, lecturer_id, lecturer_name, content_description, create_by, create_time, update_by,
+        update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.clazzId}, #{entity.lessonId}, #{entity.contentName}, #{entity.startDate},
+            #{entity.endDate}, #{entity.classroomId}, #{entity.lecturerId}, #{entity.lecturerName},
+            #{entity.contentDescription}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy},
+            #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_logistics.clazz_lesson_arrange(org_id, clazz_id, lesson_id, content_name, start_date,
+        end_date, classroom_id, lecturer_id, lecturer_name, content_description, create_by, create_time, update_by,
+        update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.clazzId}, #{entity.lessonId}, #{entity.contentName}, #{entity.startDate},
+            #{entity.endDate}, #{entity.classroomId}, #{entity.lecturerId}, #{entity.lecturerName},
+            #{entity.contentDescription}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy},
+            #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , clazz_id = values(clazz_id) , lesson_id = values(lesson_id) , content_name =
+        values(content_name) , start_date = values(start_date) , end_date = values(end_date) , classroom_id =
+        values(classroom_id) , lecturer_id = values(lecturer_id) , lecturer_name = values(lecturer_name) ,
+        content_description = values(content_description) , create_by = values(create_by) , create_time =
+        values(create_time) , update_by = values(update_by) , update_time = values(update_time) $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.train.logistics.pojo.clazzlessonarrange.ClazzLessonArrangePageResponse">
+        select *
+        from clazz_lesson_arrange
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById"
+            resultType="cn.qbs.wa.train.logistics.pojo.clazzlessonarrange.ClazzLessonArrangeDetailResponse">
+        select *
+        from clazz_lesson_arrange
+        where id = #{id}
+    </select>
+
+    <select id="listV2" resultType="cn.qbs.wa.train.logistics.pojo.clazzlessonarrange.ClazzLessonArrangeListResponse">
+        select cla.*, room.room_no,cl.lesson_name
+        from clazz_lesson_arrange cla
+        left join clazz_lesson cl on cl.id=cla.lesson_id
+        left join classroom room ON room.id = cla.classroom_id
+        <where>
+            <if test="params.clazzId != null">
+                and cla.clazz_id = #{params.clazzId}
+            </if>
+            <if test="params.lessonId != null">
+                and cla.lesson_id = #{params.lessonId}
+            </if>
+        </where>
+        order by cl.sort,cl.id,cla.sort,cla.start_date
+    </select>
+
+    <select id="listV3" resultType="cn.qbs.wa.train.logistics.pojo.clazzlessonarrange.ClazzLessonArrangeListResponse">
+        select cla.*, room.room_no,cl.lesson_name
+        from clazz_lesson_arrange cla
+        left join clazz_lesson cl on cl.id=cla.lesson_id
+        left join classroom room ON room.id = cla.classroom_id
+        <where>
+            <if test="params.clazzId != null">
+                and cla.clazz_id = #{params.clazzId}
+            </if>
+            <if test="params.lessonId != null">
+                and cla.lesson_id = #{params.lessonId}
+            </if>
+            <if test="params.startDate != null">
+                and cla.start_date >= #{params.startDate}
+            </if>
+            <if test="params.endDate != null  ">
+                and cla.end_date <![CDATA[ <= ]]>#{params.endDate}
+            </if>
+            <if test="params.lessonIdList != null and params.lessonIdList.size() > 0">
+                and cla.lesson_id in
+                <foreach collection="params.lessonIdList" item="lessonId" open="(" separator="," close=")">
+                    #{lessonId}
+                </foreach>
+            </if>
+        </where>
+        order by cla.start_date
+    </select>
+
+    <select id="getWeek" resultType="cn.qbs.wa.train.logistics.pojo.clazzlessonarrange.ClazzLessonArrangeWeekResponse">
+        select convert(min(start_date),date) as beginDate,convert(max(end_date),date) as endDate
+        from clazz_lesson_arrange
+        <where>
+            <if test="params.clazzId != null">
+                and clazz_id = #{params.clazzId}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryClazzLastByLecturerIds" resultType="cn.qbs.wa.train.logistics.pojo.lecturer.LecturerClazzMap">
+        WITH seq_lecturer AS (
+            SELECT
+                cla.lecturer_id, rank() over(partition by cla.lecturer_id ORDER BY c.start_date DESC) seq, c.`name`
+            FROM
+                clazz_lesson_arrange cla
+                INNER JOIN clazz c ON c.id = cla.clazz_id AND c.state = 1
+            WHERE cla.lecturer_id IN
+            <foreach collection="lecturerIds" item="lecturerId" open="(" separator="," close=")">
+                #{lecturerId}
+            </foreach>
+        )
+        SELECT lecturer_id, `name` AS clazzName FROM seq_lecturer WHERE seq = 1
+    </select>
+
+    <select id="listClazzByLecturerId" resultType="cn.qbs.wa.train.logistics.pojo.clazz.IntegrateClazzResponse">
+        SELECT
+            c.`id` clazzId, c.`name` clazzName, c.course_id, cla.start_date, cla.end_date,cla.content_name, c.state, room.room_no,cl.lesson_name
+        FROM
+            clazz_lesson_arrange cla
+            LEFT join clazz_lesson cl on cl.id=cla.lesson_id
+            INNER JOIN clazz c ON c.id = cla.clazz_id
+            LEFT JOIN classroom room ON room.id = cla.classroom_id
+        WHERE cla.lecturer_id = #{lecturerId}
+        ORDER BY c.start_date DESC,c.id DESC
+    </select>
+</mapper>
+

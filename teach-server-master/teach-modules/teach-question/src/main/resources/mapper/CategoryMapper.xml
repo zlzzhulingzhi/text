@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.question.mapper.CategoryMapper">
+
+    <resultMap type="cn.qbs.wa.teach.question.entity.Category" id="CategoryMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="fullName" column="full_name" jdbcType="VARCHAR"/>
+        <result property="parentId" column="parent_id" jdbcType="INTEGER"/>
+        <result property="parentCode" column="parent_code" jdbcType="VARCHAR"/>
+        <result property="level" column="level" jdbcType="INTEGER"/>
+        <result property="sortNum" column="sort_num" jdbcType="INTEGER"/>
+        <result property="groupId" column="group_id" jdbcType="INTEGER"/>
+        <result property="enabled" column="enabled"/>
+        <result property="orgId" column="org_id"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into category(org_id, parent_id, name, parent_code, full_name, sort_num, group_id, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.parentId},  #{entity.name}, #{entity.parentCode},#{entity.fullName}, #{entity.sortNum}, #{entity.groupId}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.question.pojo.category.CategoryPageResponse">
+        select c.*,IF( COUNT( co.id ) > 0, 1, 0 ) AS hasChildren
+        from category c
+        LEFT JOIN category co ON c.id = co.parent_id
+        <where>
+            <!-- 分页查询，只查第1级 -->
+            c.parent_id = 0
+            <if test="params.groupId != null">
+                and c.group_id = #{params.groupId}
+            </if>
+            <if test="params.parentId != null">
+                and c.parent_id = #{params.parentId}
+            </if>
+            <if test="params.level != null">
+                and c.level = #{params.level}
+            </if>
+            <if test="params.enabled != null">
+                and c.enabled = #{params.enabled}
+            </if>
+            <if test="params.name != null and params.name != '' ">
+                and c.name like concat('%', #{params.name}, '%')
+            </if>
+        </where>
+        group by c.id
+        order by c.level, c.sort_num, c.id
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.question.pojo.category.CategoryDetailResponse">
+        select *
+        from category
+        where id = #{id}
+    </select>
+
+    <select id="childrenList" resultType="cn.qbs.wa.teach.question.pojo.category.CategoryPageResponse">
+        select c.*,IF( COUNT( co.id ) > 0, 1, 0 ) AS hasChildren
+        from category c
+        LEFT JOIN category co ON c.id = co.parent_id
+        <where>
+            c.parent_id = #{parentId}
+        </where>
+        group by c.id
+        order by c.sort_num asc
+    </select>
+
+    <select id="getChildIdList" resultType="java.lang.Long">
+        SELECT
+            id
+        FROM category
+        where FIND_IN_SET(#{parentId}, parent_code)
+        order by parent_id, sort_num
+    </select>
+
+    <select id="selectQuestionCount" resultType="java.lang.Long">
+        select count(distinct q.id)
+        from question q
+        left join question_category qc on qc.question_id = q.id
+        <where>
+            <if test="param.idList != null and param.idList.size() > 0">
+                qc.category_id IN
+                <foreach collection="param.idList" item="categoryId" open="(" separator="," close=")" index="index">
+                    #{categoryId}
+                </foreach>
+                <if test="param.idList.contains(-1L)">
+                    or qc.id is null
+                </if>
+            </if>
+            <if test="param.enabled != null">
+                and q.enabled = #{param.enabled}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectPaperCount" resultType="java.lang.Long">
+        select count(distinct p.id)
+        from paper p
+        left join paper_category pc on pc.paper_id = p.id
+        <where>
+            <if test="categoryIdList != null and categoryIdList.size() > 0">
+                and (pc.category_id IN
+                <foreach collection="categoryIdList" item="categoryId" open="(" separator="," close=")" index="index">
+                    #{categoryId}
+                </foreach>
+                <if test="categoryIdList.contains(-1L)">
+                    or pc.id is null
+                </if>
+                )
+            </if>
+        </where>
+    </select>
+
+</mapper>
+

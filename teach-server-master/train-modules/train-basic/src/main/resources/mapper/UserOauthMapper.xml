@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.basic.mapper.UserOauthMapper">
+
+    <resultMap type="cn.qbs.wa.train.basic.entity.UserOauth" id="UserOauthMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="getUserInfo" resultType="cn.qbs.wa.train.basic.entity.User">
+        select u.*
+        from user_oauth uo
+        inner join `user` u on u.id = uo.user_id
+        where uo.uid = #{uid}
+    </select>
+
+    <select id="getOauthInfo" resultType="cn.qbs.wa.train.basic.pojo.useroauth.OauthInfoResponse">
+        select u.*, uo.uid, IF(`password` IS NULL, 1, 0) AS pwdMiss
+        from `user` u
+        left join user_oauth uo on u.id = uo.user_id
+        where u.id = #{userId}
+    </select>
+</mapper>
+

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.CourseStatisticDailyMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.CourseStatisticDaily" id="CourseStatisticDailyMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="statisticDate" column="statistic_date" jdbcType="TIMESTAMP"/>
+        <result property="learningNum" column="learning_num" jdbcType="INTEGER"/>
+        <result property="learningDuration" column="learning_duration" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_statistic_daily(org_id, course_id, statistic_date, learning_num, learning_duration)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.courseId}, #{entity.statisticDate}, #{entity.learningNum}, #{entity.learningDuration})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_statistic_daily(org_id, course_id, statistic_date, learning_num, learning_duration)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.courseId}, #{entity.statisticDate}, #{entity.learningNum}, #{entity.learningDuration})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , course_id = values(course_id) , statistic_date = values(statistic_date) , learning_num = values(learning_num) , learning_duration = values(learning_duration)         $empty
+    </insert>
+
+    <sql id="commonSql">
+        select *
+        from course_statistic_daily
+        <where>
+            <if test="params.courseId != null">
+                and course_id = #{params.courseId}
+            </if>
+            <if test="params.startStatisticDate != null">
+                and statistic_date >= #{params.startStatisticDate}
+            </if>
+            <if test="params.endStatisticDate != null">
+                and statistic_date &lt;= #{params.endStatisticDate}
+            </if>
+        </where>
+        order by statistic_date desc
+    </sql>
+
+    <select id="page" resultType="cn.qbs.wa.teach.course.standard.pojo.coursestatisticdaily.CourseStatisticDailyPageResponse">
+        <include refid="commonSql" />
+    </select>
+
+    <select id="list" resultType="cn.qbs.wa.teach.course.standard.pojo.coursestatisticdaily.CourseStatisticDailyPageResponse">
+        <include refid="commonSql" />
+        limit 31
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.course.standard.pojo.coursestatisticdaily.CourseStatisticDailyDetailResponse">
+        select *
+        from course_statistic_daily
+        where id = #{id}
+    </select>
+
+    <select id="countStudentNumByCourseId" resultType="int">
+        SELECT COUNT(user_id)
+        FROM course_student_study_snapshot
+        WHERE course_id = #{courseId}
+        <if test="begin != null and end != null">
+            AND create_time BETWEEN #{begin} AND #{end}
+        </if>
+    </select>
+
+
+</mapper>
+

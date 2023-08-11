@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.allowance.mapper.ApplyAllowanceFeeMapper">
+
+    <resultMap type="cn.qbs.wa.train.allowance.entity.ApplyAllowanceFee" id="ApplyAllowanceFeeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="applyAllowanceId" column="apply_allowance_id" jdbcType="INTEGER"/>
+        <result property="itemCode" column="item_code" jdbcType="VARCHAR"/>
+        <result property="itemName" column="item_name" jdbcType="VARCHAR"/>
+        <result property="allowanceFee" column="allowance_fee" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_allowance.apply_allowance_fee(apply_allowance_id, item_code, item_name, allowance_fee, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.applyAllowanceId}, #{entity.itemCode}, #{entity.itemName}, #{entity.allowanceFee}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+    
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_allowance.apply_allowance_fee(apply_allowance_id, item_code, item_name, allowance_fee, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.applyAllowanceId}, #{entity.itemCode}, #{entity.itemName}, #{entity.allowanceFee}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        apply_allowance_id = values(apply_allowance_id) , item_code = values(item_code) , item_name = values(item_name) , allowance_fee = values(allowance_fee) , create_by = values(create_by) , create_time = values(create_time) , update_by = values(update_by) , update_time = values(update_time)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.train.allowance.pojo.applyallowancefee.ApplyAllowanceFeePageResponse">
+        select *
+        from apply_allowance_fee
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.train.allowance.pojo.applyallowancefee.ApplyAllowanceFeeDetailResponse">
+        select *
+        from apply_allowance_fee
+        where id = #{id}
+    </select>
+
+    <insert id="copyByApplyId">
+        INSERT INTO apply_allowance_fee(apply_allowance_id, item_code, item_name, allowance_fee, create_by, create_time)
+        SELECT #{targetAllowanceId}, item_code, item_name, allowance_fee, create_by, NOW()
+        FROM apply_allowance_fee
+        WHERE `apply_allowance_id` = #{sourceAllowanceId}
+    </insert>
+</mapper>
+

@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.exam.admin.mapper.ExamMapper">
+
+    <resultMap type="cn.qbs.wa.teach.exam.common.entity.Exam" id="ExamMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="examName" column="exam_name" jdbcType="VARCHAR"/>
+        <result property="paperId" column="paper_id" jdbcType="INTEGER"/>
+        <result property="paperScore" column="paper_score" jdbcType="NUMERIC"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="shelfStatus" column="shelf_status" jdbcType="INTEGER"/>
+        <result property="edited" column="edited" jdbcType="INTEGER"/>
+        <result property="startTime" column="start_time" jdbcType="TIMESTAMP"/>
+        <result property="endTime" column="end_time" jdbcType="TIMESTAMP"/>
+        <result property="difficulty" column="difficulty" jdbcType="INTEGER"/>
+        <result property="duration" column="duration" jdbcType="INTEGER"/>
+        <result property="limitCount" column="limit_count" jdbcType="INTEGER"/>
+        <result property="introduction" column="introduction" jdbcType="VARCHAR"/>
+        <result property="releaseMode" column="release_mode" jdbcType="INTEGER"/>
+        <result property="passScore" column="pass_score" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="userVisible" column="user_visible" jdbcType="INTEGER"/>
+        <result property="enabled" column="enabled"/>
+        <result property="releaseTime" column="release_time" jdbcType="TIMESTAMP"/>
+        <result property="examMode" column="exam_mode"/>
+        <result property="startWay" column="start_way"/>
+        <result property="endWay" column="end_way"/>
+        <result property="admissionStartTime" column="admission_start_time"/>
+        <result property="admissionEndTime" column="admission_end_time"/>
+    </resultMap>
+
+    <select id="page" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.ExamPageResponse">
+        select e.*,
+            count(distinct en.id) as examineeCount,
+            sum(if(er.status=2, 1,0)) as correctCount,
+            count(er.id) as submitCount,
+            max(ifnull(er.score,0)) as highestScore,
+            min(er.score) as lowestScore,
+            round(sum(ifnull(er.score,0)) / sum(if(er.status=2, 1,0)), 1) as avgScore
+        from exam e
+            left join examinee en on en.exam_id = e.id
+            left join examinee_record er on (er.examinee_id = en.id and er.status in (1,2) and er.calculated = 1)
+        <where>
+            <if test="params.status != null">
+                and e.status = #{params.status}
+            </if>
+            <if test="params.shelfStatus != null">
+                and e.shelf_status = #{params.shelfStatus}
+            </if>
+            <if test="params.difficulty != null">
+                and e.difficulty = #{params.difficulty}
+            </if>
+            <if test="params.examName != null and params.examName != '' ">
+                and e.exam_name like concat('%', #{params.examName}, '%')
+            </if>
+        </where>
+        group by e.id
+        order by e.id desc
+    </select>
+
+    <select id="pageV2" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.ExamPageResponseV2">
+        select e.*
+        from exam e
+        <where>
+            e.enabled = 1
+            <if test="params.releaseStatus != null">
+                and e.shelf_status = #{params.releaseStatus}
+            </if>
+            <if test="params.status != null">
+                and e.status = #{params.status}
+            </if>
+            <if test="params.examName != null and params.examName != '' ">
+                and e.exam_name like concat('%', #{params.examName}, '%')
+            </if>
+        </where>
+        group by e.id
+        order by e.id desc
+    </select>
+
+    <select id="pageV3" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.ExamPageResponseV3">
+        select count(distinct euv.student_id) examineeCount, count(distinct em.id) joinCount, count(distinct erd.examinee_id) submitCount,
+               max(distinct er.score) highestScore, min(distinct er.score) lowestScore, avg(distinct er.score) avgScore, paper_score totalScore,
+               any_value((select count(ee.examinee_id) from examinee_record ee left join examinee eem on ee.examinee_id = eem.id where eem.exam_id = e.id and ee.`status` in(1,2))) handInCount,
+               any_value((select count(ee.examinee_id) from examinee_record ee left join examinee eem on ee.examinee_id = eem.id where eem.exam_id = e.id and ee.`status` in(2))) correctCount,
+               count(distinct exrd.examinee_id) underCount, e.*
+        from exam e
+            left join exam_user_visible euv on euv.exam_id = e.id
+            left join examinee em on  em.exam_id = e.id
+            left join examinee_record er on er.examinee_id = em.id
+            left join examinee_record erd on erd.examinee_id = em.id and erd.`status` in(1,2)
+            left join examinee_record exrd on exrd.examinee_id = em.id and exrd.`status` = 0
+        <where>
+            e.enabled = 1
+            <if test="params.releaseStatus != null">
+                and e.shelf_status = #{params.releaseStatus}
+            </if>
+            <if test="params.status != null">
+                and e.status = #{params.status}
+            </if>
+            <if test="params.examId != null">
+                and e.id = #{params.examId}
+            </if>
+            <if test="params.examName != null and params.examName != '' ">
+                and e.exam_name like concat('%', #{params.examName}, '%')
+            </if>
+        </where>
+        group by e.id
+        order by e.id desc
+    </select>
+
+    <select id="selectSubmitCount" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.ExamPageResponse">
+        select count(er.id) as submitCount from examinee_record er
+        where    er.examinee_id in(
+		select en.id
+        from exam e
+        inner join examinee en on en.exam_id = e.id
+		where e.id =#{params.id})
+		<if test="flag == 1">
+            and er.status in (1,2,3)
+        </if>
+        <if test="flag == 0">
+            and er.status in (2)
+        </if>
+    </select>
+
+    <select id="selectDetailById" resultMap="DetailMap">
+        select e.*, eu.rule_id, r.code rule_code, r.rule_name, euv.user_id, euv.employee_id, euv.student_id,euv.id as evuId
+        from exam e
+--             left join exam_category ec on ec.exam_id = e.id
+--             left join category c on c.id = ec.category_id
+            left join exam_rule eu on eu.exam_id = e.id
+            left join rule r on r.id = eu.rule_id
+            left join exam_user_visible euv on euv.exam_id = e.id
+        where e.id = #{id}
+    </select>
+
+    <select id="assignUserExamRecordPage" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.ExamUserRecordPageResponse">
+        select euv.student_id studentId, any_value(er.id) recordId, any_value(em.id) examineeId, e.id examId, e.exam_name examName, e.org_id orgId,
+               any_value(er.start_time) startTime, any_value(er.submit_time) submitTime, any_value(er.use_duration_format) useDurationFormat,
+               any_value(euv.create_time) createTime
+               <if test="params.examineeId == null and params.studentId == null">
+                   , any_value(max(er.score)) score, any_value(count(er.examinee_id)) examNum
+               </if>
+               <if test="params.examineeId != null or params.studentId != null">
+                   , any_value((er.score)) score
+               </if>
+        from exam_user_visible euv
+                 left join exam e on euv.exam_id = e.id
+                 <if test="params.examineeId != null or params.studentId != null">
+                     right join examinee em on em.student_id = euv.student_id and em.exam_id = e.id
+                 </if>
+                 <if test="params.examineeId == null and params.studentId == null">
+                     left join examinee em on em.student_id = euv.student_id and em.exam_id = e.id
+                 </if>
+                 left join examinee_record er on er.examinee_id = em.id
+                 left join examinee_score es on es.examinee_id = er.examinee_id
+        <where>
+            <if test="params.examId != null">
+                and e.id = #{params.examId}
+            </if>
+            <if test="params.examineeId != null">
+                and em.id = #{params.examineeId}
+            </if>
+            <if test="params.studentId != null">
+                and euv.student_id = #{params.studentId}
+            </if>
+            <if test="params.userIdList != null and params.userIdList.size() > 0">
+                and euv.user_id in
+                <foreach collection="params.userIdList" item="userId" open="(" separator="," close=")">
+                    #{userId}
+                </foreach>
+            </if>
+            <if test="params.examName != null and params.examName != ''">
+                and e.exam_name like concat('%', #{params.examName}, '%')
+            </if>
+        </where>
+        <if test="params.examineeId == null and params.studentId == null">
+            group by studentId
+        </if>
+    </select>
+
+    <select id="assignUserExamRecordPageAllVisible" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.ExamUserRecordPageResponse">
+        select em.student_id studentId, any_value(er.id) recordId, any_value(em.id) examineeId, e.id examId, e.exam_name examName, e.org_id orgId,
+        any_value(er.start_time) startTime, any_value(er.submit_time) submitTime, any_value(er.use_duration_format) useDurationFormat,
+        any_value(em.create_time) createTime
+        <if test="params.examineeId == null and params.studentId == null">
+            , any_value(max(er.score)) score, any_value(count(er.examinee_id)) examNum
+        </if>
+        <if test="params.examineeId != null or params.studentId != null">
+            , any_value((er.score)) score
+        </if>
+        from exam e
+        right join examinee em on em.exam_id = e.id
+        left join examinee_record er on er.examinee_id = em.id
+        left join examinee_score es on es.examinee_id = er.examinee_id
+        <where>
+            <if test="params.examId != null">
+                and e.id = #{params.examId}
+            </if>
+            <if test="params.examineeId != null">
+                and em.id = #{params.examineeId}
+            </if>
+            <if test="params.studentId != null">
+                and em.student_id = #{params.studentId}
+            </if>
+            <if test="params.userIdList != null and params.userIdList.size() > 0">
+                and em.user_id in
+                <foreach collection="params.userIdList" item="userId" open="(" separator="," close=")">
+                    #{userId}
+                </foreach>
+            </if>
+            <if test="params.examName != null and params.examName != ''">
+                and e.exam_name like concat('%', #{params.examName}, '%')
+            </if>
+        </where>
+        <if test="params.examineeId == null and params.studentId == null">
+            group by studentId
+        </if>
+    </select>
+
+    <select id="statistics" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.ExamStatistics">
+        select e.*, e.paper_score as totalScore,
+            ifnull(max(ifnull(es.score,0)),0) as highestScore,
+            ifnull(min(ifnull(es.score,0)),0) as lowestScore,
+            round(ifnull(avg(ifnull(es.score,0)),0) , 1) as avgScore,
+            count(distinct en.id) as examineeCount,
+            count(er.id) as submitCount,
+            sum(if(er.status = 2, 1, 0)) as correctCount
+        from exam e
+            left join examinee en on en.exam_id = e.id
+            left join examinee_score es on es.examinee_id = en.id
+            left join examinee_record er on (er.examinee_id = en.id and er.status in (1,2))
+        where e.id = #{examId}
+    </select>
+
+    <select id="markingPage" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.MarkingPageResponse">
+        select e.id exam_id, e.exam_name,
+            count(distinct er.examinee_id) submitPeopleCount,
+            sum(if(er.`status`=2, 1, 0)) correctedCopies,
+            sum(if(er.`status`=1, 1, 0)) unCorrectCount,
+            count(er.id) as totalCopies
+        from exam e
+            left join examinee en on e.id = en.exam_id
+            left join examinee_record er on en.id = er.examinee_id
+        where er.`status` in ( 1, 2 )
+        group by e.id
+        <if test="params.status != null">
+            <if test="params.status == 1">
+                having unCorrectCount  > 0
+            </if>
+            <if test="params.status == 2">
+                having unCorrectCount = 0
+            </if>
+        </if>
+        order by e.start_time desc
+    </select>
+
+    <select id="examRecordPage" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.MarkingExamRecordPageResponse">
+        select er.id examineeRecordId, er.`status` correctStatus, er.score, er.submit_time, en.user_id, er.examinee_id
+        from examinee_record er
+            left join examinee en on er.examinee_id = en.id
+        <where>
+            en.exam_id = #{params.examId}
+            <if test="params.status != null">
+                and er.status = #{params.status}
+            </if>
+            <if test="studentIdList != null and studentIdList.size() > 0">
+                and en.student_id in
+                <foreach collection="studentIdList" item="studentId" open="(" separator="," close=")">
+                    #{studentId}
+                </foreach>
+            </if>
+        </where>
+        order by er.submit_time desc
+    </select>
+
+    <select id="countCorrect" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.ExamStatistics">
+        select
+            sum(if(t.min_status=2, 1,0)) as correctCount,
+            sum(if(t.min_status=1, 1,0)) as unCorrectCount
+        from (
+            select er.examinee_id, min(er.status) as min_status
+            from exam e
+                left join examinee en on en.exam_id = e.id
+                right join examinee_record er on (er.examinee_id = en.id and er.status in (1,2))
+            where e.id = #{examId}
+            group by er.examinee_id
+        ) t
+    </select>
+    <select id="selectExamRuleByExamIdList" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.ExamRuleDTO">
+        select r.*, er.exam_id, r.id rule_id
+        from exam_rule er
+            left join rule r on er.rule_id = r.id
+        where er.exam_id in
+        <foreach collection="examIdList" item="examId" open="(" separator="," close=")">
+            #{examId}
+        </foreach>
+    </select>
+
+    <select id="selectExamRuleByExamIdListAndCode" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.ExamRuleDTO">
+        select r.*, er.exam_id, r.id rule_id
+        from exam_rule er
+        left join rule r on er.rule_id = r.id
+        where er.exam_id in
+        <foreach collection="examIdList" item="examId" open="(" separator="," close=")">
+            #{examId}
+        </foreach>
+        and r.code = #{ruleCode}
+    </select>
+
+    <select id="statisticsInExamByExamIdList" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.StatisticsInExam">
+        select e.id as exam_id,
+               count(distinct en.id) as examineeCount,
+               count(er.id) as submitCount
+        from exam e
+            left join examinee en on en.exam_id = e.id
+            left join examinee_record er on (er.examinee_id = en.id and er.status in (1,2))
+        where e.id in
+        <foreach collection="examIdList" item="examId" open="(" separator="," close=")">
+            #{examId}
+        </foreach>
+        group by e.id
+    </select>
+
+    <select id="statisticsAfterExamByExamIdList" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.StatisticsAfterExam">
+        select e.id as exam_id,
+               count(distinct en.id) as examineeCount,
+               count(er.id) as submitCount,
+               sum(if(er.status = 2, 1, 0)) as correctCount
+        from exam e
+            left join examinee en on en.exam_id = e.id
+            left join examinee_record er on (er.examinee_id = en.id and er.status in (1,2))
+        where e.id in
+        <foreach collection="examIdList" item="examId" open="(" separator="," close=")">
+            #{examId}
+        </foreach>
+        group by e.id
+    </select>
+
+    <select id="selectExamineeList" resultType="cn.qbs.wa.teach.exam.admin.pojo.api.ApiExamineeeListResponse">
+        select e.id examId, e.exam_name, en.user_id, en.student_id, ifnull(er.score, 0) score
+        from exam e
+            left join examinee en on e.id = en.exam_id
+            left join examinee_record er on (er.examinee_id = en.id and er.calculated = 1)
+        where e.id = #{params.examId}
+        <if test="params.searchStatus and params.searchStatus == 1">
+            and er.score &gt;= e.pass_score
+        </if>
+        <if test="params.searchStatus and params.searchStatus == 2">
+            and er.score &lt; e.pass_score
+        </if>
+    </select>
+
+    <resultMap id="DetailMap" type="cn.qbs.wa.teach.exam.admin.pojo.exam.ExamDetailResponse" extends="ExamMap">
+        <collection property="ruleIdList" ofType="long">
+            <result column="rule_id"/>
+        </collection>
+        <collection property="visibleUserList" ofType="cn.qbs.wa.teach.exam.admin.pojo.exam.VisibleUser">
+            <result property="id" column="evuId"/>
+            <result property="userId" column="user_id"/>
+            <result property="employeeId" column="employee_id"/>
+            <result property="studentId" column="student_id"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectTimeoutNotStarted" resultType="cn.qbs.wa.teach.exam.common.entity.Exam">
+        select * from exam
+        where enabled = 1 and shelf_status = 1 and start_time &lt;= now() and end_time &gt; now() and status &lt;&gt; #{status}
+        limit #{size}
+    </select>
+
+    <select id="selectTimeoutNotEnded" resultType="cn.qbs.wa.teach.exam.common.entity.Exam">
+        select * from exam
+        where enabled = 1 and shelf_status = 1 and end_time &lt;= now() and status &lt;&gt; #{status}
+        limit #{size}
+    </select>
+
+    <select id="selectCertRuleByExamineeId" resultMap="ExamAndCertMap">
+        SELECT e.*,tc.*,er.score,ex.user_id,ex.student_id FROM exam  e
+            LEFT JOIN examinee ex on  e.id  = ex.exam_id
+            LEFT JOIN examinee_record er on er.examinee_id = ex.id and er.calculated = 1 and er.enabled = 1
+            LEFT JOIN t_cert t on e.id  = t.exam_id
+            LEFT JOIN t_cert_rule tc on  tc.id =t.id
+        where ex.id = #{examineeId} and t.deleted = 0
+    </select>
+    <resultMap id="ExamAndCertMap" type="cn.qbs.wa.teach.exam.common.pojo.ExamAndCertDetailResponse">
+        <id property="id" column="id"/>
+        <result property="orgId" column="org_id" jdbcType="BIGINT"/>
+        <result property="studentId" column="student_id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="BIGINT"/>
+        <result property="examName" column="exam_name" jdbcType="BIGINT"/>
+        <result property="passScore" column="pass_score" jdbcType="DECIMAL"/>
+        <result property="score" column="score" jdbcType="DECIMAL"/>
+
+        <collection property="tCertRuleDetailResponseList"
+                    ofType="cn.qbs.wa.teach.exam.admin.pojo.tcertrule.TCertRuleDetailResponse">
+            <result property="certId" column="cert_id"/>
+            <result property="ruleCode" column="rule_code"/>
+            <result property="ruleValue" column="rule_value"/>
+        </collection>
+    </resultMap>
+</mapper>
+

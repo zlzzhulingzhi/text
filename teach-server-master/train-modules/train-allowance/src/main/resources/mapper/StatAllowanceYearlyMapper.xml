@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.allowance.mapper.StatAllowanceYearlyMapper">
+
+    <resultMap type="cn.qbs.wa.train.allowance.entity.StatAllowanceYearly" id="StatAllowanceYearlyMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="year" column="year" jdbcType="INTEGER"/>
+        <result property="totalLessonNum" column="total_lesson_num" jdbcType="INTEGER"/>
+        <result property="totalStudentNum" column="total_student_num" jdbcType="INTEGER"/>
+        <result property="totalActivityFee" column="total_activity_fee" jdbcType="VARCHAR"/>
+        <result property="totalCourseFee" column="total_course_fee" jdbcType="VARCHAR"/>
+        <result property="siteFundFee" column="site_fund_fee" jdbcType="VARCHAR"/>
+        <result property="mealFundFee" column="meal_fund_fee" jdbcType="VARCHAR"/>
+        <result property="roomFundFee" column="room_fund_fee" jdbcType="VARCHAR"/>
+        <result property="trafficFundFee" column="traffic_fund_fee" jdbcType="VARCHAR"/>
+        <result property="studyFundFee" column="study_fund_fee" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="selectByCategory" resultType="cn.qbs.wa.train.allowance.pojo.stat.StatAllowanceYearlyResponse">
+        SELECT *,"课程申请" as category from stat_allowance_yearly say
+        Union ALL
+        SELECT *,"活动申请" as category from stat_allowance_yearly say
+        order by `year`
+    </select>
+
+    <update id="refresh">
+        REPLACE INTO
+            stat_allowance_yearly(
+            `year`, `total_lesson_num`, `total_student_num`, `total_activity_fee`, `total_course_fee`, `site_fund_fee`,
+            `meal_fund_fee`, `room_fund_fee`, `traffic_fund_fee`, `study_fund_fee`, `create_time`, `update_time`
+            )
+        SELECT
+            `year`, SUM(`total_lesson_num`), SUM(`total_student_num`), SUM(`total_activity_fee`), SUM(`total_course_fee`),
+            SUM(`site_fund_fee`), SUM(`meal_fund_fee`), SUM(`room_fund_fee`), SUM(`traffic_fund_fee`), SUM(`study_fund_fee`),
+            NOW(), NOW()
+        FROM stat_allowance_monthly
+        GROUP BY `year`
+    </update>
+
+    <delete id="deleteAll">
+        DELETE FROM stat_allowance_yearly WHERE id >= 1
+    </delete>
+
+    <update id="replaceInsertBatch">
+        REPLACE INTO
+            stat_allowance_yearly(
+            `year`, `total_lesson_num`, `total_student_num`, `total_activity_fee`, `total_course_fee`, `site_fund_fee`,
+            `meal_fund_fee`, `room_fund_fee`, `traffic_fund_fee`, `study_fund_fee`, `create_time`, `update_time`
+            )
+        VALUES
+        <foreach collection="entities" item="entity" separator=",">
+            (
+                #{entity.year}, #{entity.totalLessonNum}, #{entity.totalStudentNum}, #{entity.totalActivityFee}, #{entity.totalCourseFee},
+                #{entity.siteFundFee}, #{entity.mealFundFee}, #{entity.roomFundFee}, #{entity.trafficFundFee}, #{entity.studyFundFee},
+                #{entity.createTime}, #{entity.updateTime}
+            )
+        </foreach>
+    </update>
+
+</mapper>
+

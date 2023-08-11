@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.question.mapper.PaperMapper">
+
+    <resultMap type="cn.qbs.wa.teach.question.entity.Paper" id="PaperMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="questionCount" column="question_count" jdbcType="INTEGER"/>
+        <result property="totalScore" column="total_score" jdbcType="VARCHAR"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into paper(name, question_count, total_score, enabled, remark, org_id, create_by, create_time, update_by, update_time, category_id)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.name}, #{entity.questionCount}, #{entity.totalScore}, #{entity.enabled}, #{entity.remark}, #{entity.orgId}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime}, #{entity.categoryId})
+        </foreach>
+    </insert>
+    
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into paper(name, question_count, total_score, enabled, remark, org_id, create_by, create_time, update_by, update_time, category_id)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.name}, #{entity.questionCount}, #{entity.totalScore}, #{entity.enabled}, #{entity.remark}, #{entity.orgId}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime}, #{entity.categoryId})
+        </foreach>
+        on duplicate key update
+        name = values(name) , question_count = values(question_count) , total_score = values(total_score) , enabled = values(enabled) , remark = values(remark) , org_id = values(org_id) , create_by = values(create_by) , create_time = values(create_time) , update_by = values(update_by) , update_time = values(update_time) , category_id = values(category_id)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.question.pojo.paper.PaperPageResponse">
+        select *
+        from paper
+        <where>
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultMap="PaperDetail">
+        select p.*, pqt.question_type_id as questionTypeId, qt.name as questionTypeName, pqt.sort_num, c.id as categoryId, c.name as categoryName
+        from paper p
+            left join paper_question_type pqt on p.id = pqt.paper_id
+            left join question_type qt on pqt.question_type_id = qt.id
+            left join paper_question pq on p.id = pq.paper_id
+            left join paper_category pc on p.id = pc.paper_id
+            left join category c on pc.category_id = c.id
+        where p.id = #{id}
+    </select>
+
+    <select id="selectListByQuestionId" resultType="cn.qbs.wa.teach.question.entity.Paper">
+        select p.*
+        from paper_question pq
+            left join paper p on pq.paper_id = p.id
+        where pq.question_id = #{questionId} and p.enabled = 1
+    </select>
+
+    <select id="selectPaper" resultType="cn.qbs.wa.teach.question.entity.Paper">
+        select * from paper
+        where enabled = 1
+        <if test="paperIdList != null and paperIdList.size() > 0">
+            and id in
+            <foreach collection="paperIdList" item="paperId" open="(" separator="," close=")">
+                #{paperId}
+            </foreach>
+        </if>
+        order by id
+        limit #{size}
+    </select>
+
+    <select id="pageId" resultType="java.lang.Long">
+        select p.id
+        from paper p
+            left join paper_category pc on p.id = pc.paper_id
+        <where>
+            <if test="param.categoryIds != null and param.categoryIds.size() > 0">
+                and pc.category_id in
+                <foreach collection="param.categoryIds" item="categoryId" open="(" separator="," close=")">
+                    #{categoryId}
+                </foreach>
+            </if>
+            <if test="param.keyword != null and param.keyword != '' ">
+                and p.name like concat('%', #{param.keyword}, '%')
+            </if>
+        </where>
+        order by p.id desc
+    </select>
+
+    <select id="selectByIdListAndOrder" resultMap="PaperSearchResultDetail">
+        select p.*, c.id as categoryId, c.name as categoryName
+        from paper p
+            left join paper_category pc on p.id = pc.paper_id
+            left join category c on pc.category_id = c.id
+        <where>
+            p.id in
+            <foreach collection="paperIdList" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
+        order by field(p.id, <foreach collection="paperIdList" item="id" open="" separator="," close="">#{id}</foreach>)
+    </select>
+
+    <resultMap id="PaperDetail" type="cn.qbs.wa.teach.question.pojo.paper.PaperDetailResponse" extends="PaperMap">
+        <collection property="questionTypeList" ofType="cn.qbs.wa.teach.question.pojo.question.QuestionGroupResponse">
+            <id property="questionTypeId" column="questionTypeId"/>
+            <result property="questionTypeName" column="questionTypeName"/>
+            <result property="sortNum" column="sort_num"/>
+        </collection>
+        <collection property="categoryList" ofType="cn.qbs.wa.teach.question.pojo.category.SimpleCategoryDTO">
+            <result property="id" column="categoryId"/>
+            <result property="name" column="categoryName"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="PaperSearchResultDetail" type="cn.qbs.wa.teach.question.pojo.paper.PaperSearchResult" extends="PaperMap">
+        <result property="originalName" column="name"/>
+        <collection property="categoryList" ofType="cn.qbs.wa.teach.question.pojo.category.SimpleCategoryDTO">
+            <result property="id" column="categoryId"/>
+            <result property="name" column="categoryName"/>
+        </collection>
+    </resultMap>
+
+</mapper>
+

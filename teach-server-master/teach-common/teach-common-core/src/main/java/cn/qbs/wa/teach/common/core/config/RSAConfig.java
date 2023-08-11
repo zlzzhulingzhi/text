@@ -1,0 +1,15 @@
+package cn.qbs.wa.teach.common.core.config;
+
+/**
+ * TODO
+ *
+ * @author vieux
+ * @version 1.0
+ * @date 2022/6/8 17:11
+ */
+public class RSAConfig {
+
+    public static final String privateKey="MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAJxfPmDmE0YA6AU5WGJhjyliWsfeBeYeRhEGqoQexVoqqN1j09BuR9Jv1WQPvxVjAXJNLMxmfl7UDlddcNNQvc97N+Uxz8aO+x4Hzs5DdrpcMfDm1VeImu5zvag30YoS+HlONBTOLZLWxMdeDy90P+eJfD4r+JytAV3NKnLU9ZzpAgMBAAECgYAkC1ZDGrWVnM7eqWXEo61OwkOfr39XmGHZOdqjQr6F9rBe+8xOzqTSjoG3I2QN53jlYoGxieyWKjY2EC1aIFHn/cUqYnlBlItC14EKnfwsBmCMqVVyAkZ3yWsh+WUZQh3MU4C5/ZYu4Q50sLk0r8AFdq7zWbmI9keX7QfCHg2w0wJBAMrkyrHwxrtrEmdMrQe4RJxNCNe/YrKZfylbwP31/TY7BP89R+NOcU80Q1J6WPOQqFBNTo+ih89ED+4YYa9vcCcCQQDFTTHxQbgnvOVXN6PdJQK3idG3lwfp71XBHCMN+3dR30wSngKbTjkskusCGgd8oX/2ovEOf0ziraruHaW1vaRvAkAHTAUyMxuin+4wguRyM6FcEbUwtTRigfy9ywv81jz+F09NsrGELk0K8TE+pSHP2LME+FLL/aduv97mzD+vJI3fAkEAlBp1Ud9+SD4Qfd7jX36HwpRu23xA0Yb5/UKMwdMw50FSTmtUE5atbls+k85MLm7gqpf3kWVXppSsyZ9xo7IeewJAF4AHN5YpsB8OanHDYOIB5Np/1Fzc+D8HE0tQjUsGdYGk8fqg3JcMAGbgXpzZh0AEb0NQLuBTdU990ojAUlvWEQ==";
+
+    public static final String publicKey="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCcXz5g5hNGAOgFOVhiYY8pYlrH3gXmHkYRBqqEHsVaKqjdY9PQbkfSb9VkD78VYwFyTSzMZn5e1A5XXXDTUL3PezflMc/GjvseB87OQ3a6XDHw5tVXiJruc72oN9GKEvh5TjQUzi2S1sTHXg8vdD/niXw+K/icrQFdzSpy1PWc6QIDAQAB";
+}

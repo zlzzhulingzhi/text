@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.CourseInnerMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.Course" id="courseMap">
+        <result property="id" column="id" jdbcType="BIGINT"/>
+        <result property="orgId" column="org_id" jdbcType="BIGINT"/>
+        <result property="courseName" column="course_name" jdbcType="VARCHAR"/>
+        <result property="shelfStatus" column="shelf_status" jdbcType="INTEGER"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <resultMap id="courseDetailResultMap" type="cn.qbs.wa.teach.course.standard.pojo.courseinfo.CourseInfoDetailResponse">
+        <result column="course_id" property="courseId" />
+        <result column="org_id" property="orgId" />
+        <result column="course_name" property="courseName" />
+        <result column="introduction" property="introduction" />
+        <result column="shelf_status" property="shelfStatus" />
+        <collection property="lecturers" ofType="cn.qbs.wa.teach.course.standard.pojo.dto.CourseLecturerDTO">
+            <id column="course_lecturer_id" property="id" />
+            <result column="lecturer_id" property="lecturerId" />
+            <result column="lecturer_name" property="lecturerName" />
+        </collection>
+    </resultMap>
+
+    <select id="getById" resultMap="courseMap">
+        select id, org_id, course_name, shelf_status, enabled
+        from course
+        where id = #{courseId}
+    </select>
+
+    <select id="getCourseLesson" resultType="cn.qbs.wa.teach.course.common.entity.CourseLesson">
+        select *
+        from course_lesson
+        WHERE course_id = #{courseId}
+    </select>
+
+    <select id="courseInfo" resultMap="courseDetailResultMap">
+        SELECT
+            co.id, co.course_name, co.introduction, co.shelf_status,
+            cl.id AS course_lecturer_id, cl.lecturer_id, cl.lecturer_name
+        FROM
+            course co
+            LEFT JOIN course_lecturer cl ON cl.course_id = co.id
+        WHERE co.id = #{courseId} AND co.deleted = 0
+    </select>
+
+    <select id="getCourseList" resultType="cn.qbs.wa.teach.course.standard.pojo.course.CoursePageResponse">
+        SELECT
+        co.id, co.course_name, co.cover_url, co.shelf_status, co.shelf_time, co.create_by, co.create_time,
+        ca.id AS category_id, ca.category_name, co.plan, ci.sign_up_limit, IFNULL(cso.sign_up_num, 0) AS sign_up_num
+        FROM
+        course co
+        INNER JOIN course_info ci ON ci.course_id = co.id
+        INNER JOIN course_category cc ON cc.course_id = co.id
+        INNER JOIN category ca ON ca.id = cc.category_id
+        LEFT JOIN course_statistic_overview cso ON cso.course_id = co.id
+        <where>
+            co.deleted = 0
+            <if test="params.orgId != null">
+                AND co.org_id = #{params.orgId}
+            </if>
+            <if test="params.plan != null">
+                AND co.plan = #{params.plan}
+            </if>
+            <if test="params.shelfStatus != null">
+                AND co.shelf_status = #{params.shelfStatus}
+            </if>
+            <if test="params.courseType != null and params.courseType != ''">
+                AND co.course_type = #{params.courseType}
+            </if>
+            <if test="params.categoryId != null">
+                AND ca.id = #{params.categoryId}
+            </if>
+            <if test="params.courseName != null and params.courseName != '' ">
+                AND co.course_name like concat('%', #{params.courseName}, '%')
+            </if>
+            <if test="params.idList!=null and params.idList.size()>0">
+                and co.id in
+                <foreach collection="params.idList" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="params.categoryIdList != null and params.categoryIdList.size > 0">
+                AND ca.id IN
+                <foreach collection="params.categoryIdList" item="categoryId" open="(" separator="," close=")">
+                    #{categoryId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="listByIds" resultMap="courseMap">
+        SELECT id, org_id, course_name
+        FROM course
+        WHERE id IN
+        <foreach collection="courseIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+</mapper>
+

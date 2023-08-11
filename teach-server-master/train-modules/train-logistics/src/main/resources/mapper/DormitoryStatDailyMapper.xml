@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.DormitoryStatDailyMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.DormitoryStatDaily" id="DormitoryStatDailyMap">
+        <result property="id" column="id" jdbcType="BIGINT"/>
+        <result property="dormitoryStatImportId" column="dormitory_stat_import_id" jdbcType="INTEGER"/>
+        <result property="day" column="day" jdbcType="TIMESTAMP"/>
+        <result property="roomTypeCode" column="room_type_code" jdbcType="VARCHAR"/>
+        <result property="free" column="free" jdbcType="INTEGER"/>
+    </resultMap>
+
+</mapper>
+

@@ -1,0 +1,18 @@
+{
+  "global": {
+    "$--color-primary": "#C63636",
+    "$--color-success": "#13C97F",
+    "$--color-warning": "#FE993A",
+    "$--color-danger": "#FF4B5B",
+    "$--background-color-base": "#F8FAFC",
+    "$--color-text-placeholder": "#999999",
+    "$--color-text-primary": "#333333",
+    "$--color-text-regular": "#666666",
+    "$--color-text-secondary": "#999999",
+    "$--border-color-base": "#CCCCCC",
+    "$--border-color-light": "#CCCCCC",
+    "$--border-color-lighter": "#CCCCCC",
+    "$--border-color-extra-light": "#CCCCCC"
+  },
+  "local": {}
+}

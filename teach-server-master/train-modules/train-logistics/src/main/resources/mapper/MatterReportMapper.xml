@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.MatterReportMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.MatterReport" id="MatterReportMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="category" column="category" jdbcType="INTEGER"/>
+        <result property="description" column="description" jdbcType="VARCHAR"/>
+        <result property="contactPerson" column="contact_person" jdbcType="VARCHAR"/>
+        <result property="contactNumber" column="contact_number" jdbcType="VARCHAR"/>
+        <result property="classroomId" column="classroom_id" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="detail" resultType="cn.qbs.wa.train.logistics.pojo.matter.LiteMatterReportResponse">
+        SELECT
+            mr.id, mr.org_id, mr.category, mr.description, mr.contact_person, mr.contact_number, mr.classroom_id, mr.create_time,
+            o.`name` AS org_name, c.building, c.floor, c.room_no, c.room_type
+        FROM
+            matter_report mr
+            INNER JOIN organization o ON o.id = mr.org_id
+            LEFT JOIN classroom c ON c.id = mr.classroom_id
+        WHERE mr.id = #{id}
+    </select>
+
+    <select id="page" resultType="cn.qbs.wa.train.logistics.pojo.matter.LiteMatterReportResponse">
+        SELECT
+            mr.id, o.`name` AS org_name, mr.category, mr.description, mr.create_time
+        FROM
+            matter_report mr
+            INNER JOIN organization o ON o.id = mr.org_id
+        <where>
+            <if test="params.orgId != null">
+                AND mr.org_id = #{params.orgId}
+            </if>
+            <if test="params.category != null">
+                AND mr.category = #{params.category}
+            </if>
+            <if test="params.classroomId != null">
+                AND mr.classroom_id = #{params.classroomId}
+            </if>
+            <if test="params.reportDate != null">
+                AND DATE_FORMAT(mr.create_time, '%Y-%m-%d') = #{params.reportDate}
+            </if>
+        </where>
+        ORDER BY mr.id DESC
+    </select>
+
+    <select id="pageMatterReport" resultType="cn.qbs.wa.train.logistics.pojo.matter.MatterReportResponse">
+        SELECT
+        mr.id, o.`name` AS org_name, mr.category, mr.description, mr.create_time
+        FROM
+        matter_report mr
+        INNER JOIN organization o ON o.id = mr.org_id
+        LEFT JOIN classroom c ON c.id = mr.classroom_id
+        <where>
+            <if test="params.orgName != null and params.orgName != '' ">
+                and o.`name` like concat('%', #{params.orgName}, '%')
+            </if>
+            <if test="params.roomNo != null and params.roomNo != '' " >
+                AND c.room_no = #{params.roomNo}
+            </if>
+            <if test="params.orgId != null">
+                AND mr.org_id = #{params.orgId}
+            </if>
+            <if test="params.category != null">
+                AND mr.category = #{params.category}
+            </if>
+            <if test="params.classroomId != null">
+                AND mr.classroom_id = #{params.classroomId}
+            </if>
+            <if test="params.reportDate != null">
+                AND DATE_FORMAT(mr.create_time, '%Y-%m-%d') = #{params.reportDate}
+            </if>
+        </where>
+        ORDER BY mr.id DESC
+    </select>
+
+    <select id="manageDetail" resultType="cn.qbs.wa.train.logistics.pojo.matter.MatterReportResponse">
+        SELECT
+            mr.id, mr.org_id, mr.category, mr.description, mr.contact_person, mr.contact_number, mr.classroom_id, mr.create_time,mr.create_by,
+            o.`name` AS org_name, c.building, c.floor, c.room_no, c.room_type
+        FROM
+            matter_report mr
+                INNER JOIN organization o ON o.id = mr.org_id
+                LEFT JOIN classroom c ON c.id = mr.classroom_id
+        WHERE mr.id = #{id}
+    </select>
+
+    <select id="listMatterReportClassroom" resultType="cn.qbs.wa.train.logistics.entity.Classroom">
+        SELECT
+        DISTINCT c.id, c.building, c.floor, c.room_no, c.room_type
+        FROM
+        matter_report mr
+        INNER JOIN classroom c ON c.id = mr.classroom_id
+        <where>
+            <if test="orgId != null">
+                AND mr.org_id = #{orgId}
+            </if>
+        </where>
+    </select>
+
+    <select id="listMatterReportOrg" resultType="cn.qbs.wa.train.logistics.entity.Organization">
+        SELECT
+            DISTINCT o.id, o.`name`
+        FROM
+            matter_report mr
+                INNER JOIN organization o ON o.id = mr.org_id
+    </select>
+
+</mapper>
+

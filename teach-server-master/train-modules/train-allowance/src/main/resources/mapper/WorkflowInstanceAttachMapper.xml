@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.allowance.mapper.WorkflowInstanceAttachMapper">
+
+    <resultMap type="cn.qbs.wa.train.allowance.entity.WorkflowInstanceAttach" id="WorkflowInstanceAttachMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="instanceNodeId" column="instance_node_id" jdbcType="INTEGER"/>
+        <result property="processNo" column="process_no" jdbcType="VARCHAR"/>
+        <result property="attachName" column="attach_name" jdbcType="VARCHAR"/>
+        <result property="attachUrl" column="attach_url" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+</mapper>
+

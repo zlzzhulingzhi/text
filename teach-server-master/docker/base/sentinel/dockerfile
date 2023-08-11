@@ -1,0 +1,11 @@
+FROM adoptopenjdk/openjdk8:jre
+# 挂载目录
+VOLUME /mydata/base
+# 创建目录
+WORKDIR /mydata/base
+RUN mkdir -p /mydata/base
+
+# 复制jar文件到路径
+COPY ./sentinel.jar /mydata/base/sentinel.jar
+
+ENTRYPOINT ["java", "-Dserver.port=9405","-Dcsp.sentinel.dashboard.server=localhost:9405","-Dsentinel.dashboard.auth.username=wa","-Dsentinel.dashboard.auth.password=hSGLVPGG","-jar","sentinel.jar"]

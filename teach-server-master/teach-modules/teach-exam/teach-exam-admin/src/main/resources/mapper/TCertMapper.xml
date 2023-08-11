@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.exam.admin.mapper.TCertMapper">
+
+    <resultMap type="cn.qbs.wa.teach.exam.common.entity.TCert" id="TCertMap">
+        <result property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="examId" column="exam_id" jdbcType="INTEGER"/>
+        <result property="deleted" column="deleted" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into t_cert(org_id, exam_id, deleted, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.examId}, #{entity.deleted}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+    </insert>
+    
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into t_cert(org_id, exam_id, deleted, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.examId}, #{entity.deleted}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , exam_id = values(exam_id) , deleted = values(deleted) , create_by = values(create_by) , create_time = values(create_time)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.exam.admin.pojo.tcert.TCertPageResponse">
+        select *
+        from t_cert
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.exam.admin.pojo.tcert.TCertDetailResponse">
+        select *
+        from t_cert
+        where id = #{id}
+    </select>
+    <select id="certDetail" resultType="cn.qbs.wa.teach.exam.admin.pojo.tcert.TCertDetailResponse">
+        select *
+        from t_cert t left join t_cert_rule tc on  tc.id = t.id
+        where  t.exam_id = #{examId} and t.deleted = 0
+        <if test="certId != null and certId != '' ">
+            and tc.cert_id = #{certId}
+        </if>
+    </select>
+
+    <select id="certList" resultType="cn.qbs.wa.teach.exam.admin.pojo.tcert.CertDetailResponse">
+        select *
+        from t_cert t left join t_cert_rule tc on  tc.id = t.id
+        where  t.exam_id = #{examId} and t.deleted = 0
+        <if test="certId != null and certId != '' ">
+            and tc.cert_id = #{certId}
+        </if>
+    </select>
+
+    <select id="awardRecordPage" resultType="cn.qbs.wa.teach.exam.admin.pojo.tcert.CertDetailResponse">
+        select tc.cert_id, tc.id, tc.rule_value, tc.rule_code, t.exam_id
+        from t_cert t
+                 left join t_cert_rule tc on t.id = tc.id
+        where t.deleted = 0
+          and t.id = #{id}
+    </select>
+</mapper>
+

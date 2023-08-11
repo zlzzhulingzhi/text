@@ -1,0 +1,24 @@
+
+# Spring
+spring:
+  cloud:
+    nacos:
+      discovery:
+        # 服务注册地址
+        server-addr: 111.230.230.132:8848
+        namespace: train_dev
+      config:
+        # 配置中心地址
+        server-addr: 111.230.230.132:8848
+        # 配置文件格式
+        file-extension: yml
+        # 命名空间
+        namespace: train_dev
+        shared-configs:
+          - data-id: teach-tencent.yml
+          - data-id: teach-common.yml
+
+  datasource:
+    url: jdbc:mysql://111.230.230.132:3306/train_teach_organization?characterEncoding=UTF8&allowMultiQueries=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: OucTr4LI

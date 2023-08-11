@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.AppCourseMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.Course" id="CourseMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="courseName" column="course_name" jdbcType="VARCHAR"/>
+        <result property="coverUrl" column="cover_url" jdbcType="VARCHAR"/>
+        <result property="introduction" column="introduction" jdbcType="VARCHAR"/>
+        <result property="shelfStatus" column="shelf_status" jdbcType="INTEGER"/>
+        <result property="shelfTime" column="shelf_time" jdbcType="TIMESTAMP"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="deleted" column="deleted" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course(org_id, course_name, cover_url, introduction, shelf_status, sort, enabled, deleted, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.courseName}, #{entity.coverUrl}, #{entity.introduction}, #{entity.shelfStatus}, #{entity.sort}, #{entity.enabled}, #{entity.deleted}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course(org_id, course_name, cover_url, introduction, shelf_status, sort, enabled, deleted, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.courseName}, #{entity.coverUrl}, #{entity.introduction}, #{entity.shelfStatus}, #{entity.sort}, #{entity.enabled}, #{entity.deleted}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , course_name = values(course_name) , cover_url = values(cover_url) , introduction = values(introduction) , shelf_status = values(shelf_status) , sort = values(sort) , enabled = values(enabled) , deleted = values(deleted) , create_by = values(create_by) , create_time = values(create_time) , update_by = values(update_by) , update_time = values(update_time)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.course.standard.pojo.course.CoursePageResponse">
+        SELECT
+            co.id, co.course_name, co.cover_url, co.shelf_status, co.shelf_time, co.create_by, co.create_time,
+            ca.id AS category_id, ca.category_name, IFNULL(cso.sign_up_num, 0) AS sign_up_num, co.course_type,
+            ci.sign_up_limit, ci.course_price, ci.start_time, ci.end_time
+        FROM
+            course co
+            INNER JOIN course_info ci ON ci.course_id = co.id
+            INNER JOIN course_category cc ON cc.course_id = co.id
+            INNER JOIN category ca ON ca.id = cc.category_id
+            LEFT JOIN course_statistic_overview cso ON cso.course_id = co.id
+        <where>
+            co.deleted = 0
+            <if test="params.shelfStatus != null">
+                AND co.shelf_status = #{params.shelfStatus}
+            </if>
+            <if test="params.courseType != null and params.courseType != ''">
+                AND co.course_type = #{params.courseType}
+            </if>
+            <if test="params.categoryId != null">
+                AND ca.id = #{params.categoryId}
+            </if>
+            <if test="params.courseName != null and params.courseName != '' ">
+                AND co.course_name like concat('%', #{params.courseName}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="selectByIdWithoutOrg" resultMap="CourseMap">
+        select * from course where id = #{id}
+    </select>
+
+    <select id="selectDetailById" resultMap="courseDetailResultMap">
+        SELECT
+            co.id, co.org_id, co.course_name, co.course_type, co.introduction, co.cover_url, co.shelf_status, co.shelf_time, co.create_by, co.create_time,
+            ci.user_visible_status, ci.playback_speed, ci.playback_drag, ci.sign_up_limit, ci.course_price, ci.course_points, ci.start_time, ci.end_time, ci.course_manage,
+            cl.id AS course_lecturer_id, cl.lecturer_id, cl.lecturer_name, cl.lecturer_head_img_url, cl.lecturer_intro
+        FROM
+            course co
+            INNER JOIN course_info ci ON ci.course_id = co.id
+            LEFT JOIN course_lecturer cl ON cl.course_id = co.id
+        where co.id = #{id} and co.deleted = 0
+    </select>
+
+    <select id="selectContentById" resultMap="courseContentResultMap">
+        SELECT
+            chapter.id, chapter.course_id, chapter.chapter_name, chapter.sort AS chapter_sort, chapter.introduction AS chapter_introduction, chapter.lesson_num,
+            lesson.chapter_id, lesson.lesson_name, lesson.sort AS lesson_sort, lesson.introduction AS lesson_introduction, lesson.id AS lesson_id,
+            comp.lesson_id AS comp_lesson_id, comp.component_name, attach.component_id, attach.resource_file_id, attach.resource_file_path, attach.resource_file_name,
+            attach.resource_file_type, attach.resource_file_size, attach.resource_file_duration, comp.component_type_code, comp.sort AS comp_sort
+        FROM
+            course_chapter chapter
+            LEFT JOIN course_lesson lesson ON lesson.chapter_id = chapter.id
+            LEFT JOIN course_component comp ON comp.lesson_id = lesson.id
+            LEFT JOIN course_component_attachment attach ON attach.component_id = comp.id
+        WHERE chapter.course_id = #{courseId, jdbcType=BIGINT}
+        order by comp_sort
+    </select>
+
+    <select id="shopSelectContentById" resultMap="courseContentResultMap">
+        SELECT
+            chapter.id, chapter.course_id, chapter.chapter_name, chapter.sort AS chapter_sort, chapter.introduction AS chapter_introduction, chapter.lesson_num,
+            lesson.chapter_id, lesson.lesson_name, lesson.sort AS lesson_sort, lesson.introduction AS lesson_introduction, lesson.id AS lesson_id,
+            comp.lesson_id AS comp_lesson_id, comp.component_name, attach.component_id, attach.resource_file_id, attach.resource_file_path, attach.resource_file_name,
+            attach.resource_file_type, attach.resource_file_size, attach.resource_file_duration, comp.component_type_code, comp.sort AS comp_sort
+        FROM
+            course_chapter chapter
+                LEFT JOIN course_lesson lesson ON lesson.chapter_id = chapter.id
+                LEFT JOIN course_component comp ON comp.lesson_id = lesson.id
+                LEFT JOIN course_component_attachment attach ON attach.component_id = comp.id
+        WHERE chapter.course_id = #{courseId, jdbcType=BIGINT}
+    </select>
+
+    <resultMap id="courseContentResultMap" type="cn.qbs.wa.teach.course.standard.pojo.dto.CourseChapterDTO">
+        <id column="id" property="chapterId" />
+        <result column="course_id" property="courseId" />
+        <result column="chapter_name" property="chapterName" />
+        <result column="chapter_introduction" property="introduction" />
+        <result column="lesson_num" property="lessonNum" />
+        <result column="chapter_sort" property="sort" />
+        <collection property="lessonList" ofType="cn.qbs.wa.teach.course.standard.pojo.dto.CourseLessonDTO">
+            <id column="lesson_id" property="lessonId" />
+            <result column="lesson_name" property="lessonName" />
+            <result column="lesson_introduction" property="introduction" />
+            <result column="lesson_sort" property="sort" />
+            <result column="chapter_id" property="chapterId" />
+            <collection property="componentList" ofType="cn.qbs.wa.teach.course.standard.pojo.dto.CourseComponentDTO">
+                <id column="component_id" property="componentId"/>
+                <result column="comp_lesson_id" property="lessonId" />
+                <result column="component_name" property="componentName" />
+                <result column="component_type_code" property="componentTypeCode" />
+                <result column="comp_sort" property="sort" />
+                <result column="resource_file_id" property="resourceFileId" />
+                <result column="resource_file_name" property="resourceFileName" />
+                <result column="resource_file_path" property="resourceFilePath" />
+                <result column="resource_file_type" property="resourceFileType" />
+                <result column="resource_file_size" property="resourceFileSize" />
+                <result column="resource_file_duration" property="resourceFileDuration" />
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="pageInnerCourse" resultType="cn.qbs.wa.teach.course.standard.pojo.dto.app.PageCourseVO">
+        SELECT DISTINCT
+            co.id, co.course_name, co.cover_url, co.shelf_status, co.shelf_time, co.create_by, co.create_time,
+            IFNULL(cso.sign_up_num, 0) sign_up_num, cso.lesson_num, cso.views, ci.course_points, cso.score, co.course_type,
+            ci.sign_up_limit, ci.course_price, ci.start_time, ci.end_time, ci.course_manage, ci.gooded, ci.virtual_status, ci.virtual_sign_up_num
+        FROM
+            course co
+            INNER JOIN course_info ci ON ci.course_id = co.id
+            INNER JOIN course_category cc ON cc.course_id = co.id
+            LEFT JOIN course_user_visible cuv ON cuv.course_id = co.id
+            LEFT JOIN course_statistic_overview cso ON cso.course_id = co.id
+            LEFT JOIN course_user_dept_visible cud ON cud.course_id = co.id
+            LEFT JOIN course_user_group_visible cug ON cug.course_id = co.id
+        <where>
+            <choose>
+                <when test="params.courseIds != null and params.courseIds.size() != 0">
+                    co.id IN
+                    <foreach collection="params.courseIds" item="id" open="(" close=")" separator=",">
+                        #{id, jdbcType=BIGINT}
+                    </foreach>
+                </when>
+                <otherwise>
+                    co.deleted = 0 AND co.shelf_status = 1
+                    AND (ci.user_visible_status = 1 OR (ci.user_visible_status = 2 AND cuv.user_id = #{params.userId})
+                    <if test="params.deptIds != null and params.deptIds.size() > 0">
+                        OR ( ci.user_visible_status = 2 AND
+                        cud.dept_id IN
+                        <foreach collection="params.deptIds" item="deptId" open="(" close=")" separator=",">
+                            #{deptId}
+                        </foreach>
+                        )
+                    </if>
+
+                    <if test="params.groupIds != null and params.groupIds.size() != 0">
+                        OR cug.group_id IN
+                        <foreach collection="params.groupIds" item="groupId" open="(" close=")" separator=",">
+                            #{groupId,jdbcType=BIGINT}
+                        </foreach>
+                    </if>
+                    )
+                    <if test="params.courseType != null and params.courseType != ''">
+                        AND co.course_type = #{params.courseType}
+                    </if>
+                    <if test="params.courseName != null and params.courseName != '' ">
+                        AND co.course_name like concat('%', #{params.courseName}, '%')
+                    </if>
+                    <if test="params.categoryIds != null and params.categoryIds.size() != 0">
+                        AND cc.category_id IN
+                        <foreach collection="params.categoryIds" item="categoryId" open="(" close=")" separator=",">
+                            #{categoryId, jdbcType=BIGINT}
+                        </foreach>
+                    </if>
+                    <if test="params.ignoreCourseIds != null and params.ignoreCourseIds.size() != 0">
+                        AND co.id NOT IN
+                        <foreach collection="params.ignoreCourseIds" item="id" open="(" close=")" separator=",">
+                            #{id, jdbcType=BIGINT}
+                        </foreach>
+                    </if>
+                    <if test="params.gooded != null">
+                        AND ci.gooded = #{params.gooded}
+                    </if>
+                    <if test="params.free == true">
+                        AND ci.course_price = 0
+                    </if>
+                </otherwise>
+            </choose>
+        </where>
+        <if test="params.sortField == null or params.sortField == ''">
+            ORDER BY sign_up_num DESC, co.id DESC
+        </if>
+    </select>
+
+    <select id="pageInnerCourseSignUp" resultType="cn.qbs.wa.teach.course.standard.pojo.dto.app.PageCourseVO">
+        SELECT DISTINCT
+            co.id, co.course_name, co.cover_url, co.shelf_status, co.shelf_time, co.create_by, co.create_time,
+            IFNULL(cso.sign_up_num, 0) sign_up_num, cso.lesson_num, cso.views, ci.course_points, cso.score, co.course_type,
+            ci.sign_up_limit, ci.course_price, ci.start_time, ci.end_time, ci.course_manage, ci.gooded
+        FROM
+            course co
+            INNER JOIN course_info ci ON ci.course_id = co.id
+            INNER JOIN course_category cc ON cc.course_id = co.id
+            LEFT JOIN course_user_visible cuv ON cuv.course_id = co.id
+            LEFT JOIN course_statistic_overview cso ON cso.course_id = co.id
+            LEFT JOIN course_user_dept_visible cud ON cud.course_id = co.id
+            LEFT JOIN course_user_group_visible cug ON cug.course_id = co.id
+        <where>
+            co.deleted = 0 AND co.shelf_status = 1
+            <choose>
+                <when test="params.isSignUp == true">
+                    AND co.id IN
+                    <foreach collection="params.courseIds" item="id" open="(" close=")" separator=",">
+                        #{id, jdbcType=BIGINT}
+                    </foreach>
+                </when>
+                <otherwise>
+                    AND (ci.user_visible_status = 1 OR (ci.user_visible_status = 2 AND cuv.user_id = #{params.userId})
+                    <if test="params.deptIds != null and params.deptIds.size() > 0">
+                        OR ( ci.user_visible_status = 2 AND
+                        cud.dept_id IN
+                        <foreach collection="params.deptIds" item="deptId" open="(" close=")" separator=",">
+                            #{deptId}
+                        </foreach>
+                        )
+                    </if>
+
+                    <if test="params.groupIds != null and params.groupIds.size() != 0">
+                        OR cug.group_id IN
+                        <foreach collection="params.groupIds" item="groupId" open="(" close=")" separator=",">
+                            #{groupId,jdbcType=BIGINT}
+                        </foreach>
+                    </if>
+                    )
+                    AND co.id NOT IN
+                    <foreach collection="params.courseIds" item="id" open="(" close=")" separator=",">
+                        #{id, jdbcType=BIGINT}
+                    </foreach>
+                </otherwise>
+            </choose>
+            <if test="params.categoryIds != null and params.categoryIds.size() != 0">
+                AND cc.category_id IN
+                <foreach collection="params.categoryIds" item="categoryId" open="(" close=")" separator=",">
+                    #{categoryId, jdbcType=BIGINT}
+                </foreach>
+            </if>
+            <if test="params.courseType != null and params.courseType != ''">
+                AND co.course_type = #{params.courseType}
+            </if>
+            <if test="params.courseName != null and params.courseName != '' ">
+                AND co.course_name like concat('%', #{params.courseName}, '%')
+            </if>
+        </where>
+        <if test="params.sortField == null or params.sortField == ''">
+            ORDER BY sign_up_num DESC, co.id DESC
+        </if>
+    </select>
+
+    <select id="pageRecommendCourse" resultType="cn.qbs.wa.teach.course.standard.pojo.dto.app.PageCourseVO">
+        SELECT DISTINCT
+            co.id, co.course_name, co.cover_url, co.shelf_time, co.create_by, co.create_time,
+            IFNULL(cso.sign_up_num, 0) sign_up_num, cso.lesson_num, ci.course_points, cso.score, co.course_type,
+            ci.sign_up_limit, ci.course_price, ci.start_time, ci.end_time, ci.course_manage
+        FROM
+            course co
+            INNER JOIN course_info ci ON ci.course_id = co.id
+            INNER JOIN course_lecturer cl ON cl.course_id = co.id
+            LEFT JOIN course_user_visible cuv ON cuv.course_id = co.id
+            LEFT JOIN course_statistic_overview cso ON cso.course_id = co.id
+        <where>
+            co.deleted = 0 AND co.shelf_status = 1
+            AND (ci.user_visible_status = 1 OR (ci.user_visible_status = 2 AND cuv.user_id = #{params.userId}))
+            <if test="params.lecturerIds!= null and params.lecturerIds.size() != 0">
+                AND cl.lecturer_id IN
+                <foreach collection="params.lecturerIds" item="lecturerId" open="(" close=")" separator=",">
+                    #{lecturerId, jdbcType=BIGINT}
+                </foreach>
+            </if>
+            <if test="params.courseType != null and params.courseType != ''">
+                AND co.course_type = #{params.courseType}
+            </if>
+            <if test="params.courseName != null and params.courseName != '' ">
+                AND co.course_name like concat('%', #{params.courseName}, '%')
+            </if>
+        </where>
+        ORDER BY sign_up_num DESC
+    </select>
+
+    <select id="selectDetailByCourseId" resultMap="courseDetailResultMap">
+        SELECT
+            co.org_id, co.course_name, co.cover_url, co.course_type, co.introduction,co.shelf_status, ci.*,
+            cso.score, cso.sign_up_num, cso.lesson_num, cso.views, cso.study_total_num,
+            cl.id AS course_lecturer_id, cl.lecturer_id
+        FROM
+            course co
+            INNER JOIN course_info ci ON ci.course_id = co.id
+            INNER JOIN course_statistic_overview cso ON cso.course_id = co.id
+            INNER JOIN course_lecturer cl ON cl.course_id = co.id
+        WHERE co.id = #{courseId} AND co.deleted = 0
+    </select>
+
+    <resultMap id="courseDetailResultMap" type="cn.qbs.wa.teach.course.standard.pojo.dto.CourseInfoDTO">
+        <result column="org_id" property="orgId" />
+        <result column="course_id" property="courseId" />
+        <result column="course_name" property="courseName" />
+        <result column="cover_url" property="coverUrl" />
+        <result column="introduction" property="introduction" />
+        <result column="course_type" property="courseType" />
+        <result column="shelf_status" property="shelfStatus" />
+        <result column="playback_speed" property="playbackSpeed" />
+        <result column="playback_drag" property="playbackDrag"/>
+        <result column="course_points" property="coursePoints" />
+        <result column="course_duration" property="courseDuration" />
+        <result column="course_manage" property="courseManage" />
+        <result column="course_mode" property="courseMode" />
+        <result column="score" property="score"/>
+        <result column="learningRate" property="learningRate"/>
+        <result column="sign_up_num" property="signUpNum"/>
+        <result column="course_price" property="coursePrice" />
+        <result column="sign_up_limit" property="signUpLimit" />
+        <result column="lesson_num" property="lessonNum"/>
+        <result column="study_total_num" property="studyTotalNum"/>
+        <result column="user_visible_status" property="userVisibleStatus"/>
+        <result property="virtualStatus" column="virtual_status" jdbcType="INTEGER"/>
+        <result property="virtualSignUpNum" column="virtual_sign_up_num" jdbcType="INTEGER"/>
+        <result property="signUpAuthType" column="sign_up_auth_type" jdbcType="INTEGER"/>
+        <result property="signUpAuthValue" column="sign_up_auth_value" jdbcType="VARCHAR"/>
+        <collection property="lecturers" ofType="cn.qbs.wa.teach.course.standard.pojo.dto.CourseLecturerDTO">
+            <id column="course_lecturer_id" property="id" />
+            <result column="lecturer_id" property="lecturerId" />
+        </collection>
+    </resultMap>
+
+    <select id="pageComment" resultType="cn.qbs.wa.teach.course.standard.pojo.dto.CourseCommentViewDTO">
+        SELECT *
+        FROM course_comment
+        <where>
+            deleted = 0
+            <if test="params.courseId != null">
+                AND course_id = #{params.courseId}
+            </if>
+        </where>
+        ORDER BY id DESC
+
+    </select>
+
+</mapper>
+

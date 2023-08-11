@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.allowance.mapper.ApplyAuditExpertMapper">
+
+    <resultMap type="cn.qbs.wa.train.allowance.entity.ApplyAuditExpert" id="ApplyAuditExpertMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="applyId" column="apply_id" jdbcType="INTEGER"/>
+        <result property="applyType" column="apply_type" jdbcType="VARCHAR"/>
+        <result property="expertId" column="expert_id" jdbcType="INTEGER"/>
+        <result property="cost" column="cost" jdbcType="VARCHAR"/>
+        <result property="comment" column="comment" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="listApplyAuditExpert" resultType="cn.qbs.wa.train.allowance.pojo.applyauditexpert.ApplyAuditExpertDetailResponse">
+        select aae.*,e.name
+        from apply_audit_expert aae
+        left join expert e on e.id=aae.expert_id
+        where aae.apply_id = #{params.id} and aae.apply_type = #{params.applyType}
+        order by id desc
+    </select>
+</mapper>
+

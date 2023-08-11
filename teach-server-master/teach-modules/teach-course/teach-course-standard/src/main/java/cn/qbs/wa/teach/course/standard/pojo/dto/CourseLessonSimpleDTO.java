@@ -1,0 +1,45 @@
+package cn.qbs.wa.teach.course.standard.pojo.dto;
+
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+
+/**
+ * @author yjx
+ */
+@Data
+public class CourseLessonSimpleDTO {
+
+    @ApiModelProperty(value = "【讲次ID】")
+    private Long lessonId;
+
+    @ApiModelProperty(value = "【讲次名称】")
+    private String lessonName;
+
+    @ApiModelProperty(value = "【讲次简介】")
+    private String introduction;
+
+    @ApiModelProperty(value = "【排序】")
+    private Integer sort;
+
+    @ApiModelProperty(value = "【组件ID】")
+    private Long componentId;
+
+    @ApiModelProperty(value = "【组件名称】")
+    private String componentName;
+
+    @ApiModelProperty(value = "【上传文件ID】")
+    private Long resourceFileId;
+
+    @ApiModelProperty(value = "【文件路径】")
+    private String resourceFilePath;
+
+    @ApiModelProperty(value = "【文件类型】")
+    private String resourceFileType;
+
+    @ApiModelProperty(value = "【文件时长】")
+    private Integer resourceFileDuration;
+
+    @ApiModelProperty(value = "【播放位置】")
+    private Integer playbackPosition;
+
+}

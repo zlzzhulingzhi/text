@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.union.auth.mapper.UniApplicationClientMapper">
+
+    <resultMap type="cn.qbs.wa.union.auth.entity.UniApplicationClient" id="UniApplicationClientMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="clientCode" column="client_code" jdbcType="VARCHAR"/>
+        <result property="clientName" column="client_name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into uni_application_client(client_code, client_name)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.clientCode}, #{entity.clientName})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into uni_application_client(client_code, client_name)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.clientCode}, #{entity.clientName})
+        </foreach>
+        on duplicate key update
+        client_code = values(client_code) , client_name = values(client_name)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.union.auth.pojo.uniapplicationclient.UniApplicationClientPageResponse">
+        select *
+        from uni_application_client
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.union.auth.pojo.uniapplicationclient.UniApplicationClientDetailResponse">
+        select *
+        from uni_application_client
+        where id = #{id}
+    </select>
+</mapper>
+

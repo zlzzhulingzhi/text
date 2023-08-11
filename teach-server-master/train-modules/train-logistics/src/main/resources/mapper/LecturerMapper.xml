@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.LecturerMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.Lecturer" id="LecturerMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="employeeId" column="employee_id" jdbcType="INTEGER"/>
+        <result property="lecturerName" column="lecturer_name" jdbcType="VARCHAR"/>
+        <result property="intro" column="intro" jdbcType="VARCHAR"/>
+        <result property="title" column="title" jdbcType="VARCHAR"/>
+        <result property="headImgUrl" column="head_img_url" jdbcType="VARCHAR"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_train_organization.lecturer(org_id, user_id, employee_id, intro, head_img_url, enabled, create_time, create_by, update_time, update_by,lecturer_name)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.userId}, #{entity.employeeId}, #{entity.intro}, #{entity.headImgUrl}, #{entity.enabled}, #{entity.createTime}, #{entity.createBy}, #{entity.updateTime}, #{entity.updateBy}, #{entity.lecturer_name})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_train_organization.lecturer(org_id, user_id, employee_id, intro, head_img_url, enabled, create_time, create_by, update_time, update_by,lecturer_name)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.userId}, #{entity.employeeId}, #{entity.intro}, #{entity.headImgUrl}, #{entity.enabled}, #{entity.createTime}, #{entity.createBy}, #{entity.updateTime}, #{entity.updateBy}, #{entity.lecturer_name})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , user_id = values(user_id) , employee_id = values(employee_id) , intro = values(intro) , head_img_url = values(head_img_url) , enabled = values(enabled) , create_time = values(create_time) , create_by = values(create_by) , update_time = values(update_time) , update_by = values(update_by) , lecturer_name = values(lecturer_name)        $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.train.logistics.pojo.lecturer.LecturerPageResponse">
+        SELECT
+        l.*,
+        e.*,
+        o.NAME AS orgName,
+        IF
+        ( wl.id IS NULL, 0, 1 ) AS added
+        FROM
+        lecturer l
+        LEFT JOIN employee e ON e.id = l.employee_id AND e.enabled = 1
+        LEFT JOIN organization o ON o.id = e.org_id
+        LEFT JOIN w_lecturer wl on wl.id=l.id
+        <where>
+            <if test="params.enabled != null">
+                and l.enabled = #{params.enabled}
+            </if>
+            <if test="params.name != null and params.name != '' ">
+                and l.lecturer_name like concat('%', #{params.name}, '%')
+            </if>
+            <if test="params.userId != null">
+                and l.user_id = #{params.userId}
+            </if>
+            <if test="params.idList!=null and params.idList.size()>0">
+                and   l.id in
+                <foreach collection="params.idList" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY l.sort, l.id
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.train.logistics.pojo.lecturer.LecturerDetailResponse">
+        select *
+        from lecturer
+        where id = #{id}
+    </select>
+
+    <select id="listLecture" resultType="cn.qbs.wa.train.logistics.pojo.lecturer.LecturerListResponse">
+        select  l.*,e.*
+        from lecturer l left join employee e on e.id=l.employee_id
+        <where>
+             <if test="userId!=null">
+              and l.user_id=#{userId}
+             </if>
+
+            <if test="idList!=null and idList.size()>0">
+             and   l.id in
+                <foreach collection="idList" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="listLectureWithOutOrgId"
+            resultType="cn.qbs.wa.train.logistics.pojo.lecturer.LecturerListResponse">
+        select  *
+        from lecturer l
+      <where>
+          <if test="idList!=null and idList.size()>0">
+                l.id in
+              <foreach collection="idList" item="id" open="(" separator="," close=")">
+                  #{id}
+              </foreach>
+          </if>
+      </where>
+
+    </select>
+    <select id="pageAdmin" resultType="cn.qbs.wa.train.logistics.pojo.lecturer.LecturerPageResponse">
+        SELECT
+        l.*,
+        e.*,
+        o.NAME AS orgName,
+        IF
+        ( wl.id IS NULL, 0, 1 ) AS added
+        FROM
+        lecturer l
+        INNER JOIN employee e ON e.id = l.employee_id AND e.enabled = 1
+        INNER JOIN organization o ON o.id = e.org_id
+        LEFT  JOIN w_lecturer wl on wl.id=l.id
+        <where>
+            <if test="params.enabled != null">
+                and l.enabled = #{params.enabled}
+            </if>
+            <if test="params.name != null and params.name != '' ">
+                and e.real_name like concat('%', #{params.name}, '%')
+            </if>
+
+            <if test="params.orgId != null">
+                AND e.org_id = #{params.orgId}
+            </if>
+
+        </where>
+        ORDER BY l.sort, l.id
+    </select>
+</mapper>
+

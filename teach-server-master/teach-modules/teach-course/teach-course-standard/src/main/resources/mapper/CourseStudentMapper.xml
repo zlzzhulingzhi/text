@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.CourseStudentMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.CourseStudent" id="CourseStudentMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="studentId" column="student_id" jdbcType="INTEGER"/>
+        <result property="signUpTime" column="sign_up_time" jdbcType="TIMESTAMP"/>
+        <result property="lastStudyTime" column="last_study_time" jdbcType="TIMESTAMP"/>
+        <result property="learningCount" column="learning_count" jdbcType="INTEGER"/>
+        <result property="learningFinishCount" column="learning_finish_count" jdbcType="INTEGER"/>
+        <result property="learningTotalCount" column="learning_total_count" jdbcType="INTEGER"/>
+        <result property="learningDuration" column="learning_duration" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="pageV2" resultType="cn.qbs.wa.teach.course.standard.pojo.coursestudent.CourseStudentPageResponse">
+        select cos.*
+        from course_student cos
+        <where>
+            <if test="params.orgId != null">
+                and cos.org_id=#{params.orgId}
+            </if>
+            <if test="params.courseId != null">
+                and cos.course_id=#{params.courseId}
+            </if>
+            <if test="params.userId != null">
+                and cos.user_id=#{params.userId}
+            </if>
+            <if test="params.userIds != null and params.userIds.size() > 0">
+                and cos.user_id in
+                <foreach collection="params.userIds" item="userId" open="(" separator="," close=")">
+                    #{userId}
+                </foreach>
+            </if>
+            <if test="params.studentId != null">
+                and cos.student_id=#{params.studentId}
+            </if>
+            <if test="params.signUpTime != null">
+                and cos.sign_up_time=#{params.signUpTime}
+            </if>
+            <if test="params.lastStudyTime != null">
+                and cos.last_study_time=#{params.lastStudyTime}
+            </if>
+            <if test="params.learningCount != null">
+                and cos.learning_count=#{params.learningCount}
+            </if>
+            <if test="params.learningFinishCount != null">
+                and cos.learning_finish_count=#{params.learningFinishCount}
+            </if>
+            <if test="params.learningTotalCount != null">
+                and cos.learning_total_count=#{params.learningTotalCount}
+            </if>
+            <if test="params.learningDuration != null">
+                and cos.learning_duration=#{params.learningDuration}
+            </if>
+        </where>
+        <choose>
+            <when test="params.sortField != null">
+                <if test="params.sortField == 'signUpTime'">
+                    <choose>
+                        <when test="params.sortOrder == 'asc'">
+                            order by cos.id asc
+                        </when>
+                        <otherwise>
+                            order by cos.id desc
+                        </otherwise>
+                    </choose>
+                </if>
+            </when>
+            <when test="params.userIds != null and params.userIds.size() > 0">
+                order by field (cos.user_id, <foreach collection="params.userIds" item="userId" open="" separator="," close="">#{userId}</foreach>)
+            </when>
+            <otherwise>
+                order by cos.id desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="page" resultType="cn.qbs.wa.teach.course.standard.pojo.coursestudent.CourseStudentPageResponse">
+        select cos.*
+        from course_student cos
+        <where>
+            <if test="params.courseId != null">
+                and cos.course_id=#{params.courseId}
+            </if>
+            <if test="params.userId != null">
+                and cos.user_id=#{params.userId}
+            </if>
+            <if test="params.userIds != null and params.userIds.size() > 0">
+                and cos.user_id in
+                <foreach collection="params.userIds" item="userId" open="(" separator="," close=")">
+                    #{userId}
+                </foreach>
+            </if>
+            <if test="params.studentId != null">
+                and cos.student_id=#{params.studentId}
+            </if>
+            <if test="params.signUpTime != null">
+                and cos.sign_up_time=#{params.signUpTime}
+            </if>
+            <if test="params.lastStudyTime != null">
+                and cos.last_study_time=#{params.lastStudyTime}
+            </if>
+            <if test="params.learningCount != null">
+                and cos.learning_count=#{params.learningCount}
+            </if>
+            <if test="params.learningFinishCount != null">
+                and cos.learning_finish_count=#{params.learningFinishCount}
+            </if>
+            <if test="params.learningTotalCount != null">
+                and cos.learning_total_count=#{params.learningTotalCount}
+            </if>
+            <if test="params.learningDuration != null">
+                and cos.learning_duration=#{params.learningDuration}
+            </if>
+        </where>
+        <choose>
+            <when test="params.sortField != null">
+                <if test="params.sortField == 'signUpTime'">
+                    <choose>
+                        <when test="params.sortOrder == 'asc'">
+                            order by cos.id asc
+                        </when>
+                        <otherwise>
+                            order by cos.id desc
+                        </otherwise>
+                    </choose>
+                </if>
+            </when>
+            <when test="params.userIds != null and params.userIds.size() > 0">
+                order by field (cos.user_id, <foreach collection="params.userIds" item="userId" open="" separator="," close="">#{userId}</foreach>)
+            </when>
+            <otherwise>
+                order by cos.id desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.course.standard.pojo.coursestudent.CourseStudentDetailResponse">
+        select *
+        from course_student
+        where id = #{id}
+    </select>
+
+    <select id="getCourseStudentList" resultType="cn.qbs.wa.teach.course.standard.pojo.coursestudent.CourseStudentPageResponse">
+        select cos.*
+        from course_student cos
+        <where>
+            <if test="params.courseId != null">
+                and cos.course_id=#{params.courseId}
+            </if>
+            <if test="params.userId != null">
+                and cos.user_id=#{params.userId}
+            </if>
+            <if test="params.studentId != null">
+                and cos.student_id=#{params.studentId}
+            </if>
+            <if test="params.signUpTime != null">
+                and cos.sign_up_time=#{params.signUpTime}
+            </if>
+            <if test="params.lastStudyTime != null">
+                and cos.last_study_time=#{params.lastStudyTime}
+            </if>
+            <if test="params.learningCount != null">
+                and cos.learning_count=#{params.learningCount}
+            </if>
+            <if test="params.learningFinishCount != null">
+                and cos.learning_finish_count=#{params.learningFinishCount}
+            </if>
+            <if test="params.learningTotalCount != null">
+                and cos.learning_total_count=#{params.learningTotalCount}
+            </if>
+            <if test="params.learningDuration != null">
+                and cos.learning_duration=#{params.learningDuration}
+            </if>
+        </where>
+        order by cos.sign_up_time
+    </select>
+
+    <select id="pageMyCourse" resultType="cn.qbs.wa.teach.course.standard.pojo.dto.MyCoursePageDTO">
+        SELECT
+            co.id, co.course_name, co.cover_url,co.course_type, co.shelf_time, IFNULL(cso.sign_up_num, 0) sign_up_num,
+            cso.lesson_num, cso.views, ci.course_points,ci.course_manage, cso.score, cos.learning_rate, cos.learning_completion,
+            ci.virtual_status, ci.virtual_sign_up_num
+        FROM
+            course_student cos
+            INNER JOIN course co ON co.id = cos.course_id AND co.deleted = 0
+            INNER JOIN course_info ci ON ci.course_id = co.id
+            LEFT JOIN course_statistic_overview cso ON cso.course_id = co.id
+            left join course_category cc on co.id = cc.course_id
+        WHERE cos.user_id = #{params.userId}
+        <if test="params.learningCompletion != null">
+            AND cos.learning_completion = = #{params.learningCompletion}
+        </if>
+        <if test="params.categoryId != null">
+            AND cc.category_id = #{params.categoryId}
+        </if>
+          <if test="params.categoryIdList != null and params.categoryIdList.size() > 0">
+              and cc.category_id in
+              <foreach collection="params.categoryIdList" item="categoryId" open="(" separator="," close=")">
+                  #{categoryId}
+              </foreach>
+          </if>
+        <if test="params.courseName != null and params.courseName != '' ">
+            AND co.course_name like concat('%', #{params.courseName}, '%')
+        </if>
+        ORDER BY cos.sign_up_time desc
+    </select>
+
+    <select id="getLastCourseStudyRecord" resultType="cn.qbs.wa.teach.course.standard.pojo.dto.CourseLessonSimpleDTO">
+        SELECT
+            snap.*,
+            cca.resource_file_id,
+            cca.resource_file_type,
+            cca.resource_file_path,
+            cca.resource_file_duration
+        FROM
+            course_student_study_snapshot snap
+            INNER JOIN course_component_attachment cca ON cca.component_id = snap.component_id
+        WHERE snap.user_id = #{userId} AND snap.course_id = #{courseId}
+    </select>
+
+    <select id="getLiveId" resultType="cn.qbs.wa.teach.course.standard.pojo.coursecomponentattachment.CourseComponentAttachmentDetailResponse">
+        select cca.resource_file_id from course_component cc left join course_component_attachment cca on cc.id = cca.component_id
+        where cc.course_id = #{id} and cc.component_type_code = 'ZB'
+    </select>
+
+    <select id="getLastCourseStudyRecordById" resultType="cn.qbs.wa.teach.course.standard.pojo.dto.CourseLessonSimpleResponseDTO">
+        SELECT
+            snap.*,
+            cca.resource_file_id,
+            cca.resource_file_type,
+            cca.resource_file_path,
+            cca.resource_file_duration
+        FROM
+            course_student_study_snapshot snap
+            INNER JOIN course_component_attachment cca ON cca.component_id = snap.component_id
+        WHERE snap.user_id = #{userId}
+        <if test="params !=null and params.size() > 0 ">
+        AND snap.course_id in
+        <foreach collection="params" index="index" item="item"  open="(" close=")" separator=",">
+            #{item.courseId}
+        </foreach>
+        </if>
+    </select>
+
+    <select id="queryStudentByPlat" resultMap="CourseStudentMap">
+        SELECT
+            cos.org_id, cos.student_id, cos.user_id, cos.course_id
+        FROM
+            course_student cos
+            INNER JOIN course co ON co.id = cos.course_id AND co.deleted = 0
+        WHERE co.course_name like concat('%', #{params.courseName}, '%')
+        <if test="params.memberIds != null and params.memberIds.size() > 0">
+            and cos.user_id in
+            <foreach collection="params.memberIds" item="memberId" open="(" separator="," close=")">
+                #{memberId}
+            </foreach>
+        </if>
+    </select>
+</mapper>
+

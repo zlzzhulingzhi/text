@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.question.mapper.PaperQuestionMapper">
+
+    <resultMap type="cn.qbs.wa.teach.question.entity.PaperQuestion" id="PaperQuestionMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="paperId" column="paper_id" jdbcType="INTEGER"/>
+        <result property="questionId" column="question_id" jdbcType="INTEGER"/>
+        <result property="score" column="score" jdbcType="VARCHAR"/>
+        <result property="parentId" column="parent_id" jdbcType="INTEGER"/>
+        <result property="globalOrder" column="global_order" jdbcType="INTEGER"/>
+        <result property="localOrder" column="local_order" jdbcType="INTEGER"/>
+        <result property="displayHeight" column="display_height" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into paper_question(paper_id, question_id, score, parent_id, global_order, local_order, display_height, create_by, create_time, update_by, update_time, org_id)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.paperId}, #{entity.questionId}, #{entity.score}, #{entity.parentId}, #{entity.globalOrder}, #{entity.localOrder}, #{entity.displayHeight}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime}, #{entity.orgId})
+        </foreach>
+    </insert>
+    
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into paper_question(paper_id, question_id, score, parent_id, global_order, local_order, display_height, create_by, create_time, update_by, update_time, org_id)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.paperId}, #{entity.questionId}, #{entity.score}, #{entity.parentId}, #{entity.globalOrder}, #{entity.localOrder}, #{entity.displayHeight}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime}, #{entity.orgId})
+        </foreach>
+        on duplicate key update
+        paper_id = values(paper_id) , question_id = values(question_id) , score = values(score) , parent_id = values(parent_id) , global_order = values(global_order) , local_order = values(local_order) , display_height = values(display_height) , create_by = values(create_by) , create_time = values(create_time) , update_by = values(update_by) , update_time = values(update_time) , org_id = values(org_id)         $empty
+    </insert>
+
+</mapper>
+

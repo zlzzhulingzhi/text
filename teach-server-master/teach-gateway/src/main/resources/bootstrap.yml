@@ -1,0 +1,19 @@
+# Tomcat
+server:
+  port: 9701
+# Spring
+spring:
+  application:
+    # 应用名称
+    name: teach-gateway
+  profiles:
+    # 环境配置
+    active: dev
+
+
+
+
+
+
+
+

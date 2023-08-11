@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.exam.answer.mapper.ExamineeMapper">
+
+    <resultMap type="cn.qbs.wa.teach.exam.common.entity.Examinee" id="ExamineeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="examId" column="exam_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="employeeId" column="employee_id" jdbcType="INTEGER"/>
+        <result property="remainingTimes" column="remaining_times" jdbcType="INTEGER"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="VARCHAR"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="selectAllIds" resultType="cn.qbs.wa.teach.exam.answer.pojo.exam.ExamPageResponse">
+        (select e.id,e.start_time
+        from exam e
+            left join exam_user_visible euv on euv.exam_id = e.id
+        where e.user_visible = 2 and euv.user_id = #{params.userId} and e.shelf_status = 1 and e.enabled = 1)
+
+        union
+
+        (select e.id,e.start_time from exam e where e.user_visible = 1 and e.shelf_status = 1 and e.enabled = 1) ORDER BY start_time DESC
+    </select>
+    <select id="selectJoinTest" resultType="java.lang.Integer">
+        select  COUNT(DISTINCT ex.id) from examinee_record er
+        inner join examinee ex on ex.id = er.examinee_id
+        where  ex.exam_id = #{id}
+    </select>
+    <select id="selectComplete" resultType="cn.qbs.wa.teach.exam.answer.pojo.exam.ExamPageResponse">
+        SELECT er.score,ei.id as examineeId,er.id as examineeRecordId from  examinee ei
+        inner join examinee_record er on er.examinee_id=ei.id
+        where ei.user_id = #{userId} and ei.exam_id = #{id} and er.calculated=1
+    </select>
+    <select id="selectUnfinished" resultType="cn.qbs.wa.teach.exam.answer.pojo.exam.ExamPageResponse">
+        SELECT * FROM exam WHERE shelf_status = 1 and enabled = 1
+        <if test="list != null and list.size() > 0">
+            AND id IN
+            <foreach collection="list" item="exam" open="(" separator="," close=")" index="index">
+                #{exam.id}
+            </foreach>
+        </if>
+        <if test="info.complete == 0">
+            AND (now() BETWEEN start_time AND end_time)
+            ORDER BY start_time DESC
+        </if>
+        <if test="info.complete == 1">
+            AND now() > end_time
+            ORDER BY start_time DESC
+        </if>
+        <if test="info.complete == 4">
+            AND start_time > now()
+            ORDER BY start_time
+        </if>
+    </select>
+    <select id="selectAccomplish" resultType="cn.qbs.wa.teach.exam.answer.pojo.exam.ExamPageResponse">
+        SELECT ei.exam_id as id,ei.id as examineeId,er.id as examineeRecordId,er.score from examinee ei
+        inner join examinee_record er on er.examinee_id=ei.id
+        <if test="list != null and list.size() > 0">
+            where ei.user_id = #{info.userId}
+            <choose>
+                <when test="info.complete == 1">
+                    and er.status in(1,2,3) and er.calculated = 1
+                </when>
+                <otherwise>
+                    and er.status = 0
+                </otherwise>
+            </choose>
+            and ei.exam_id in
+            <foreach collection="list" item="exam" open="(" separator="," close=")" index="index">
+                #{exam.id}
+            </foreach>
+        </if>
+    </select>
+    <select id="selectUnderway" resultType="cn.qbs.wa.teach.exam.answer.pojo.exam.ExamPageResponse">
+        SELECT er.score,ei.id as examineeId,er.id as examineeRecordId,er.status as complete from  examinee ei
+        inner join examinee_record er on er.examinee_id=ei.id
+        where  ei.user_id = #{userId} and ei.exam_id = #{id} and er.status = 0
+    </select>
+    <select id="selectNotStart" resultType="cn.qbs.wa.teach.exam.answer.pojo.exam.ExamPageResponse">
+        SELECT ei.exam_id as id from examinee ei
+        left join examinee_record er on er.examinee_id=ei.id
+        <if test="list != null and list.size() > 0">
+            WHERE ei.user_id = #{info.userId} and er.id is null and ei.exam_id in
+            <foreach collection="list" item="exam" open="(" separator="," close=")" index="index">
+                #{exam.id}
+            </foreach>
+        </if>
+        union
+        SELECT e.id as id from exam e
+        <if test="list != null and list.size() > 0">
+            WHERE e.id not in (
+            select exam_id from examinee WHERE user_id = #{info.userId}
+            ) and e.user_visible = 1 and e.shelf_status = 1 and e.enabled = 1 and e.id in
+            <foreach collection="list" item="exam" open="(" separator="," close=")" index="index">
+                #{exam.id}
+            </foreach>
+        </if>
+        union
+        select e.id
+        from exam e
+        left join exam_user_visible euv on euv.exam_id = e.id
+        where e.user_visible = 2 and euv.user_id = #{info.userId} and e.shelf_status = 1 and e.enabled = 1
+        <if test="info.complete == 0">
+            AND now() BETWEEN start_time AND end_time
+        </if>
+        <if test="info.complete == 1">
+            AND now() > end_time
+        </if>
+        <if test="info.complete == 4">
+            AND start_time > now()
+        </if>
+    </select>
+    <select id="selectAnswer" resultType="cn.qbs.wa.teach.exam.answer.pojo.exam.ExamPageResponse">
+        (SELECT ei.exam_id as id from examinee ei
+        inner join examinee_record er on er.examinee_id=ei.id
+
+            where ei.user_id = #{info.userId}
+            <choose>
+                <when test="flag == 1">
+                    and er.status in(2,3) and er.calculated = 1
+                </when>
+                <otherwise>
+                    and er.status = 0
+                </otherwise>
+            </choose>
+            and ei.exam_id = #{list.id}
+        )
+
+        union
+
+       ( SELECT ei.exam_id as id from examinee ei
+        inner join examinee_record er on er.examinee_id=ei.id
+
+            where ei.user_id = #{info.userId}
+            <choose>
+                <when test="flag == 1">
+                    and er.status = 1
+                </when>
+                <otherwise>
+                    and er.status = 0
+                </otherwise>
+            </choose>
+            and  ei.exam_id = #{list.id}
+
+        order by er.submit_time desc LIMIT 1 )
+    </select>
+
+    <select id="selectParticulars" resultType="cn.qbs.wa.teach.exam.answer.pojo.exam.ExamPageResponse">
+        select e.exam_id as id,e.id as examineeId,er.id as examineeRecordId,ifnull(er.score,0),e.remaining_times as
+        remainingTimes ,er.submit_time as submitTime ,er.status as status from examinee e LEFT JOIN  examinee_record er on e.id = er.examinee_id where e.exam_id = #{id}
+        order by er.submit_time desc
+    </select>
+
+    <update id="decrRemainingTimes">
+        update examinee set remaining_times = remaining_times - 1 where id = #{id} and remaining_times > 0
+    </update>
+</mapper>
+

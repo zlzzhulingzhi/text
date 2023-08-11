@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.union.admin.mapper.SystemUserMapper">
+
+    <resultMap type="cn.qbs.wa.union.admin.entity.SystemUser" id="SystemUserMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="mode" column="mode" jdbcType="INTEGER"/>
+        <result property="account" column="account" jdbcType="VARCHAR"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="nickName" column="nick_name" jdbcType="VARCHAR"/>
+        <result property="realName" column="real_name" jdbcType="VARCHAR"/>
+        <result property="headImgUrl" column="head_img_url" jdbcType="VARCHAR"/>
+        <result property="sex" column="sex" jdbcType="INTEGER"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="idNumber" column="id_number" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into system_user(user_id, mode, account, phone, email, password, nick_name, real_name, head_img_url, sex, enabled, id_number, create_time, update_time, create_by, update_by)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.userId}, #{entity.mode}, #{entity.account}, #{entity.phone}, #{entity.email}, #{entity.password}, #{entity.nickName}, #{entity.realName}, #{entity.headImgUrl}, #{entity.sex}, #{entity.enabled}, #{entity.idNumber}, #{entity.createTime}, #{entity.updateTime}, #{entity.createBy}, #{entity.updateBy})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into system_user(user_id, mode, account, phone, email, password, nick_name, real_name, head_img_url, sex, enabled, id_number, create_time, update_time, create_by, update_by)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.userId}, #{entity.mode}, #{entity.account}, #{entity.phone}, #{entity.email}, #{entity.password}, #{entity.nickName}, #{entity.realName}, #{entity.headImgUrl}, #{entity.sex}, #{entity.enabled}, #{entity.idNumber}, #{entity.createTime}, #{entity.updateTime}, #{entity.createBy}, #{entity.updateBy})
+        </foreach>
+        on duplicate key update
+        user_id = values(user_id) , mode = values(mode) , account = values(account) , phone = values(phone) , email = values(email) , password = values(password) , nick_name = values(nick_name) , real_name = values(real_name) , head_img_url = values(head_img_url) , sex = values(sex) , enabled = values(enabled) , id_number = values(id_number) , create_time = values(create_time) , update_time = values(update_time) , create_by = values(create_by) , update_by = values(update_by)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.union.admin.pojo.systemuser.SystemUserPageResponse">
+        select
+        GROUP_CONCAT( r.name SEPARATOR ',' ) as roleName,
+        GROUP_CONCAT( r.code SEPARATOR ',' ) as roleCode,
+        MAX(r.priority) as priority,
+        u.*
+        from system_user u
+        INNER JOIN system_user_role sur ON sur.user_id = u.id
+        INNER JOIN system_role r ON r.id = sur.role_id
+        <where>
+            <if test="params.enabled != null">
+                and u.enabled = #{params.enabled}
+            </if>
+            <if test="params.searchContent != null and params.searchContent != '' ">
+                and (u.real_name like concat('%', #{params.searchContent}, '%') or u.account=#{params.searchContent} )
+            </if>
+
+        </where>
+        group by u.id
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.union.admin.pojo.systemuser.SystemUserDetailResponse">
+        select id, account, phone, email, nick_name, real_name, head_img_url, sex, enabled, id_number
+        from `system_user`
+        where id = #{id}
+    </select>
+    <select id="getMinePermission"
+            resultType="cn.qbs.wa.union.admin.pojo.systemuser.SystemUserRoleMenuDataResponse">
+        SELECT
+            sm.*,
+            sr.`name` AS roleName
+        FROM
+            system_user_role su
+                INNER JOIN system_role sr ON sr.id = su.role_id
+                INNER JOIN system_role_menu srm ON srm.role_id = sr.id
+                INNER JOIN system_menu sm ON sm.id = srm.menu_id
+        WHERE
+            su.user_id = #{userId}
+          AND sr.enabled = 1
+          AND sm.enabled =1
+          order by sm.sort
+    </select>
+    <select id="listAdmin" resultType="cn.qbs.wa.union.admin.entity.SystemUser">
+      select
+      distinct
+        u.*
+        from `system_user` u
+        INNER JOIN system_user_role sur ON sur.user_id = u.id
+        INNER JOIN system_role r ON r.id = sur.role_id
+        where
+        u.account=#{account}
+
+    </select>
+</mapper>
+

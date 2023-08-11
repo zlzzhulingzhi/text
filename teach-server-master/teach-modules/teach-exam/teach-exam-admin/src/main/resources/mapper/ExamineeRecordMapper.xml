@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.exam.admin.mapper.ExamineeRecordMapper">
+
+    <resultMap type="cn.qbs.wa.teach.exam.common.entity.ExamineeRecord" id="ExamineeRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="examineeId" column="examinee_id" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="calculated" column="calculated" jdbcType="INTEGER"/>
+        <result property="score" column="score" jdbcType="NUMERIC"/>
+        <result property="startTime" column="start_time" jdbcType="TIMESTAMP"/>
+        <result property="submitTime" column="submit_time" jdbcType="TIMESTAMP"/>
+        <result property="useDuration" column="use_duration" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="attachmentName" column="attachment_name"/>
+        <result property="attachmentUrl" column="attachment_url"/>
+    </resultMap>
+
+    <select id="selectListByExamId" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.ExamRecord">
+        select er.*, en.user_id as userId
+        from exam e
+            left join examinee en on e.id = en.exam_id
+            right join examinee_record er on (en.id = er.examinee_id and er.status in (1,2))
+        where e.id = #{params.examId}
+    </select>
+
+    <select id="rankingByExamId" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.ExamRanking">
+        select t2.id, t2.score, t2.use_duration, t2.use_duration_format, t2.userId, t2.org_id, t2.employee_id,
+               t2.examineeId, rank as ranking
+        from (
+             select t1.*,
+                    @curRank := IF(@prevRank = score, @curRank, @incRank) AS rank,
+                    @incRank := @incRank + 1,
+                    @prevRank := score
+             from (
+                 select er.id, ifnull(es.score, 0) as score, er.use_duration, er.use_duration_format,
+                        en.user_id as userId, en.org_id, en.employee_id, en.id as examineeId
+                 from exam e
+                 left join examinee en on e.id = en.exam_id
+                 left join examinee_score es on es.examinee_id = en.id
+                 right join examinee_record er on es.examinee_record_id = er.id
+                 where e.id = #{params.examId}
+             ) t1, (SELECT @curRank := 0, @prevRank := NULL, @incRank := 1) r
+             ORDER BY score desc
+        ) t2
+    </select>
+
+    <select id="questionCorrectRateByExamId" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.QuestionCorrectRate">
+        select erq.question_id,
+               round(sum(if(erq.correct_result=1, 1,0)) / count(erq.id) * 100) as correctRate
+        from exam e
+            left join examinee en on e.id = en.exam_id
+            left join examinee_record er on (en.id = er.examinee_id and er.calculated = 1)
+            right join examinee_record_question erq on erq.examinee_record_id = er.id
+        where e.id = #{examId}
+        group by erq.question_id
+    </select>
+
+    <select id="questionAnalysisByExamId" resultType="cn.qbs.wa.teach.exam.admin.pojo.exam.QuestionAnalysis">
+        select erq.question_id,
+               sum(if(erq.correct_result=1, 1,0)) as rightCount,
+               sum(if(erq.correct_result is null or erq.correct_result&lt;&gt;1, 1,0)) as wrongCount,
+               round(avg(ifnull(erq.score,0)), 1) as avgScore,
+               round(sum(ifnull(erq.score,0)) / sum(ifnull(erq.question_score,0)) * 100) as scoringRate
+        from exam e
+             left join examinee en on e.id = en.exam_id
+             left join examinee_record er on (en.id = er.examinee_id and er.status in (1,2) and er.calculated = 1)
+             right join examinee_record_question erq on erq.examinee_record_id = er.id
+        where e.id = #{examId}
+        group by erq.question_id
+    </select>
+
+    <select id="selectUnsubmitListByExamId" resultType="cn.qbs.wa.teach.exam.common.entity.ExamineeRecord">
+        select er.*
+        from exam e
+            left join examinee en on e.id = en.exam_id
+            left join examinee_record er on en.id = er.examinee_id
+        where e.id = #{examId} and (er.`status` = 0 or er.submit_time is null)
+    </select>
+
+    <select id="selectByExamId" resultType="cn.qbs.wa.teach.exam.common.entity.ExamineeRecord">
+        select er.*
+        from exam e
+            left join examinee en on en.exam_id = e.id
+            left join examinee_record er on er.examinee_id = en.id
+        where e.id = #{examId} and er.status &gt; 0
+    </select>
+
+</mapper>
+

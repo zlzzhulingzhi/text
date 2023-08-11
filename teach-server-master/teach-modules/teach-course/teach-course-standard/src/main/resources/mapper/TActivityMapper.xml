@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.TActivityMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.standard.entity.TActivity" id="TActivityMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="title" column="title" jdbcType="VARCHAR"/>
+        <result property="coverUrl" column="cover_url" jdbcType="VARCHAR"/>
+        <result property="introduction" column="introduction" jdbcType="VARCHAR"/>
+        <result property="shelfStatus" column="shelf_status" jdbcType="INTEGER"/>
+        <result property="shelfTime" column="shelf_time" jdbcType="TIMESTAMP"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_teach_course.t_activity(title, cover_url, introduction, shelf_status, shelf_time, sort,
+        create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.title}, #{entity.coverUrl}, #{entity.introduction}, #{entity.shelfStatus}, #{entity.shelfTime},
+            #{entity.sort}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_teach_course.t_activity(title, cover_url, introduction, shelf_status, shelf_time, sort,
+        create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.title}, #{entity.coverUrl}, #{entity.introduction}, #{entity.shelfStatus}, #{entity.shelfTime},
+            #{entity.sort}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        title = values(title) , cover_url = values(cover_url) , introduction = values(introduction) , shelf_status =
+        values(shelf_status) , shelf_time = values(shelf_time) , sort = values(sort) , create_by = values(create_by) ,
+        create_time = values(create_time) , update_by = values(update_by) , update_time = values(update_time) $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.course.standard.pojo.tactivity.TActivityPageResponse">
+        select *
+        from t_activity
+        <where>
+            <if test="params.shelfStatus != null">
+                AND shelf_status = #{params.shelfStatus}
+            </if>
+            <if test="params.title != null and params.title != '' ">
+                AND title like concat('%', #{params.title}, '%')
+            </if>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+        order by sort asc,id desc
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.course.standard.pojo.tactivity.TActivityDetailResponse">
+        select *
+        from t_activity
+        where id = #{id}
+    </select>
+</mapper>
+

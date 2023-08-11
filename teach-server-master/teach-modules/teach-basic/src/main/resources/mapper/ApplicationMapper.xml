@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.basic.mapper.ApplicationMapper">
+
+    <resultMap type="cn.qbs.wa.teach.basic.entity.Application" id="ApplicationMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="clientCode" column="client_code" jdbcType="VARCHAR"/>
+        <result property="appTypeId" column="app_type_id" jdbcType="INTEGER"/>
+        <result property="iconUrl" column="icon_url" jdbcType="VARCHAR"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="host" column="host" jdbcType="VARCHAR"/>
+        <result property="uri" column="uri" jdbcType="VARCHAR"/>
+        <result property="permission" column="permission" jdbcType="VARCHAR"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into application(client_code, app_type_id, icon_url, name, host, uri, permission, remark, enabled, sort, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.clientCode}, #{entity.appTypeId}, #{entity.iconUrl}, #{entity.name}, #{entity.host}, #{entity.uri}, #{entity.permission}, #{entity.remark}, #{entity.enabled}, #{entity.sort}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into application(client_code, app_type_id, icon_url, name, host, uri, permission, remark, enabled, sort, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.clientCode}, #{entity.appTypeId}, #{entity.iconUrl}, #{entity.name}, #{entity.host}, #{entity.uri}, #{entity.permission}, #{entity.remark}, #{entity.enabled}, #{entity.sort}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        client_code = values(client_code) , app_type_id = values(app_type_id) , icon_url = values(icon_url) , name = values(name) , host = values(host) , uri = values(uri) , permission = values(permission) , remark = values(remark) , enabled = values(enabled) , sort = values(sort) , create_by = values(create_by) , create_time = values(create_time) , update_by = values(update_by) , update_time = values(update_time)         $empty
+    </insert>
+    <select id="getChildrenByAppTypeId" resultMap="getChildrenByAppTypeIdMap">
+        SELECT
+            t.id AS appTypeId,
+            t.`name` AS appTypeName,
+            a.id AS appId,
+            a.`name` AS appName,
+            a.permission,
+            a.icon_url as iconUrl
+        FROM
+            application_type t
+                INNER JOIN application a ON a.app_type_id=t.id and a.enabled=1
+        WHERE
+            t.id = #{applicationTypeId}
+        ORDER BY t.sort,a.sort
+
+    </select>
+    <select id="page" resultType="cn.qbs.wa.teach.basic.pojo.app.ApplicationPageResponse">
+        select * from application
+        <where>
+            <if test="request.name != null and request.name != '' ">
+                and name like concat('%', #{request.name}, '%')
+            </if>
+            <if test="request.enabled != null  ">
+                and enabled =#{request.enabled}
+            </if>
+            <if test="request.appTypeId !=null">
+                and app_type_id =#{request.appTypeId}
+            </if>
+        </where>
+      order by sort
+    </select>
+
+    <resultMap id="getChildrenByAppTypeIdMap" type="cn.qbs.wa.teach.basic.pojo.app.ApplicationFullResponse">
+        <id column="appTypeId" property="appTypeId"></id>
+        <result column="appTypeName" property="appTypeName"></result>
+        <collection property="applicationList" ofType="cn.qbs.wa.teach.basic.pojo.app.ApplicationFullDetailResponse">
+            <id column="appId" property="appId"></id>
+            <result column="appName" property="appName"></result>
+            <result column="permission" property="permission"></result>
+            <result column="iconUrl" property="iconUrl"></result>
+        </collection>
+
+    </resultMap>
+
+</mapper>
+

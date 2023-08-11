@@ -1,0 +1,51 @@
+# Tomcat
+server:
+  port: 15520
+## Spring
+spring:
+  application:
+    # 应用名称
+    name: train-basic
+  mvc:
+    servlet:
+      path: /train/basic
+  profiles:
+    # 环境配置
+    active: dev
+
+mybatis-plus:
+  global-config:
+    banner: false
+    db-config:
+      db-type: mysql
+      field-strategy: NOT_EMPTY
+      id-type: auto
+      #驼峰下划线转换
+      table-underline: true
+      # 逻辑删除配置
+      # 逻辑删除全局值（1表示已删除，这也是Mybatis Plus的默认配置）
+      logic-delete-value: 1
+      # 逻辑未删除全局值（0表示未删除，这也是Mybatis Plus的默认配置）
+      logic-not-delete-value: 0
+  #    super-mapper-class: com.kingsine.core.framework.dao.BaseMapper
+  mapper-locations: classpath*:mapper/*.xml
+  type-aliases-package: cn.qbs.wa.train.**.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    #mybatis-plus配置控制台打印完整带参数SQL语句
+    #    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+mate:
+  tenant:
+    # 开启数据表多租户
+    enable: false
+    # 租户列名称
+    column: org_id
+    # 以,分割
+    ignoreTables: user,application,application_type,menu,user_role,role,application_application_type,dict,navigation_item,user_info,user_oauth
+
+seata:
+  enabled: false
+  enable-auto-data-source-proxy: false

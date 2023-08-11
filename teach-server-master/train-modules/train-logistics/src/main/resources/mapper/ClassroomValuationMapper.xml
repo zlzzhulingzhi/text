@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.ClassroomValuationMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.ClassroomValuation" id="ClassroomValuationMap">
+        <result property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="itemCode" column="item_code" jdbcType="VARCHAR"/>
+        <result property="itemName" column="item_name" jdbcType="VARCHAR"/>
+        <result property="unitPrice" column="unit_price" jdbcType="VARCHAR"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_logistics.classroom_valuation(item_code, item_name, unit_price, remark)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.itemCode}, #{entity.itemName}, #{entity.unitPrice}, #{entity.remark})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_logistics.classroom_valuation(item_code, item_name, unit_price, remark)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.itemCode}, #{entity.itemName}, #{entity.unitPrice}, #{entity.remark})
+        </foreach>
+        on duplicate key update
+        item_code = values(item_code) , item_name = values(item_name) , unit_price = values(unit_price) , remark =
+        values(remark) $empty
+    </insert>
+
+    <select id="getClassroomPrice" resultType="cn.qbs.wa.train.logistics.pojo.classroom.ClassroomPriceResponse">
+        select SUM(IF(cv.item_code = 'site_fee', cv.unit_price, 0)) AS siteFee,
+               SUM(IF(cv.item_code = 'water_power_fee', cv.unit_price, 0)) AS waterPowerFee,
+               SUM(IF(cv.item_code = 'air_exhaust_fee', cv.unit_price, 0)) AS airExhaustFee,
+               SUM(IF(cv.item_code = 'air_conditioner_fee', cv.unit_price, 0)) AS airConditionerFee
+        from classroom_valuation cv
+    </select>
+
+</mapper>
+

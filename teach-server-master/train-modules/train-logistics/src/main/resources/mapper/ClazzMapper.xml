@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.ClazzMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.Clazz" id="ClazzMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="employeeId" column="employee_id" jdbcType="INTEGER"/>
+        <result property="startDate" column="start_date" jdbcType="TIMESTAMP"/>
+        <result property="endDate" column="end_date" jdbcType="TIMESTAMP"/>
+        <result property="studentNum" column="student_num" jdbcType="INTEGER"/>
+        <result property="lessonNum" column="lesson_num" jdbcType="INTEGER"/>
+        <result property="state" column="state" jdbcType="VARCHAR"/>
+        <result property="plan" column="plan" jdbcType="VARCHAR"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="deleted" column="deleted" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into clazz(org_id, name, course_id, employee_id, start_date, end_date, student_num,
+        state, plan, remark, deleted, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.name}, #{entity.courseId}, #{entity.employeeId}, #{entity.startDate},
+            #{entity.endDate}, #{entity.studentNum}, #{entity.state}, #{entity.plan}, #{entity.remark},
+            #{entity.deleted}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into clazz(org_id, name, course_id, employee_id, start_date, end_date, student_num,
+        state, plan, remark, deleted, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.name}, #{entity.courseId}, #{entity.employeeId}, #{entity.startDate},
+            #{entity.endDate}, #{entity.studentNum}, #{entity.state}, #{entity.plan}, #{entity.remark},
+            #{entity.deleted}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , name = values(name) , course_id = values(course_id) , employee_id =
+        values(employee_id) , start_date = values(start_date) , end_date = values(end_date) , student_num =
+        values(student_num) , state = values(state) , plan = values(plan) , remark = values(remark) , deleted =
+        values(deleted) , create_by = values(create_by) , create_time = values(create_time) , update_by =
+        values(update_by) , update_time = values(update_time) $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.train.logistics.pojo.clazz.ClazzPageResponse">
+        select c.*,e.real_name,e.enabled
+        from clazz c
+        left join employee e on c.employee_id = e.id
+        <where>
+            c.deleted = 0 and e.enabled = 1
+            <if test="params.orgId != null">
+                and  c.org_id = #{params.orgId}
+            </if>
+            <if test="params.name != null and params.name != '' ">
+                and  c.name like concat('%', #{params.name}, '%')
+            </if>
+            <if test="params.state != null and params.state != '' ">
+                and  c.state = #{params.state}
+            </if>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+        order by state asc, id desc
+    </select>
+
+    <select id="pageV2" resultType="cn.qbs.wa.train.logistics.pojo.clazz.ClazzPageResponse">
+        select c.*,e.real_name,e.enabled,e.phone
+        from clazz c
+        left join employee e on c.employee_id = e.id
+        <where>
+            c.deleted = 0 and e.enabled = 1
+            <if test="params.orgId != null">
+                and  c.org_id = #{params.orgId}
+            </if>
+            <if test="params.name != null and params.name != '' ">
+                and  c.name like concat('%', #{params.name}, '%')
+            </if>
+            <if test="params.state != null and params.state != '' ">
+                and  c.state = #{params.state}
+            </if>
+            <if test="params.startDate != null  ">
+                and start_date <![CDATA[ >= ]]>#{params.startDate}
+            </if>
+            <if test="params.endDate != null  ">
+                and end_date <![CDATA[ <= ]]>#{params.endDate}
+            </if>
+            <if test="params.courseIdList != null and params.courseIdList.size > 0">
+                and c.course_id IN
+                <foreach collection="params.courseIdList" item="courseId" open="(" close=")" separator=",">
+                    #{courseId, jdbcType=BIGINT}
+                </foreach>
+            </if>
+            <if test="params.idList != null and params.idList.size > 0">
+                and c.id IN
+                <foreach collection="params.idList" item="id" open="(" close=")" separator=",">
+                    #{id, jdbcType=BIGINT}
+                </foreach>
+            </if>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+        <choose>
+            <when test="params.sortField != null and params.sortField !=''">
+                <if test="params.sortField == 'startDate'">
+                    <choose>
+                        <when test="params.sortOrder == 'asc'">
+                            order by c.start_date ,c.id
+                        </when>
+                        <otherwise>
+                            order by c.start_date desc,c.id desc
+                        </otherwise>
+                    </choose>
+                </if>
+            </when>
+            <otherwise>
+                order by c.start_date desc,c.id desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.train.logistics.pojo.clazz.ClazzDetailResponse">
+        select *
+        from clazz
+        where id = #{id}
+    </select>
+
+    <select id="list" resultType="cn.qbs.wa.train.logistics.pojo.clazz.ClazzListResponse">
+        SELECT c.id, c.org_id, c.name, c.course_id, c.employee_id, c.start_date, c.state, c.plan, e.real_name AS employeeName
+        FROM
+            clazz c
+            LEFT JOIN employee e ON e.id = c.employee_id
+        <where>
+            c.org_id = #{params.orgId}
+            <if test="params.courseId != null">
+                AND c.course_id = #{params.courseId}
+            </if>
+            <if test="params.state != null">
+                AND c.state = #{params.state}
+            </if>
+            <if test="params.plan != null">
+                AND c.plan = #{params.plan}
+            </if>
+            <if test="params.name != null and params.name != ''">
+                AND c.name like concat('%', #{params.name}, '%')
+            </if>
+        </where>
+        ORDER BY c.id DESC
+    </select>
+
+    <select id="getInfoById" resultType="cn.qbs.wa.train.logistics.pojo.clazz.ClazzInfoResponse">
+        SELECT
+            c.id, c.org_id, c.name, c.course_id, c.state, c.plan, c.start_date, c.end_date,
+            c.student_num, c.lesson_num, c.employee_id, e.real_name AS employeeName
+        FROM
+            clazz c
+            LEFT JOIN employee e ON e.id = c.employee_id
+        WHERE c.id = #{clazzId}
+        <if test="params.orgId != null">
+            AND c.org_id = #{params.orgId}
+        </if>
+    </select>
+    <select id="listMyClazz"
+            resultType="cn.qbs.wa.train.logistics.pojo.clazz.LiteClazzResponse">
+        select c.id, c.`name` AS clazzName, o.`name` AS orgName
+        from clazz c
+                 inner join clazz_student cs on c.id = cs.clazz_id
+                 inner join organization o ON o.id = c.org_id
+        where cs.member_id =#{params.memberId} and c.state=1
+    </select>
+
+    <update id="updateLessonNumOrStudentNum">
+        UPDATE clazz set student_num = #{params.studentNum},lesson_num = #{params.lessonNum},classroom_id=#{params.classroomId} WHERE id=#{params.id}
+    </update>
+
+    <select id="getClazzSummary" resultType="cn.qbs.wa.train.logistics.pojo.clazz.ClazzSummaryResponse">
+        select cl.org_id,any_value(o.name) as orgName,count(cl.id ) as clazzCount,sum(cl.lesson_num) as lessonNumCount
+        from clazz cl
+        inner join organization o on cl.org_id=o.id
+        <where>
+            cl.deleted = 0
+            <if test="params.orgId != null">
+                and  cl.org_id = #{params.orgId}
+            </if>
+            <if test="params.startDate != null  ">
+                and cl.start_date <![CDATA[ >= ]]>#{params.startDate}
+            </if>
+            <if test="params.endDate != null  ">
+                and cl.end_date <![CDATA[ <= ]]>#{params.endDate}
+            </if>
+        </where>
+        group by cl.org_id
+        ORDER BY convert(o.name using gbk) ASC
+    </select>
+
+    <select id="getClazzSummaryV2" resultType="cn.qbs.wa.train.logistics.pojo.clazz.ClazzSummaryResponse">
+        select cl.org_id,count(cs.id ) as studentCount
+        from clazz cl
+        inner join clazz_student cs on cl.id=cs.clazz_id
+        <where>
+            cl.deleted = 0
+            <if test="params.orgId != null">
+                and  cl.org_id = #{params.orgId}
+            </if>
+            <if test="params.startDate != null  ">
+                and cl.start_date <![CDATA[ >= ]]>#{params.startDate}
+            </if>
+            <if test="params.endDate != null  ">
+                and cl.end_date <![CDATA[ <= ]]>#{params.endDate}
+            </if>
+        </where>
+        group by cl.org_id
+    </select>
+
+    <select id="listClazzByMemberId" resultType="cn.qbs.wa.train.logistics.pojo.clazz.IntegrateClazzResponse">
+        SELECT
+            c.`id` clazzId, c.`name` clazzName, c.course_id, c.start_date, c.end_date, c.state, room.room_no, o.`name` AS orgName
+        FROM
+            clazz_student cs
+            INNER JOIN clazz c ON c.id = cs.clazz_id
+            INNER JOIN organization o ON o.id = c.org_id
+            LEFT JOIN classroom room ON room.id = c.classroom_id
+        WHERE cs.member_id = #{memberId}
+        ORDER BY c.start_date DESC
+    </select>
+</mapper>
+

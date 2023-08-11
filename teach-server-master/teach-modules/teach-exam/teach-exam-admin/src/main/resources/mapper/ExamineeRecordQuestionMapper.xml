@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.exam.admin.mapper.ExamineeRecordQuestionMapper">
+
+    <resultMap type="cn.qbs.wa.teach.exam.common.entity.ExamineeRecordQuestion" id="ExamineeRecordQuestionMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="examineeRecordId" column="examinee_record_id" jdbcType="INTEGER"/>
+        <result property="questionId" column="question_id" jdbcType="INTEGER"/>
+        <result property="answer" column="answer" jdbcType="VARCHAR"/>
+        <result property="answerTime" column="answer_time" jdbcType="TIMESTAMP"/>
+        <result property="answerUrl" column="answer_url" jdbcType="VARCHAR"/>
+        <result property="answerStatus" column="answer_status" jdbcType="INTEGER"/>
+        <result property="correctResult" column="correct_result" jdbcType="INTEGER"/>
+        <result property="correctTime" column="correct_time" jdbcType="TIMESTAMP"/>
+        <result property="score" column="score" jdbcType="NUMERIC"/>
+        <result property="questionScore" column="question_score" jdbcType="NUMERIC"/>
+        <result property="correctStatus" column="correct_status" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="correctBy" column="correct_by" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="sortNum" column="sort_num" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <update id="mark">
+        update  `examinee_record_question`
+        set correct_time = now(),
+            correct_status = 1,
+            score = #{score,jdbcType=INTEGER}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+</mapper>
+

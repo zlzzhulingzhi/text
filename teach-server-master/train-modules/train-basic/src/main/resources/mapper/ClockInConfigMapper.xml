@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.basic.mapper.ClockInConfigMapper">
+
+    <resultMap type="cn.qbs.wa.train.basic.entity.ClockInConfig" id="ClockInConfigMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="siteCode" column="site_code" jdbcType="VARCHAR"/>
+        <result property="siteName" column="site_name" jdbcType="VARCHAR"/>
+        <result property="longitude" column="longitude" jdbcType="VARCHAR"/>
+        <result property="latitude" column="latitude" jdbcType="VARCHAR"/>
+        <result property="distance" column="distance" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_basic.clock_in_config(site_code, site_name, longitude, latitude, distance, remark, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.siteCode}, #{entity.siteName}, #{entity.longitude}, #{entity.latitude}, #{entity.distance}, #{entity.remark}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_basic.clock_in_config(site_code, site_name, longitude, latitude, distance, remark, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.siteCode}, #{entity.siteName}, #{entity.longitude}, #{entity.latitude}, #{entity.distance}, #{entity.remark}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        site_code = values(site_code) , site_name = values(site_name) , longitude = values(longitude) , latitude = values(latitude) , distance = values(distance) , remark = values(remark) , create_by = values(create_by) , create_time = values(create_time) , update_by = values(update_by) , update_time = values(update_time)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.train.basic.pojo.clockinconfig.ClockInConfigPageResponse">
+        select *
+        from clock_in_config
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.train.basic.pojo.clockinconfig.ClockInConfigDetailResponse">
+        select *
+        from clock_in_config
+        where id = #{id}
+    </select>
+</mapper>
+

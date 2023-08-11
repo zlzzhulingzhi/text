@@ -1,0 +1,165 @@
+version : '3.8'
+services:
+  teach-gateway:
+    container_name: teach-gateway
+    image: ${prefix}${module}:${version}
+    build:
+      context: .
+      dockerfile: ./gateway/dockerfile
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./gateway/logs:/mydata/app/logs
+
+  teach-auth:
+    container_name: teach-auth
+    image: ${prefix}${module}:${version}
+    build:
+      context: .
+      dockerfile: ./auth/dockerfile
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./auth/logs:/mydata/app/logs
+
+  teach-basic:
+    container_name: teach-basic
+    image: ${prefix}${module}:${version}
+    environment:
+      - TZ=Asia/Shanghai
+    build:
+      context: .
+      dockerfile: ./basic/dockerfile
+    volumes:
+      - ./basic/logs:/mydata/app/logs
+
+  teach-course-standard:
+    container_name: teach-course-standard
+    image: ${prefix}${module}:${version}
+    environment:
+      - TZ=Asia/Shanghai
+    build:
+      context: .
+      dockerfile: ./course/dockerfile
+    volumes:
+      - ./course/logs:/mydata/app/logs
+
+  teach-organization:
+    container_name: teach-organization
+    image: ${prefix}${module}:${version}
+    environment:
+      - TZ=Asia/Shanghai
+    build:
+      context: .
+      dockerfile: ./organization/dockerfile
+    volumes:
+      - ./organization/logs:/mydata/app/logs
+
+  teach-question:
+    container_name: teach-question
+    image: ${prefix}${module}:${version}
+    environment:
+      - TZ=Asia/Shanghai
+    build:
+      context: .
+      dockerfile: ./question/dockerfile
+    volumes:
+      - ./question/logs:/mydata/app/logs
+
+  teach-exam-admin:
+    container_name: teach-exam-admin
+    image: ${prefix}${module}:${version}
+    environment:
+      - TZ=Asia/Shanghai
+    build:
+      context: .
+      dockerfile: ./exam/exam-admin/dockerfile
+    volumes:
+      - ./exam/exam-admin/logs:/mydata/app/logs
+
+  teach-exam-answer:
+    container_name: teach-exam-answer
+    image: ${prefix}${module}:${version}
+    environment:
+      - TZ=Asia/Shanghai
+    build:
+      context: .
+      dockerfile: ./exam/exam-answer/dockerfile
+    volumes:
+      - ./exam/exam-answer/logs:/mydata/app/logs
+
+  teach-exam-consumer:
+    container_name: teach-exam-consumer
+    image: ${prefix}${module}:${version}
+    environment:
+      - TZ=Asia/Shanghai
+    build:
+      context: .
+      dockerfile: ./exam/exam-consumer/dockerfile
+    volumes:
+      - ./exam/exam-consumer/logs:/mydata/app/logs
+
+  teach-cert:
+    container_name: teach-cert
+    image: ${prefix}${module}:${version}
+    environment:
+      - TZ=Asia/Shanghai
+    build:
+      context: .
+      dockerfile: ./cert/dockerfile
+    volumes:
+      - ./cert/logs:/mydata/app/logs
+
+  union-auth:
+    container_name: union-auth
+    image: ${prefix}${module}:${version}
+    build:
+      context: .
+      dockerfile: ./union-auth/dockerfile
+    volumes:
+      - ./union-auth/logs:/mydata/app/logs
+
+  union-admin:
+    container_name: union-admin
+    image: ${prefix}${module}:${version}
+    build:
+      context: .
+      dockerfile: ./union-admin/dockerfile
+    volumes:
+      - ./union-admin/logs:/mydata/app/logs
+
+  train-allowance:
+    image: ${prefix}${module}:${version}
+    container_name: train-allowance
+    build:
+      context: .
+      dockerfile: ./train-allowance/dockerfile
+    volumes:
+      - ./train-allowance/logs:/mydata/app/logs
+
+  train-basic:
+    container_name: train-basic
+    image: ${prefix}${module}:${version}
+    build:
+      context: .
+      dockerfile: ./train-basic/dockerfile
+    volumes:
+      - ./train-basic/logs:/mydata/app/logs
+
+  train-logistics:
+    container_name: train-logistics
+    image: ${prefix}${module}:${version}
+    build:
+      context: .
+      dockerfile: ./train-logistics/dockerfile
+    volumes:
+      - ./train-logistics/logs:/mydata/app/logs
+
+  train-screen:
+    container_name: train-screen
+    image: ${prefix}${module}:${version}
+    build:
+      context: .
+      dockerfile: ./train-screen/dockerfile
+    volumes:
+      - ./train-screen/logs:/mydata/app/logs

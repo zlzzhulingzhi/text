@@ -1,0 +1,136 @@
+# 执行前先检查替换IP
+
+# 创建题库索引及映射
+curl -H "Content-Type: application/json" -XPUT http://127.0.0.1:9200/train_question -d '
+{
+  "settings": {
+    "number_of_shards": 5,
+    "number_of_replicas": 0,
+    "analysis": {
+      "analyzer": {
+        "html_ik_analyzer": {
+          "char_filter": [
+            "html_strip"
+          ],
+          "tokenizer": "ik_max_word"
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "id": {
+        "type": "long"
+      },
+      "questionTypeId": {
+        "type": "integer"
+      },
+      "categoryIds": {
+        "type": "long"
+      },
+      "difficultyId": {
+        "type": "integer"
+      },
+      "orgId": {
+        "type": "long"
+      },
+      "content": {
+        "type": "text",
+        "analyzer": "html_ik_analyzer"
+      },
+      "createBy": {
+        "type": "long"
+      },
+      "createTime": {
+        "type": "date",
+        "format": "yyyy-MM-dd HH:mm:ss"
+      },
+      "updateBy": {
+        "type": "long"
+      },
+      "updateTime": {
+        "type": "date",
+        "format": "yyyy-MM-dd HH:mm:ss"
+      }
+    }
+  },
+  "aliases": {
+    "train_question_alias": {
+      "is_write_index": true
+    }
+  }
+}
+'
+
+# 创建试卷索引及映射
+curl -H "Content-Type: application/json" -XPUT http://127.16.0.14:9200/train_paper -d '
+{
+  "settings": {
+    "number_of_shards": 5,
+    "number_of_replicas": 0,
+    "analysis": {
+      "analyzer": {
+        "html_ik_analyzer": {
+          "char_filter": [
+            "html_strip"
+          ],
+          "tokenizer": "ik_max_word"
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "id": {
+        "type": "long"
+      },
+      "name": {
+        "type": "text",
+        "analyzer": "html_ik_analyzer"
+      },
+      "questionCount": {
+        "type": "long"
+      },
+      "totalScore": {
+        "type": "double"
+      },
+      "orgId": {
+        "type": "long"
+      },
+      "remark": {
+        "type": "keyword"
+      },
+      "createBy": {
+        "type": "long"
+      },
+      "createTime": {
+        "type": "date",
+        "format": "yyyy-MM-dd HH:mm:ss"
+      },
+      "updateBy": {
+        "type": "long"
+      },
+      "updateTime": {
+        "type": "date",
+        "format": "yyyy-MM-dd HH:mm:ss"
+      },
+      "categoryList": {
+        "type": "nested",
+        "properties": {
+          "categoryId": {
+            "type": "long"
+          },
+          "categoryName": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  },
+ "aliases": {
+   "train_paper_alias": {
+     "is_write_index": true
+   }
+ }
+}
+'

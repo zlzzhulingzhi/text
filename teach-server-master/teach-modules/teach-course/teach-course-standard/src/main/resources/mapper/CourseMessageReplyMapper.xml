@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.CourseMessageReplyMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.CourseMessageReply" id="CourseMessageReplyMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="messageId" column="message_id" jdbcType="INTEGER"/>
+        <result property="replyContent" column="reply_content" jdbcType="VARCHAR"/>
+        <result property="replyId" column="reply_id" jdbcType="INTEGER"/>
+        <result property="replyType" column="reply_type" jdbcType="VARCHAR"/>
+        <result property="replyNickName" column="reply_nick_name" jdbcType="VARCHAR"/>
+        <result property="replyHeadImgUrl" column="reply_head_img_url" jdbcType="VARCHAR"/>
+        <result property="toUserId" column="to_user_id" jdbcType="INTEGER"/>
+        <result property="praiseNum" column="praise_num" jdbcType="INTEGER"/>
+        <result property="reportStatus" column="report_status" jdbcType="INTEGER"/>
+        <result property="deleted" column="deleted" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_message_reply(org_id, message_id, reply_content, reply_id, reply_type,
+        reply_nick_name, reply_head_img_url, to_user_id, praise_num, report_status, deleted, create_by, create_time,
+        update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.messageId}, #{entity.replyContent}, #{entity.replyId}, #{entity.replyType},
+            #{entity.replyNickName}, #{entity.replyHeadImgUrl}, #{entity.toUserId}, #{entity.praiseNum},
+            #{entity.reportStatus}, #{entity.deleted}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy},
+            #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_message_reply(org_id, message_id, reply_content, reply_id, reply_type,
+        reply_nick_name, reply_head_img_url, to_user_id, praise_num, report_status, deleted, create_by, create_time,
+        update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.messageId}, #{entity.replyContent}, #{entity.replyId}, #{entity.replyType},
+            #{entity.replyNickName}, #{entity.replyHeadImgUrl}, #{entity.toUserId}, #{entity.praiseNum},
+            #{entity.reportStatus}, #{entity.deleted}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy},
+            #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , message_id = values(message_id) , reply_content = values(reply_content) , reply_id =
+        values(reply_id) , reply_type = values(reply_type) , reply_nick_name = values(reply_nick_name) ,
+        reply_head_img_url = values(reply_head_img_url) , to_user_id = values(to_user_id) , praise_num =
+        values(praise_num) , report_status = values(report_status) , deleted = values(deleted) , create_by =
+        values(create_by) , create_time = values(create_time) , update_by = values(update_by) , update_time =
+        values(update_time) $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.course.standard.pojo.coursemessagereply.CourseMessageReplyPageResponse">
+        select *
+        from course_message_reply cmr
+        <where>
+            <if test="params.messageId != null">
+                and cmr.message_id=#{params.messageId}
+            </if>
+            <if test="params.replyContent != null and params.replyContent != '' ">
+                and cmr.reply_content like concat('%', #{params.replyContent}, '%')
+            </if>
+            <if test="params.replyId != null">
+                and cmr.reply_id=#{params.replyId}
+            </if>
+            <if test="params.replyType != null and params.replyType != '' ">
+                and cmr.reply_type like concat('%', #{params.replyType}, '%')
+            </if>
+            <if test="params.replyNickName != null and params.replyNickName != '' ">
+                and cmr.reply_nick_name like concat('%', #{params.replyNickName}, '%')
+            </if>
+            <if test="params.replyHeadImgUrl != null and params.replyHeadImgUrl != '' ">
+                and cmr.reply_head_img_url like concat('%', #{params.replyHeadImgUrl}, '%')
+            </if>
+            <if test="params.toUserId != null">
+                and cmr.to_user_id=#{params.toUserId}
+            </if>
+            <if test="params.praiseNum != null">
+                and cmr.praise_num=#{params.praiseNum}
+            </if>
+            <if test="params.reportStatus != null">
+                and cmr.report_status=#{params.reportStatus}
+            </if>
+            <choose>
+                <when test="params.deleted != null">
+                    and cmr.deleted = #{params.deleted}
+                </when>
+                <otherwise>
+                    and cmr.deleted = 0
+                </otherwise>
+            </choose>
+        </where>
+        order by cmr.id desc
+    </select>
+
+    <select id="selectDetailById"
+            resultType="cn.qbs.wa.teach.course.standard.pojo.coursemessagereply.CourseMessageReplyDetailResponse">
+        select *
+        from course_message_reply
+        where id = #{id}
+    </select>
+</mapper>
+

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.organization.mapper.StudentGroupMapper">
+
+    <resultMap type="cn.qbs.wa.teach.organization.entity.StudentGroup" id="StudentGroupMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="studentId" column="student_id" jdbcType="INTEGER"/>
+        <result property="groupId" column="group_id" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_teach_organization.student_group(org_id, student_id, group_id, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.studentId}, #{entity.groupId}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_teach_organization.student_group(org_id, student_id, group_id, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.studentId}, #{entity.groupId}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , student_id = values(student_id) , group_id = values(group_id) , create_by = values(create_by) , create_time = values(create_time)         $empty
+    </insert>
+
+    <insert id="addStudentGroup" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_teach_organization.student_group(org_id, student_id, group_id, create_by, create_time)
+        values
+            (#{entity.orgId}, #{entity.studentId}, #{entity.groupId}, #{entity.createBy}, #{entity.createTime})
+
+    </insert>
+
+    <select id="selectGroup" resultType="cn.qbs.wa.teach.organization.pojo.studentgroup.StudentGroupPageResponse">
+       SELECT COUNT(*) as count from student_group where student_id = #{params.studentId} and group_id = #{params.groupId}
+    </select>
+
+    <select id="selectAll" resultType="cn.qbs.wa.teach.organization.pojo.studentgroup.StudentGroupDetailResponse">
+       SELECT * from `groups` where enabled=1
+    </select>
+
+    <select id="page" resultType="cn.qbs.wa.teach.organization.pojo.studentgroup.StudentGroupPageResponse">
+        select *
+        from student_group
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.organization.pojo.studentgroup.StudentGroupDetailResponse">
+       select g.group_name,g.id groupId,sg.id studentGroupId
+        from `groups` g LEFT JOIN student_group sg on g.id = sg.group_id where g.enabled = 1
+    </select>
+
+
+    <select id="listGroupByStu" resultType="cn.qbs.wa.teach.organization.entity.Groups">
+        SELECT
+            g.*
+        FROM
+            student_group sg
+            INNER JOIN `groups` g ON g.id = sg.group_id
+        WHERE sg.student_id = #{id}
+    </select>
+</mapper>
+

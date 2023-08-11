@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.organization.mapper.WLecturerMapper">
+
+    <resultMap type="cn.qbs.wa.teach.organization.entity.WLecturer" id="WLecturerMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_teach_organization.w_lecturer(org_id, sort, create_time, create_by)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.sort}, #{entity.createTime}, #{entity.createBy})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_teach_organization.w_lecturer(org_id, sort, create_time, create_by)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.sort}, #{entity.createTime}, #{entity.createBy})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , sort = values(sort) , create_time = values(create_time) , create_by = values(create_by)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.organization.pojo.wlecturer.WLecturerPageResponse">
+        SELECT
+        wl.*,
+        e.real_name,
+        e.phone,
+        l.head_img_url,
+        l.title,
+        l.intro,
+        l.enabled,
+        o.NAME AS orgName
+        FROM
+        w_lecturer wl
+        INNER JOIN lecturer l ON l.id = wl.id AND l.enabled = 1
+        INNER JOIN employee e on e.id=l.employee_id
+        INNER JOIN organization o ON o.id = e.org_id
+        <where>
+            <!-- 示例代码，自行修改 -->
+
+            <if test="params.name != null and params.name != '' ">
+                and e.real_name like concat('%', #{params.name}, '%')
+            </if>
+
+            <if test="params.enabled != null">
+                and l.enabled = #{params.enabled}
+            </if>
+
+        </where>
+       order by wl.sort
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.organization.pojo.wlecturer.WLecturerDetailResponse">
+        select *
+        from w_lecturer
+        where id = #{id}
+    </select>
+</mapper>
+

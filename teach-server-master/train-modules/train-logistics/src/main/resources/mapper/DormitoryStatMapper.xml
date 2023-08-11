@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.DormitoryStatMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.DormitoryStat" id="DormitoryStatMap">
+        <result property="id" column="id" jdbcType="BIGINT"/>
+        <result property="building" column="building" jdbcType="VARCHAR"/>
+        <result property="roomTypeCode" column="room_type_code" jdbcType="VARCHAR"/>
+        <result property="roomTypeName" column="room_type_name" jdbcType="VARCHAR"/>
+        <result property="roomNum" column="room_num" jdbcType="INTEGER"/>
+        <result property="maintNum" column="maint_num" jdbcType="INTEGER"/>
+        <result property="usingNum" column="using_num" jdbcType="INTEGER"/>
+        <result property="incomeNum" column="income_num" jdbcType="INTEGER"/>
+        <result property="outcomeNum" column="outcome_num" jdbcType="INTEGER"/>
+        <result property="area" column="area" jdbcType="DECIMAL"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="BIGINT"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="BIGINT"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+</mapper>
+

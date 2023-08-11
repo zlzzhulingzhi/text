@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.question.mapper.QuestionBodyMapper">
+
+    <resultMap type="cn.qbs.wa.teach.question.entity.QuestionBody" id="QuestionBodyMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="content" column="content" jdbcType="VARCHAR"/>
+        <result property="answer" column="answer" jdbcType="VARCHAR"/>
+        <result property="answerDesc" column="answer_desc" jdbcType="VARCHAR"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into question_body(content, answer, answer_desc, org_id)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.content}, #{entity.answer}, #{entity.answerDesc}, #{entity.orgId})
+        </foreach>
+    </insert>
+    
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into question_body(content, answer, answer_desc, org_id)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.content}, #{entity.answer}, #{entity.answerDesc}, #{entity.orgId})
+        </foreach>
+        on duplicate key update
+        content = values(content) , answer = values(answer) , answer_desc = values(answer_desc) , org_id = values(org_id)         $empty
+    </insert>
+
+</mapper>
+

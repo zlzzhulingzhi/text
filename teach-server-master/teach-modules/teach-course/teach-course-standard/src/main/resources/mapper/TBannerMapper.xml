@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.TBannerMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.standard.entity.TBanner" id="TBannerMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="section" column="section" jdbcType="VARCHAR"/>
+        <result property="imgUrl" column="img_url" jdbcType="VARCHAR"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="page" resultType="cn.qbs.wa.teach.course.standard.pojo.tbanner.TBannerResponse">
+        select id, `section`, img_url, sort, enabled
+        from t_banner
+        <where>
+            <if test="params.section != null and params.section != '' ">
+                and `section` = #{params.section}
+            </if>
+            <if test="params.enabled != null ">
+                and `section` = #{params.enabled}
+            </if>
+        </where>
+        ORDER BY sort, id DESC
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.course.standard.pojo.tbanner.TBannerDetailResponse">
+        select id, `section`, img_url, sort, enabled
+        from t_banner
+        where id = #{id}
+    </select>
+
+    <select id="list" resultType="cn.qbs.wa.teach.course.standard.pojo.tbanner.TBannerResponse">
+        select id, `section`, img_url, sort, enabled
+        from t_banner
+        <where>
+            <if test="params.section != null and params.section != '' ">
+                and `section` = #{params.section}
+            </if>
+            <if test="params.enabled != null ">
+                and enabled = #{params.enabled}
+            </if>
+        </where>
+        ORDER BY sort, id DESC
+    </select>
+</mapper>
+

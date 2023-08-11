@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.TCourseStudentMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.standard.entity.TCourseStudent" id="TCourseStudentMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="memberId" column="member_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="pageCourseStudent" resultType="cn.qbs.wa.teach.course.standard.pojo.tcoursestudent.TCourseStudentPageResponse">
+        select *
+        from t_course_student
+        <where>
+            <if test="params.status != null ">
+                and status =  #{params.status}
+            </if>
+            <if test="params.courseId != null ">
+                and course_id =  #{params.courseId}
+            </if>
+            <if test="params.orgId != null ">
+                and org_id =  #{params.orgId}
+            </if>
+            <if test="params.memberIdList!=null and params.memberIdList.size() > 0 ">
+                and member_id in
+                <foreach collection="params.memberIdList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        order by status
+    </select>
+
+    <select id="litePagePreStudent" resultType="cn.qbs.wa.teach.course.standard.pojo.tcoursestudent.TCourseStudentResponse">
+        SELECT `id`, `status`, `member_id`, `create_time`
+        FROM t_course_student
+        <where>
+            course_id =  #{params.courseId}
+            <if test="params.status != null ">
+                and status =  #{params.status}
+            </if>
+        </where>
+        order by `status`, `id` DESC
+    </select>
+</mapper>
+

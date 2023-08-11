@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.MemberVisitMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.MemberVisit" id="MemberVisitMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="visitorName" column="visitor_name" jdbcType="VARCHAR"/>
+        <result property="memberId" column="member_id" jdbcType="INTEGER"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="carNumber" column="car_number" jdbcType="VARCHAR"/>
+        <result property="visitPeople" column="visit_people" jdbcType="VARCHAR"/>
+        <result property="visitDepartment" column="visit_department" jdbcType="VARCHAR"/>
+        <result property="visitReason" column="visit_reason" jdbcType="VARCHAR"/>
+        <result property="visitTime" column="visit_time" jdbcType="TIMESTAMP"/>
+        <result property="auditBy" column="audit_by" jdbcType="INTEGER"/>
+        <result property="auditTime" column="audit_time" jdbcType="TIMESTAMP"/>
+        <result property="auditStats" column="audit_stats" jdbcType="INTEGER"/>
+        <result property="auditResult" column="audit_result" jdbcType="VARCHAR"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_logistics.member_visit(visitor_name, member_id, phone, car_number, visit_people,
+        visit_department, visit_reason, visit_time, audit_by, audit_time, audit_stats, audit_result, enabled,
+        create_time, remark)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.visitorName}, #{entity.memberId}, #{entity.phone}, #{entity.carNumber}, #{entity.visitPeople},
+            #{entity.visitDepartment}, #{entity.visitReason}, #{entity.visitTime}, #{entity.auditBy},
+            #{entity.auditTime}, #{entity.auditStats}, #{entity.auditResult}, #{entity.enabled}, #{entity.createTime},
+            #{entity.remark})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_logistics.member_visit(visitor_name, member_id, phone, car_number, visit_people,
+        visit_department, visit_reason, visit_time, audit_by, audit_time, audit_stats, audit_result, enabled,
+        create_time, remark)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.visitorName}, #{entity.memberId}, #{entity.phone}, #{entity.carNumber}, #{entity.visitPeople},
+            #{entity.visitDepartment}, #{entity.visitReason}, #{entity.visitTime}, #{entity.auditBy},
+            #{entity.auditTime}, #{entity.auditStats}, #{entity.auditResult}, #{entity.enabled}, #{entity.createTime},
+            #{entity.remark})
+        </foreach>
+        on duplicate key update
+        visitor_name = values(visitor_name) , member_id = values(member_id) , phone = values(phone) , car_number =
+        values(car_number) , visit_people = values(visit_people) , visit_department = values(visit_department) ,
+        visit_reason = values(visit_reason) , visit_time = values(visit_time) , audit_by = values(audit_by) , audit_time
+        = values(audit_time) , audit_stats = values(audit_stats) , audit_result = values(audit_result) , enabled =
+        values(enabled) , create_time = values(create_time) , remark = values(remark) $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.train.logistics.pojo.membervisit.MemberVisitPageResponse">
+        select mv.*,o.name as orgName
+        from member_visit mv
+        left join organization o on mv.visit_org_id=o.id
+        <where>
+            <if test="params.roles != null and params.roles.size() > 0">
+                <foreach collection="params.roles" item="role" open="(" separator="," close=")">
+                    <if test="role == 'plat_manager'">
+                        mv.visit_org_id is null
+                    </if>
+                    <if test="role == 'zxwy'">
+                        mv.visit_org_id is not null
+                    </if>
+                </foreach>
+            </if>
+            <if test="params.visitorName != null and params.visitorName != '' ">
+                and mv.visitor_name like concat('%', #{params.visitorName}, '%')
+            </if>
+            <if test="params.memberId != null">
+                and mv.member_id = #{params.memberId}
+            </if>
+            <if test="params.auditStats != null ">
+                and mv.audit_stats = #{params.auditStats}
+            </if>
+            <if test="params.phone != null and params.phone != '' ">
+                and mv.phone = #{params.phone}
+            </if>
+            <if test="params.startVisitTime != null and params.endVisitTime != null ">
+                and mv.visit_time <![CDATA[ >= ]]>#{params.startVisitTime} and mv.visit_time <![CDATA[ <= ]]>#{params.endVisitTime}
+            </if>
+            <if test="params.visitDepartment != null and params.visitDepartment != '' ">
+                and mv.visit_department like concat('%', #{params.visitDepartment}, '%')
+            </if>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+        order by id desc
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.train.logistics.pojo.membervisit.MemberVisitDetailResponse">
+        select *,o.name as orgName
+        from member_visit mv
+        left join organization o on mv.visit_org_id=o.id
+        where mv.id = #{id}
+    </select>
+</mapper>
+

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.ClassroomMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.Classroom" id="ClassroomMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="building" column="building" jdbcType="VARCHAR"/>
+        <result property="floor" column="floor" jdbcType="VARCHAR"/>
+        <result property="roomNo" column="room_no" jdbcType="VARCHAR"/>
+        <result property="roomType" column="room_type" jdbcType="VARCHAR"/>
+        <result property="seats" column="seats" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="deleted" column="deleted" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into classroom(building, floor, room_no, room_type, seats, remark, enabled, deleted,
+        create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.building}, #{entity.floor}, #{entity.roomNo}, #{entity.roomType}, #{entity.seats},
+            #{entity.remark}, #{entity.enabled}, #{entity.deleted}, #{entity.createBy}, #{entity.createTime},
+            #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into classroom(building, floor, room_no, room_type, seats, remark, enabled, deleted,
+        create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.building}, #{entity.floor}, #{entity.roomNo}, #{entity.roomType}, #{entity.seats},
+            #{entity.remark}, #{entity.enabled}, #{entity.deleted}, #{entity.createBy}, #{entity.createTime},
+            #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        building = values(building) , floor = values(floor) , room_number = values(room_number) , room_type =
+        values(room_type) , seats = values(seats) , remark = values(remark) , enabled = values(enabled) , deleted =
+        values(deleted) , create_by = values(create_by) , create_time = values(create_time) , update_by =
+        values(update_by) , update_time = values(update_time) $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.train.logistics.pojo.classroom.ClassroomPageResponse">
+        select c.*
+        from classroom c
+        <where>
+            deleted = 0
+            <if test="params.building != null and params.building != '' ">
+                and building = #{params.building}
+            </if>
+            <if test="params.floor != null and params.floor != '' ">
+                and floor = #{params.floor}
+            </if>
+            <if test="params.roomNo != null and params.roomNo != '' ">
+                and room_no = #{params.roomNo}
+            </if>
+            <if test="params.enabled != null and params.enabled != '' ">
+                and enabled = #{params.enabled}
+            </if>
+            <if test="params.mode != null and params.mode != '' ">
+                and mode = #{params.mode}
+            </if>
+            <if test="params.roomType != null and params.roomType != '' ">
+                and room_type = #{params.roomType}
+            </if>
+            <if test="params.seats != null and params.seats != '' ">
+                and seats = #{params.seats}
+            </if>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.train.logistics.pojo.classroom.ClassroomDetailResponse">
+        select *
+        from classroom
+        where id = #{id} and deleted = 0
+    </select>
+
+    <select id="getClassroomSummary" resultType="cn.qbs.wa.train.logistics.pojo.classroom.ClassroomSummaryResponse">
+        select cl.room_type,count(distinct cl.id) as totalNum,count(distinct cs.classroom_id ) as useNum
+        from classroom cl
+        left join classroom_schedule cs
+        on cl.id=cs.classroom_id and cs.use_date = #{params.useDate}
+        <where>
+            cl.deleted = 0
+            <if test="params.roomType != null and params.roomType != '' ">
+                and cl.room_type = #{params.roomType}
+            </if>
+        </where>
+        group by cl.room_type
+        order by convert(cl.room_type using gbk) ASC
+    </select>
+
+    <select id="pageV2" resultType="cn.qbs.wa.train.logistics.pojo.classroom.ClassroomPageResponse">
+        select cl.*,cs.use_date,cs.use_period,cs.org_id
+        from classroom cl
+        left join classroom_schedule cs
+        on cl.id=cs.classroom_id
+        <where>
+            cl.deleted = 0
+            <if test="params.roomType != null and params.roomType != '' ">
+                and cl.room_type = #{params.roomType}
+            </if>
+            <if test="params.useDate != null">
+                and cs.use_date = #{params.useDate}
+            </if>
+        </where>
+    </select>
+
+    <select id="pageInuse" resultType="cn.qbs.wa.train.logistics.pojo.classroom.ClassroomPageResponse">
+        SELECT
+            DISTINCT c.id, c.building, c.floor, c.room_no, c.room_type, c.seats
+        FROM
+            classroom_schedule cs
+            INNER JOIN classroom c ON c.id = cs.classroom_id AND c.deleted = 0
+        <where>
+            cs.use_date BETWEEN #{params.startDate} AND #{params.endDate}
+            <if test="params.building != null and params.building != '' ">
+                and c.building = #{params.building}
+            </if>
+            <if test="params.floor != null and params.floor != '' ">
+                and c.floor = #{params.floor}
+            </if>
+            <if test="params.roomNo != null and params.roomNo != '' ">
+                and c.room_no = #{params.roomNo}
+            </if>
+            <if test="params.enabled != null and params.enabled != '' ">
+                and c.enabled = #{params.enabled}
+            </if>
+            <if test="params.mode != null and params.mode != '' ">
+                and c.mode = #{params.mode}
+            </if>
+            <if test="params.roomType != null and params.roomType != '' ">
+                and c.room_type = #{params.roomType}
+            </if>
+        </where>
+    </select>
+
+    <select id="pageUnused" resultType="cn.qbs.wa.train.logistics.pojo.classroom.ClassroomPageResponse">
+        SELECT
+            c.id, c.building, c.floor, c.room_no, c.room_type, c.seats
+        FROM
+            classroom c
+            LEFT JOIN classroom_schedule cs ON c.id = cs.classroom_id AND cs.use_date BETWEEN #{params.startDate} AND #{params.endDate}
+        <where>
+            cs.id IS NULL AND c.deleted = 0
+            <if test="params.building != null and params.building != '' ">
+                and c.building = #{params.building}
+            </if>
+            <if test="params.floor != null and params.floor != '' ">
+                and c.floor = #{params.floor}
+            </if>
+            <if test="params.roomNo != null and params.roomNo != '' ">
+                and c.room_no = #{params.roomNo}
+            </if>
+            <if test="params.enabled != null and params.enabled != '' ">
+                and c.enabled = #{params.enabled}
+            </if>
+            <if test="params.mode != null and params.mode != '' ">
+                and c.mode = #{params.mode}
+            </if>
+            <if test="params.roomType != null and params.roomType != '' ">
+                and c.room_type = #{params.roomType}
+            </if>
+        </where>
+    </select>
+</mapper>
+

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.allowance.mapper.ApplyQualificationCourseMapper">
+
+    <resultMap type="cn.qbs.wa.train.allowance.entity.ApplyQualificationCourse" id="ApplyQualificationCourseMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="projectId" column="project_id" jdbcType="INTEGER"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="courseName" column="course_name" jdbcType="VARCHAR"/>
+        <result property="trainObject" column="train_object" jdbcType="VARCHAR"/>
+        <result property="trainContent" column="train_content" jdbcType="VARCHAR"/>
+        <result property="lecturerId" column="lecturer_id" jdbcType="INTEGER"/>
+        <result property="lecturerName" column="lecturer_name" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_allowance.apply_qualification_course(org_id, project_id, course_id, course_name, train_object, train_content, lecturer_id, lecturer_name, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.projectId}, #{entity.courseId}, #{entity.courseName}, #{entity.trainObject}, #{entity.trainContent}, #{entity.lecturerId}, #{entity.lecturerName}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+    </insert>
+    
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_allowance.apply_qualification_course(org_id, project_id, course_id, course_name, train_object, train_content, lecturer_id, lecturer_name, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.projectId}, #{entity.courseId}, #{entity.courseName}, #{entity.trainObject}, #{entity.trainContent}, #{entity.lecturerId}, #{entity.lecturerName}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , project_id = values(project_id) , course_id = values(course_id) , course_name = values(course_name) , train_object = values(train_object) , train_content = values(train_content) , lecturer_id = values(lecturer_id) , lecturer_name = values(lecturer_name) , create_by = values(create_by) , create_time = values(create_time)         $empty
+    </insert>
+
+</mapper>
+

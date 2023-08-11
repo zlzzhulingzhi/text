@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.DeptMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.Dept" id="DeptMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="parentId" column="parent_id" jdbcType="INTEGER"/>
+        <result property="deptName" column="dept_name" jdbcType="VARCHAR"/>
+        <result property="parentCode" column="parent_code" jdbcType="VARCHAR"/>
+        <result property="fullName" column="full_name" jdbcType="VARCHAR"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_train_organization.dept(org_id, parent_id, dept_name, full_name, sort, remark, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.parentId}, #{entity.deptName}, #{entity.fullName}, #{entity.sort}, #{entity.remark}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_train_organization.dept(org_id, parent_id, dept_name, full_name, sort, remark, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.parentId}, #{entity.deptName}, #{entity.fullName}, #{entity.sort}, #{entity.remark}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , parent_id = values(parent_id) , dept_name = values(dept_name) , full_name = values(full_name) , sort = values(sort) , remark = values(remark) , create_by = values(create_by) , create_time = values(create_time)         $empty
+    </insert>
+    <update id="updateDeptCount">
+    update dept set people_count=#{peopleCount} where id=#{id}
+
+    </update>
+
+    <select id="page" resultType="cn.qbs.wa.train.logistics.pojo.dept.DeptPageResponse">
+        select
+        d.*,
+        d.people_count as peopleCountTotal,
+        IF( COUNT( de.id ) > 0, 1, 0 ) AS hasChildren
+        from dept d
+        LEFT JOIN dept de ON d.id = de.parent_id
+        <where>
+            <if test="params.parentId != null  ">
+                and d.parent_id = #{params.parentId}
+            </if>
+            <if test="params.enabled != null  ">
+                and d.enabled = #{params.enabled}
+            </if>
+        </where>
+        GROUP BY
+        d.id
+        order by d.sort
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.train.logistics.pojo.dept.DeptDetailResponse">
+        select *
+        from dept
+        where id = #{id}
+    </select>
+    <select id="listDept" resultType="cn.qbs.wa.train.logistics.pojo.dept.DeptListResponse">
+        select
+        d.*,
+        d.id deptId,
+        d.people_count as peopleCountTotal,
+        IF( COUNT( de.id ) > 0, 1, 0 ) AS hasChildren
+         from dept d
+        LEFT JOIN dept de ON d.id = de.parent_id
+        <where>
+            <if test="orgId!=null">
+                and d.org_id=#{orgId}
+            </if>
+
+            <if test="params.enabled!=null">
+                and d.enabled=#{params.enabled}
+            </if>
+            <if test="params.deptName != null and params.deptName != ''">
+                and d.dept_name LIKE CONCAT('%',#{params.deptName},'%')
+            </if>
+        </where>
+        GROUP BY
+        d.id
+        order by d.sort
+    </select>
+    <select id="getPeopleCountById" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+            employee_dept ed
+        WHERE
+            dept_id = #{id}
+    </select>
+
+
+    <select id="getOrgDept" resultType="cn.qbs.wa.train.logistics.pojo.orgbackcoupon.OrgDeptOrRoleResponseDTO">
+        select id,dept_name name
+        from dept
+        where org_id = #{id}
+    </select>
+
+    <select id="selectDeptList" resultType="cn.qbs.wa.train.logistics.pojo.dept.DeptListResponse">
+        select
+        d.*,
+        d.people_count as peopleCountTotal,
+        IF( COUNT( de.id ) > 0, 1, 0 ) AS hasChildren
+        from dept d
+        LEFT JOIN dept de ON d.id = de.parent_id
+        where d.parent_id=#{params.parentId}
+        GROUP BY
+        d.id
+        order by d.sort
+    </select>
+
+    <select id="selectDeptEmployeeCount" resultType="java.lang.Long">
+        select count(distinct e.id)
+        from employee e
+            left join employee_dept ed on ed.employee_id = e.id
+        <where>
+            e.org_id = #{orgId}
+            <if test="deptIdList != null and deptIdList.size() > 0">
+                and ed.dept_id IN
+                <foreach collection="deptIdList" item="deptId" open="(" separator="," close=")" index="index">
+                    #{deptId}
+                </foreach>
+                <if test="deptIdList.contains(-1L)">
+                    or ed.id is null
+                </if>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectDeptStudentCount" resultType="java.lang.Long">
+        select count(distinct s.id)
+        from student s
+            left join student_dept sd on sd.student_id = s.id
+        <where>
+            s.org_id = #{orgId}
+            <if test="deptIdList != null and deptIdList.size() > 0">
+                and sd.dept_id IN
+                <foreach collection="deptIdList" item="deptId" open="(" separator="," close=")" index="index">
+                    #{deptId}
+                </foreach>
+                <if test="deptIdList.contains(-1L)">
+                    or sd.id is null
+                </if>
+            </if>
+        </where>
+    </select>
+
+</mapper>
+

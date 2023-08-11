@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.LiteLogisticsMapper">
+
+    <select id="pageMatterReport" resultType="cn.qbs.wa.train.logistics.pojo.matter.LiteMatterReportResponse">
+        SELECT
+            mr.id, o.`name` AS org_name, mr.category, mr.description, mr.create_time
+        FROM
+            matter_report mr
+            INNER JOIN organization o ON o.id = mr.org_id
+        <where>
+            <if test="params.orgId != null">
+                AND mr.org_id = #{params.orgId}
+            </if>
+            <if test="params.category != null">
+                AND mr.category = #{params.category}
+            </if>
+            <if test="params.classroomId != null">
+                AND mr.classroom_id = #{params.classroomId}
+            </if>
+            <if test="params.reportDate != null">
+                AND DATE_FORMAT(mr.create_time, '%Y-%m-%d') = #{params.reportDate}
+            </if>
+        </where>
+        ORDER BY mr.id DESC
+    </select>
+
+    <select id="pageClassroom" resultType="cn.qbs.wa.train.logistics.pojo.classroom.LiteClassroomResponse">
+        SELECT
+            c.id AS classroomId, c.building, c.floor, c.room_no, c.room_type
+        FROM
+            classroom c
+        <where>
+            c.deleted = 0 AND c.enabled = 1
+            <if test="params.building != null and params.building != '' ">
+                AND c.building = #{params.building}
+            </if>
+            <if test="params.floor != null and params.floor != '' ">
+                AND c.floor = #{params.floor}
+            </if>
+            <if test="params.roomType != null and params.roomType != '' ">
+                AND c.room_type = #{params.roomType}
+            </if>
+        </where>
+    </select>
+
+    <select id="listMatterReportClassroom" resultType="cn.qbs.wa.train.logistics.entity.Classroom">
+        SELECT
+            DISTINCT c.id, c.building, c.floor, c.room_no, c.room_type
+        FROM
+            matter_report mr
+            INNER JOIN classroom c ON c.id = mr.classroom_id
+        <where>
+            <if test="orgId != null">
+                AND mr.org_id = #{orgId}
+            </if>
+        </where>
+    </select>
+
+    <select id="listMatterReportOrg" resultType="cn.qbs.wa.train.logistics.entity.Organization">
+        SELECT
+            DISTINCT o.id, o.`name`
+        FROM
+            matter_report mr
+            INNER JOIN organization o ON o.id = mr.org_id
+    </select>
+
+    <select id="pageClassroomWithDate" resultType="cn.qbs.wa.train.logistics.pojo.classroom.LiteClassroomResponse">
+        SELECT
+            c.id AS classroomId, c.building, c.floor, c.room_no, c.room_type, IF(cs.id IS NULL, 0, 1) AS scheduleNow, o.`name` AS orgName
+        FROM
+            classroom c
+            LEFT JOIN classroom_schedule cs ON cs.classroom_id = c.id AND cs.use_date = #{params.useDate}
+            LEFT JOIN organization o ON o.id = cs.org_id
+        <where>
+            c.deleted = 0 AND c.enabled = 1
+            <if test="params.building != null and params.building != '' ">
+                AND c.building = #{params.building}
+            </if>
+            <if test="params.floor != null and params.floor != '' ">
+                AND c.floor = #{params.floor}
+            </if>
+            <if test="params.roomType != null and params.roomType != '' ">
+                AND c.room_type = #{params.roomType}
+            </if>
+        </where>
+    </select>
+
+    <select id="listClassroomSchedule" resultType="cn.qbs.wa.train.logistics.pojo.classroomschedule.LiteClassroomScheduleResponse">
+        SELECT
+            cs.use_date, o.`name` AS orgName
+        FROM
+            classroom_schedule cs
+            INNER JOIN organization o ON o.id = cs.org_id
+        WHERE
+            cs.classroom_id = #{params.classroomId} AND cs.use_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+    </select>
+
+    <select id="pageDormitory" resultType="cn.qbs.wa.train.logistics.pojo.dormitory.LiteDormitoryResponse">
+        SELECT
+            dor.id AS dormitoryId, dor.building, dor.floor, dor.room_no, dor.room_type, IF(dors.id IS NULL, 0, 1) AS scheduleNow, o.`name` AS orgName
+        FROM
+            dormitory dor
+            LEFT JOIN dormitory_schedule dors ON dors.dormitory_id = dor.id AND dors.use_date = #{params.useDate}
+            LEFT JOIN organization o ON o.id = dors.org_id
+        <where>
+            dor.deleted = 0 AND dor.enabled = 1
+            <if test="params.checkIn != null">
+                <choose>
+                    <when test="params.checkIn == 1">
+                        AND dors.id IS NOT NULL
+                    </when>
+                    <otherwise>
+                        AND dors.id IS NULL
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="params.building != null and params.building != '' ">
+                AND dor.building = #{params.building}
+            </if>
+            <if test="params.floor != null and params.floor != '' ">
+                AND dor.floor = #{params.floor}
+            </if>
+            <if test="params.roomType != null and params.roomType != '' ">
+                AND dor.room_type = #{params.roomType}
+            </if>
+        </where>
+    </select>
+
+    <select id="listDormitorySchedule" resultType="cn.qbs.wa.train.logistics.pojo.dormitoryschedule.LiteDormitoryScheduleResponse">
+        SELECT
+            dors.use_date, o.`name` AS orgName
+        FROM
+            dormitory_schedule dors
+            INNER JOIN organization o ON o.id = dors.org_id
+        WHERE
+            dors.dormitory_id = #{params.dormitoryId} AND dors.use_date BETWEEN #{params.dateStart} AND #{params.dateEnd}
+    </select>
+
+    <select id="listOrg" resultType="cn.qbs.wa.train.logistics.pojo.organization.LiteOrganizationListResponse">
+        SELECT
+            o.id, o.`name`
+        FROM
+            organization o
+    </select>
+
+    <select id="statDormitoryInUse" resultType="cn.qbs.wa.train.logistics.pojo.dormitory.LiteDormitoryStatResponse">
+        SELECT
+            COUNT(dors.id) usedNum, SUM(IF(dors.id IS NULL, 1, 0)) freeNum
+        FROM
+            dormitory dor
+            LEFT JOIN dormitory_schedule dors ON dors.dormitory_id = dor.id AND dors.use_date = #{params.useDate}
+        <where>
+            dor.deleted = 0 AND dor.enabled = 1
+            <if test="params.building != null and params.building != '' ">
+                AND dor.building = #{params.building}
+            </if>
+            <if test="params.floor != null and params.floor != '' ">
+                AND dor.floor = #{params.floor}
+            </if>
+            <if test="params.roomType != null and params.roomType != '' ">
+                AND dor.room_type = #{params.roomType}
+            </if>
+        </where>
+    </select>
+
+    <select id="pageClazz" resultType="cn.qbs.wa.train.logistics.pojo.clazz.LiteClazzResponse">
+		SELECT
+            cl.id, cl.`name` AS clazzName, o.`name` AS orgName
+        FROM
+            clazz cl
+			INNER JOIN organization o ON o.id = cl.org_id
+        <where>
+            cl.deleted = 0 AND cl.state = 1
+			AND cl.start_date BETWEEN #{params.startDate} AND #{params.endDate}
+            <if test="params.orgId != null">
+                AND cl.org_id = #{params.orgId}
+            </if>
+        </where>
+		ORDER BY cl.start_date DESC
+    </select>
+</mapper>
+

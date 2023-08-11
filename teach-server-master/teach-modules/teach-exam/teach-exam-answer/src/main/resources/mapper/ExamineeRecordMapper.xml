@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.exam.answer.mapper.ExamineeRecordMapper">
+
+    <resultMap type="cn.qbs.wa.teach.exam.common.entity.ExamineeRecord" id="ExamineeRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="examineeId" column="examinee_id" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="calculated" column="calculated" jdbcType="INTEGER"/>
+        <result property="score" column="score" jdbcType="NUMERIC"/>
+        <result property="startTime" column="start_time" jdbcType="TIMESTAMP"/>
+        <result property="submitTime" column="submit_time" jdbcType="TIMESTAMP"/>
+        <result property="useDuration" column="use_duration" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="attachmentName" column="attachment_name"/>
+        <result property="attachmentUrl" column="attachment_url"/>
+    </resultMap>
+
+    <select id="selectExamResult" resultType="cn.qbs.wa.teach.exam.answer.pojo.ExamResult">
+        select er.*,
+            sum(if(erq.correct_result=1, 1,0)) as rightCount,
+            sum(if(erq.correct_result is null or erq.correct_result&lt;&gt;1, 1,0)) as wrongCount,
+            round(sum(if(erq.correct_result=1, 1,0)) / count(erq.id) * 100) as correctRate
+        from examinee_record er
+            left join examinee_record_question erq on erq.examinee_record_id = er.id
+        where er.id = #{examineeRecordId}
+    </select>
+
+    <select id="selectByExamineeQuestionId" resultType="cn.qbs.wa.teach.exam.common.entity.ExamineeRecord">
+        select er.*
+        from examinee_record_question erq
+            inner join examinee_record er on erq.examinee_record_id = er.id
+        where erq.id = #{examineeQuestionId}
+    </select>
+    <select id="selectInfoByExamId" resultType="cn.qbs.wa.teach.exam.answer.pojo.exam.ExamRecord">
+        SELECT ee.exam_id as examId,ee.remaining_times as remainingTimes ,er.id as examineeRecordId, er.status as complete , er.submit_time as submitTime ,er.calculated as calculated , er.score as score FROM `examinee` ee left JOIN examinee_record er on ee.id = er.examinee_id where ee.user_id = #{userId} and ee.exam_id = #{examId}
+    </select>
+
+    <select id="selectByExamId" resultType="cn.qbs.wa.teach.exam.common.entity.ExamineeRecord">
+        select er.*
+        from exam e
+            left join examinee en on en.exam_id = e.id
+            left join examinee_record er on er.examinee_id = en.id
+        where e.id = #{examId}
+        <if test="examineeRecordId != null">
+            and er.id = #{examineeRecordId}
+        </if>
+    </select>
+
+</mapper>
+

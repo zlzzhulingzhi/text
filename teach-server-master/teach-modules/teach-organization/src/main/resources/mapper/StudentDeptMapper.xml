@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.organization.mapper.StudentDeptMapper">
+
+    <resultMap type="cn.qbs.wa.teach.organization.entity.StudentDept" id="StudentDeptMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="studentId" column="student_id" jdbcType="INTEGER"/>
+        <result property="deptId" column="dept_id" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_teach_organization.student_dept(student_id, dept_id, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.studentId}, #{entity.deptId}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+    </insert>
+    
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into wa_teach_organization.student_dept(student_id, dept_id, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.studentId}, #{entity.deptId}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+        on duplicate key update
+        student_id = values(student_id) , dept_id = values(dept_id) , create_by = values(create_by) , create_time = values(create_time)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.organization.pojo.studentdept.StudentDeptPageResponse">
+        select *
+        from student_dept
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.organization.pojo.studentdept.StudentDeptDetailResponse">
+        select *
+        from student_dept
+        where id = #{id}
+    </select>
+    <select id="selectStudentIdListByDeptIdList" resultType="java.lang.Long">
+        select student_id
+        from student_dept
+        <where>
+              <if test="deptIdList != null and deptIdList.size() != 0">
+                   and dept_id in
+                  <foreach collection="deptIdList" item="deptId" open="(" close=")" separator=",">
+                      #{deptId, jdbcType=BIGINT}
+                  </foreach>
+              </if>
+        </where>
+    </select>
+
+    <select id="listDeptByStu" resultType="cn.qbs.wa.teach.organization.entity.Dept">
+        SELECT
+            d.*
+        FROM
+            student_dept sd
+            INNER JOIN dept d ON d.id = sd.dept_id
+        WHERE sd.student_id = #{id}
+    </select>
+
+</mapper>
+

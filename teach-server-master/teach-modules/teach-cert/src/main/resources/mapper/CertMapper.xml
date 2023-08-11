@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.cert.mapper.CertMapper">
+
+    <resultMap type="cn.qbs.wa.teach.cert.entity.Cert" id="CertMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="templateId" column="template_id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="awardCount" column="award_count" jdbcType="INTEGER"/>
+        <result property="backgroundUrl" column="background_url" jdbcType="VARCHAR"/>
+        <result property="modelType" column="model_type" jdbcType="INTEGER"/>
+        <result property="templateName" column="template_name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into cert(org_id, template_id, name, enabled, sort, remark, create_by, update_by, create_time, update_time, award_count, background_url, model_type, template_name)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.templateId}, #{entity.name}, #{entity.enabled}, #{entity.sort}, #{entity.remark}, #{entity.createBy}, #{entity.updateBy}, #{entity.createTime}, #{entity.updateTime}, #{entity.awardCount}, #{entity.backgroundUrl}, #{entity.modelType}, #{entity.templateName})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into cert(org_id, template_id, name, enabled, sort, remark, create_by, update_by, create_time, update_time, award_count, background_url, model_type, template_name)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.templateId}, #{entity.name}, #{entity.enabled}, #{entity.sort}, #{entity.remark}, #{entity.createBy}, #{entity.updateBy}, #{entity.createTime}, #{entity.updateTime}, #{entity.awardCount}, #{entity.backgroundUrl}, #{entity.modelType}, #{entity.templateName})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , template_id = values(template_id) , name = values(name) , enabled = values(enabled) , sort = values(sort) , remark = values(remark) , create_by = values(create_by) , update_by = values(update_by) , create_time = values(create_time) , update_time = values(update_time) , award_count = values(award_count) , background_url = values(background_url) , model_type = values(model_type) , template_name = values(template_name)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.cert.pojo.cert.CertPageResponse">
+        select *
+        from cert
+        <where>
+            <!-- 示例代码，自行修改 -->
+
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+        </where>
+       order by id desc
+    </select>
+
+
+    <select id="myPage" resultType="cn.qbs.wa.teach.cert.pojo.cert.CertPageResponse">
+        SELECT
+            c.*
+        FROM
+            cert c
+                INNER JOIN award_record ar ON ar.cert_id = c.id
+        WHERE
+            c.enabled = 1
+          AND ar.user_id = #{params.userId}
+        order by c.id desc
+
+    </select>
+    <select id="mySelectList" resultMap="mySelectListMap">
+        SELECT
+            c.id,
+            c.name,
+            cc.*
+        FROM
+            cert c
+                INNER JOIN cert_config cc ON c.id = cc.cert_id
+                AND cc.type =2 AND cc.enabled=1
+            where  c.enabled=1
+            <if test="name!=null and name!=''">
+                and c.name  like concat('%', #{name}, '%')
+            </if>
+        order by c.id desc
+    </select>
+    <resultMap id="mySelectListMap" type="cn.qbs.wa.teach.cert.pojo.cert.CertListResponse">
+        <id column="id" property="id"></id>
+        <result column="name" property="name"></result>
+        <collection property="searchConfigList" ofType="cn.qbs.wa.teach.cert.pojo.common.CommonConfigDetailLiteDTO">
+            <id column="code" property="code"></id>
+            <result column="key_name" property="keyName" ></result>
+        </collection>
+    </resultMap>
+
+    <select id="myPageV2" resultType="cn.qbs.wa.teach.cert.pojo.cert.CertPageResponse">
+        SELECT
+            c.*,ar.cert_image_url,ar.enabled awardEnabled,ar.create_time
+        FROM
+            cert c
+                INNER JOIN award_record ar ON ar.cert_id = c.id
+        WHERE
+         ar.user_id = #{params.userId}
+        order by ar.create_time desc
+
+    </select>
+
+    <select id="batchSelect" resultType="cn.qbs.wa.teach.cert.pojo.cert.PersonCertDetailResponse">
+        select ar.*,c.`name` from award_record ar left join cert c on ar.cert_id = c.id where ar.user_id = #{userId}
+        <if test="enabled != null">
+            and ar.enabled =  #{enabled}
+        </if>
+        <if test="sourceId != null and sourceId != ''">
+            and ar.source_id = #{sourceId}
+        </if>
+        <if test="certIds != null and certIds.size > 0">
+           and ar.cert_id IN
+            <foreach collection="certIds" item="certId" separator="," open="(" close=")">
+                #{certId}
+            </foreach>
+        </if>
+    </select>
+</mapper>
+

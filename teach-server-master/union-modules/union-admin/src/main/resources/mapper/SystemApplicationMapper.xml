@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.union.admin.mapper.SystemApplicationMapper">
+
+    <resultMap type="cn.qbs.wa.union.admin.entity.SystemApplication" id="SystemApplicationMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="url" column="url" jdbcType="VARCHAR"/>
+        <result property="permission" column="permission" jdbcType="VARCHAR"/>
+        <result property="represent" column="represent" jdbcType="VARCHAR"/>
+        <result property="hostName" column="host_name" jdbcType="VARCHAR"/>
+        <result property="enable" column="enable" jdbcType="INTEGER"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="iconUrl" column="icon_url" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="" useGeneratedKeys="true">
+        insert into system_application(id, name, url, permission, represent, host_name, enable, sort, icon_url)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.id}, #{entity.name}, #{entity.url}, #{entity.permission}, #{entity.represent}, #{entity.hostName}, #{entity.enable}, #{entity.sort}, #{entity.iconUrl})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="" useGeneratedKeys="true">
+        insert into system_application(id, name, url, permission, represent, host_name, enable, sort, icon_url)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.id}, #{entity.name}, #{entity.url}, #{entity.permission}, #{entity.represent}, #{entity.hostName}, #{entity.enable}, #{entity.sort}, #{entity.iconUrl})
+        </foreach>
+        on duplicate key update
+        id = values(id) , name = values(name) , url = values(url) , permission = values(permission) , represent = values(represent) , host_name = values(host_name) , enable = values(enable) , sort = values(sort) , icon_url = values(icon_url)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.union.admin.pojo.systemapplication.SystemApplicationPageResponse">
+        select *
+        from system_application
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+        order by sort, id desc
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.union.admin.pojo.systemapplication.SystemApplicationDetailResponse">
+        select *
+        from system_application
+        where id = #{id}
+    </select>
+    <select id="listByUniAppId" resultType="cn.qbs.wa.union.admin.entity.SystemApplication">
+        SELECT DISTINCT
+            sa.*
+        FROM
+            system_application sa
+                INNER JOIN `uni_application` ui ON sa.id = ui.application_id
+        WHERE
+            ui.id IN
+        <foreach collection="uniAppIdList" index="index" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+</mapper>
+

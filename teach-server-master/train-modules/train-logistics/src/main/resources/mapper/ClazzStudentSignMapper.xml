@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.ClazzStudentSignMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.ClazzStudentSign" id="ClazzStudentSignMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="clazzId" column="clazz_id" jdbcType="INTEGER"/>
+        <result property="memberId" column="member_id" jdbcType="INTEGER"/>
+        <result property="lessonNum" column="lesson_num" jdbcType="INTEGER"/>
+        <result property="lessonHour" column="lesson_hour" jdbcType="INTEGER"/>
+        <result property="signInStatus" column="sign_in_status" jdbcType="INTEGER"/>
+        <result property="signInDate" column="sign_in_date" jdbcType="TIMESTAMP"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="list" resultMap="ClazzStudentSignMap">
+        SELECT id, member_id, lesson_num, lesson_hour, sign_in_status, sign_in_date, remark
+        FROM clazz_student_sign
+        <where>
+            clazz_id = #{params.clazzId}
+            <if test="params.memberIds != null and params.memberIds.size > 0">
+                AND member_id IN
+                <foreach collection="params.memberIds" item="memberId" open="(" separator="," close=")">
+                    #{memberId}
+                </foreach>
+            </if>
+            <if test="params.lessonStart != null" >
+                AND lesson_num >= #{params.lessonStart}
+            </if>
+            <if test="params.lessonEnd != null" >
+                AND lesson_num &lt;= #{params.lessonEnd}
+            </if>
+            <if test="params.signInStatusList != null and params.signInStatusList.size > 0" >
+                AND sign_in_status IN
+                <foreach collection="params.signInStatusList" item="signInStatus" separator="," open="(" close=")">
+                    #{signInStatus}
+                </foreach>
+            </if>
+            <if test="params.signInDate != null" >
+                AND sign_in_date = #{params.signInDate}
+            </if>
+        </where>
+    </select>
+
+    <select id="pageSignInRecord" resultType="cn.qbs.wa.train.logistics.pojo.clazzsign.SignInRecordResponse">
+        SELECT
+            css.id, css.member_id, css.clazz_id, css.lesson_num, css.lesson_hour,
+            css.sign_in_status, css.sign_in_date, css.remark, c.`name` AS clazzName
+        FROM
+            clazz_student_sign css
+            LEFT JOIN clazz c ON c.id = css.clazz_id
+        <where>
+            css.clazz_id = #{params.clazzId} AND css.sign_in_status >= 1
+            <if test="params.memberId != null">
+                AND css.member_id = #{params.memberId}
+            </if>
+            <if test="params.lessonStart != null" >
+                AND css.lesson_num >= #{params.lessonStart}
+            </if>
+            <if test="params.lessonEnd != null" >
+                AND css.lesson_num &lt;= #{params.lessonEnd}
+            </if>
+            <if test="params.startDate != null" >
+                AND css.sign_in_date >= #{params.startDate}
+            </if>
+            <if test="params.endDate != null" >
+                AND css.sign_in_date &lt;= #{params.endDate}
+            </if>
+        </where>
+        ORDER BY css.lesson_num DESC, css.id DESC
+    </select>
+
+    <select id="signInRecordList" resultType="cn.qbs.wa.train.logistics.pojo.clazzsign.SignInRecordResponse">
+        SELECT
+        css.id, css.member_id, css.clazz_id, css.lesson_num, css.lesson_hour,
+        css.sign_in_status, css.sign_in_date, css.remark, c.`name` AS clazzName
+        FROM
+        clazz_student_sign css
+        LEFT JOIN clazz c ON c.id = css.clazz_id
+        <where>
+            css.clazz_id = #{params.clazzId} AND css.sign_in_status >= 1
+            <if test="params.memberId != null">
+                AND css.member_id = #{params.memberId}
+            </if>
+            <if test="params.lessonStart != null" >
+                AND css.lesson_num >= #{params.lessonStart}
+            </if>
+            <if test="params.lessonEnd != null" >
+                AND css.lesson_num &lt;= #{params.lessonEnd}
+            </if>
+            <if test="params.startDate != null" >
+                AND css.sign_in_date >= #{params.startDate}
+            </if>
+            <if test="params.endDate != null" >
+                AND css.sign_in_date &lt;= #{params.endDate}
+            </if>
+        </where>
+        ORDER BY css.lesson_num DESC, css.id DESC
+    </select>
+
+    <select id="pageStudentOut" resultType="cn.qbs.wa.train.logistics.entity.ClazzStudent">
+        SELECT css.member_id
+        FROM
+            clazz_student_sign css
+            LEFT JOIN clazz_student cst ON cst.member_id = css.member_id AND cst.clazz_id = css.clazz_id
+        WHERE css.clazz_id = #{clazzId} AND cst.id IS NULL
+        GROUP BY css.member_id
+    </select>
+
+    <select id="listStudentOut" resultType="cn.qbs.wa.train.logistics.entity.ClazzStudent">
+        SELECT css.member_id
+        FROM
+            clazz_student_sign css
+            LEFT JOIN clazz_student cst ON cst.member_id = css.member_id AND cst.clazz_id = css.clazz_id
+        WHERE css.clazz_id = #{clazzId} AND cst.id IS NULL and css.sign_in_status in (1,2,3)
+        GROUP BY css.member_id
+    </select>
+
+</mapper>
+

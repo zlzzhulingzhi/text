@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.CourseLecturerMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.CourseLecturer" id="CourseLecturerMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="lecturerId" column="lecturer_id" jdbcType="INTEGER"/>
+        <result property="lecturerName" column="lecturer_name" jdbcType="VARCHAR"/>
+        <result property="lecturerHeadImgUrl" column="lecturer_head_img_url" jdbcType="VARCHAR"/>
+        <result property="lecturerIntro" column="lecturer_intro" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_lecturer(org_id, course_id, lecturer_id, lecturer_name, lecturer_head_img_url, lecturer_intro, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.courseId}, #{entity.lecturerId}, #{entity.lecturerName}, #{entity.lecturerHeadImgUrl}, #{entity.lecturerIntro}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_lecturer(org_id, course_id, lecturer_id, lecturer_name, lecturer_head_img_url, lecturer_intro, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.courseId}, #{entity.lecturerId}, #{entity.lecturerName}, #{entity.lecturerHeadImgUrl}, #{entity.lecturerIntro}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , course_id = values(course_id) , lecturer_id = values(lecturer_id) , lecturer_name = values(lecturer_name) , lecturer_head_img_url = values(lecturer_head_img_url) , lecturer_intro = values(lecturer_intro) , create_by = values(create_by) , create_time = values(create_time)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.course.standard.pojo.courselecturer.CourseLecturerPageResponse">
+        select *
+        from course_lecturer
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.course.standard.pojo.courselecturer.CourseLecturerDetailResponse">
+        select *
+        from course_lecturer
+        where id = #{id}
+    </select>
+
+    <select id="listByCourseId" resultMap="CourseLecturerMap">
+        select *
+        from course_lecturer
+        where course_id = #{courseId}
+    </select>
+
+    <select id="listByCourseName" resultMap="CourseLecturerMap">
+        SELECT DISTINCT cl.lecturer_id
+        FROM
+            course c
+            INNER JOIN course_lecturer cl ON c.id = cl.course_id
+        WHERE c.`course_name` LIKE concat('%', #{courseName}, '%') AND c.deleted = 0 AND c.shelf_status = 1
+    </select>
+</mapper>
+

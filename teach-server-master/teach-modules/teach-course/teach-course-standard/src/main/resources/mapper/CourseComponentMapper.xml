@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.CourseComponentMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.CourseComponent" id="CourseComponentMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="lessonId" column="lesson_id" jdbcType="INTEGER"/>
+        <result property="componentName" column="component_name" jdbcType="VARCHAR"/>
+        <result property="componentTypeCode" column="component_type_code" jdbcType="VARCHAR"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="deleted" column="deleted" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_component(org_id, course_id, lesson_id, component_name, component_type_code, sort, deleted, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.courseId}, #{entity.lessonId}, #{entity.componentName}, #{entity.componentTypeCode}, #{entity.sort}, #{entity.deleted}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into course_component(org_id, course_id, lesson_id, component_name, component_type_code, sort, deleted, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.courseId}, #{entity.lessonId}, #{entity.componentName}, #{entity.componentTypeCode}, #{entity.sort}, #{entity.deleted}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , course_id = values(course_id) , lesson_id = values(lesson_id) , component_name = values(component_name) , component_type_code = values(component_type_code) , sort = values(sort) , deleted = values(deleted) , create_by = values(create_by) , create_time = values(create_time) , update_by = values(update_by) , update_time = values(update_time)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.course.standard.pojo.coursecomponent.CourseComponentPageResponse">
+        select *
+        from course_component
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.course.standard.pojo.coursecomponent.CourseComponentDetailResponse">
+        select
+            comp.*, attach.component_id, attach.resource_file_id, attach.resource_file_path, attach.resource_file_name,
+            attach.resource_file_type, attach.resource_file_size, attach.resource_file_duration
+        from course_component comp
+        left join course_component_attachment attach ON attach.component_id = comp.id
+        where comp.id = #{id}
+    </select>
+
+    <select id="listByLesson" resultType="cn.qbs.wa.teach.course.standard.pojo.dto.CourseComponentDTO">
+        SELECT
+            comp.*, attach.component_id, attach.resource_file_id, attach.resource_file_path, attach.resource_file_name,
+            attach.resource_file_type, attach.resource_file_size, attach.resource_file_duration
+        FROM
+            course_component comp
+            LEFT JOIN course_component_attachment attach ON attach.component_id = comp.id
+        WHERE comp.lesson_id = #{lessonId}
+        ORDER BY comp.sort, comp.id
+    </select>
+
+    <select id="listByLessonV2" resultType="cn.qbs.wa.teach.course.standard.pojo.dto.CourseComponentExtraDTO">
+        SELECT
+            comp.*, extra.component_id, extra.start_date, extra.end_date,
+            extra.lecturer_id, extra.lecturer_name, extra.extra_name, extra.extra_description
+        FROM
+            course_component comp
+            LEFT JOIN course_component_extra extra ON extra.component_id = comp.id
+        WHERE comp.lesson_id = #{lessonId}
+        ORDER BY comp.sort, comp.id
+    </select>
+
+    <select id="listTypeByCourseId" resultType="java.lang.String">
+        SELECT DISTINCT component_type_code FROM course_component WHERE course_id = #{courseId}
+    </select>
+</mapper>
+

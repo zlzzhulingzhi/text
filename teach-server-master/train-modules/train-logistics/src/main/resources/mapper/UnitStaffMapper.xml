@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.UnitStaffMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.UnitStaff" id="UnitStaffMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="unitId" column="unit_id" jdbcType="INTEGER"/>
+        <result property="account" column="account" jdbcType="VARCHAR"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="realName" column="real_name" jdbcType="VARCHAR"/>
+        <result property="education" column="education" jdbcType="VARCHAR"/>
+        <result property="idNumber" column="id_number" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="sex" column="sex" jdbcType="INTEGER"/>
+        <result property="openId" column="open_id" jdbcType="VARCHAR"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_logistics.unit_staff(unit_id, account, phone, real_name, education, id_number, email, sex,
+        open_id, enabled, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.unitId}, #{entity.account}, #{entity.phone}, #{entity.realName}, #{entity.education},
+            #{entity.idNumber}, #{entity.email}, #{entity.sex}, #{entity.openId}, #{entity.enabled}, #{entity.createBy},
+            #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_logistics.unit_staff(unit_id, account, phone, real_name, education, id_number, email, sex,
+        open_id, enabled, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.unitId}, #{entity.account}, #{entity.phone}, #{entity.realName}, #{entity.education},
+            #{entity.idNumber}, #{entity.email}, #{entity.sex}, #{entity.openId}, #{entity.enabled}, #{entity.createBy},
+            #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        unit_id = values(unit_id) , account = values(account) , phone = values(phone) , real_name = values(real_name) ,
+        education = values(education) , id_number = values(id_number) , email = values(email) , sex = values(sex) ,
+        open_id = values(open_id) , enabled = values(enabled) , create_by = values(create_by) , create_time =
+        values(create_time) , update_by = values(update_by) , update_time = values(update_time) $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.train.logistics.pojo.unitstaff.UnitStaffPageResponse">
+        select *
+        from unit_staff
+        <where>
+            <if test="params.unitId != null and params.unitId != '' ">
+                and unit_id = #{params.unitId}
+            </if>
+
+            <if test="params.enabled != null and params.enabled != '' ">
+                and enabled = #{params.enabled}
+            </if>
+
+            <if test="params.realName != null and params.realName != '' ">
+                and real_name like concat('%', #{params.realName}, '%')
+            </if>
+
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.train.logistics.pojo.unitstaff.UnitStaffDetailResponse">
+        select *
+        from unit_staff
+        where id = #{id}
+    </select>
+</mapper>
+

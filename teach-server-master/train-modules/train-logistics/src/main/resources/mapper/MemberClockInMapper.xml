@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.MemberClockInMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.MemberClockIn" id="MemberClockInMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="siteCode" column="site_code" jdbcType="VARCHAR"/>
+        <result property="clazzId" column="clazz_id" jdbcType="INTEGER"/>
+        <result property="memberId" column="member_id" jdbcType="INTEGER"/>
+        <result property="longitude" column="longitude" jdbcType="VARCHAR"/>
+        <result property="latitude" column="latitude" jdbcType="VARCHAR"/>
+        <result property="clockInDate" column="clock_in_date" jdbcType="TIMESTAMP"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_logistics.member_clock_in(site_code, clazz_id, member_id, longitude, latitude, clock_in_date, remark, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.siteCode}, #{entity.clazzId}, #{entity.memberId}, #{entity.longitude}, #{entity.latitude}, #{entity.clockInDate}, #{entity.remark}, #{entity.createTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_logistics.member_clock_in(site_code, clazz_id, member_id, longitude, latitude, clock_in_date, remark, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.siteCode}, #{entity.clazzId}, #{entity.memberId}, #{entity.longitude}, #{entity.latitude}, #{entity.clockInDate}, #{entity.remark}, #{entity.createTime})
+        </foreach>
+        on duplicate key update
+        site_code = values(site_code) , clazz_id = values(clazz_id) , member_id = values(member_id) , longitude = values(longitude) , latitude = values(latitude) , clock_in_date = values(clock_in_date) , remark = values(remark) , create_time = values(create_time)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.train.logistics.pojo.memberclockin.MemberClockInPageResponse">
+        select *
+        from member_clock_in
+        <where>
+
+            <if test="params.siteCode != null and params.siteCode != '' ">
+             and site_code = #{params.siteCode}
+            </if>
+            <if test="params.clazzId!=null">
+             and clazz_id= #{params.clazzId}
+            </if>
+            <if test="params.memberId!=null">
+             and  member_id= #{params.memberId}
+            </if>
+            <if test="params.clockInDate!=null">
+            and  clock_in_date= #{params.clockInDate}
+            </if>
+
+
+        </where>
+      order by id desc
+    </select>
+
+    <select id="pages" resultType="cn.qbs.wa.train.logistics.pojo.memberclockin.MemberClockInPageResponse">
+        select *
+        from member_clock_in
+        <where>
+
+            <if test="params.siteCode != null and params.siteCode != '' ">
+                and site_code = #{params.siteCode}
+            </if>
+            <if test="params.clazzId!=null">
+                and clazz_id= #{params.clazzId}
+            </if>
+            <if test="params.clockInDate!=null">
+                and  clock_in_date= #{params.clockInDate}
+            </if>
+            <if test="params.memberIdList!=null">
+                and member_id in
+                <foreach collection="params.memberIdList" item="memberId" open="(" close=")" separator=",">
+                    #{memberId, jdbcType=BIGINT}
+                </foreach>
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.train.logistics.pojo.memberclockin.MemberClockInDetailResponse">
+        select *
+        from member_clock_in
+        where id = #{id}
+    </select>
+    <select id="calendarList"
+            resultType="cn.qbs.wa.train.logistics.pojo.memberclockin.MemberClockInCalendarDetailResponse">
+        select ml.*,c.name as clazzName
+        from member_clock_in ml inner join clazz c on ml.clazz_id = c.id
+
+        <where>
+
+            <if test="params.memberId!=null">
+                and ml.member_id= #{params.memberId}
+            </if>
+
+            <if test="params.searchStartDate!=null">
+                and ml.clock_in_date &gt;= #{params.searchStartDate}
+            </if>
+            <if test="params.searchEndDate!=null">
+                and ml.clock_in_date &lt;= #{params.searchEndDate}
+            </if>
+
+            <if test="params.clockInDate!=null">
+                and clock_in_date= #{params.clockInDate}
+            </if>
+
+        </where>
+
+
+    </select>
+</mapper>
+

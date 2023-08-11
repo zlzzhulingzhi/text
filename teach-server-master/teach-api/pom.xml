@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>teach</artifactId>
+        <groupId>cn.qbs.wa</groupId>
+        <version>1.0.0-train</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>teach-api</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>teach-api-basic</module>
+        <module>teach-api-organization</module>
+        <module>teach-api-course</module>
+        <module>teach-api-question</module>
+        <module>teach-api-exam</module>
+        <module>teach-api-cert</module>
+        <module>teach-api-course-live</module>
+        <module>teach-api-course-live-task</module>
+        <module>teach-api-notification</module>
+        <module>teach-api-out-union-admin</module>
+        <module>teach-api-out-union-auth</module>
+        <module>train-api-basic</module>
+        <module>train-api-logistics</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+    </properties>
+
+</project>

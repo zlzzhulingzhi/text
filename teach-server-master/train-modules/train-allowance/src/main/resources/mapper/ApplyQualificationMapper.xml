@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.allowance.mapper.ApplyQualificationMapper">
+
+    <resultMap type="cn.qbs.wa.train.allowance.entity.ApplyQualification" id="ApplyQualificationMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="applyId" column="apply_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+
+    <select id="page" resultType="cn.qbs.wa.train.allowance.pojo.apply.ApplyPageResponse">
+        SELECT a.*
+        FROM workflow_instance_node win
+                 INNER JOIN `apply` a ON win.process_no = a.process_no
+        WHERE win.`status` = 11
+          AND win.manager_ref IN ('roleCode', 'userId')
+
+    </select>
+
+    <select id="pageList" resultType="cn.qbs.wa.train.allowance.pojo.apply.ApplyPageResponse">
+        SELECT
+            a.id,a.org_name,a.contact_person,a.contact_number,a.apply_date,a.apply_result,a.flow_code,
+            a.create_by,a.contact_email,a.create_time,a.process_no,a.flow_status,a.org_category,
+            a.legal_person,a.legal_number,a.legal_email,a.apply_status, c.`status`, c.curNodeId
+        FROM
+            `apply` a
+            INNER JOIN (
+                SELECT
+                    t.id, MIN(t.`status`) `status`, MAX(t.curNodeId) curNodeId
+                FROM
+                    (
+                    SELECT a.id, n.`status`, n.id AS curNodeId
+                    FROM
+                      `apply` a
+                        INNER JOIN workflow_instance_node n ON a.process_no = n.process_no AND n.`status` = 11
+                        AND n.manager_ref IN
+                        <foreach collection="params.roles" item="item" open="(" separator="," close=")">
+                            #{item}
+                        </foreach>
+                    WHERE
+                        a.deleted = 0 AND a.flow_status IN ( 1, 2 ) AND a.apply_type = 'qualification'
+                        <if test="params.applyResult != null">
+                            and a.apply_result = #{params.applyResult}
+                        </if>
+                        <if test="params.applyDateStart != null">
+                            and a.apply_date >= #{params.applyDateStart}
+                        </if>
+                        <if test="params.applyDateEnd != null">
+                            and a.apply_date &lt;= #{params.applyDateEnd}
+                        </if>
+                        <if test="params.orgId != null">
+                            and a.org_id = #{params.orgId}
+                        </if>
+                        <if test="params.orgName != null and params.orgName != ''">
+                            and a.org_name like concat('%', #{params.orgName}, '%')
+                        </if>
+                    UNION ALL
+                    SELECT DISTINCT a.id, n.`status`, NULL
+                    FROM
+                        `apply` a
+                        INNER JOIN workflow_instance_node n ON a.process_no = n.process_no AND n.`status` = 21
+                        AND n.manager_ref IN
+                        <foreach collection="params.roles" item="item" open="(" separator="," close=")">
+                            #{item}
+                        </foreach>
+                    WHERE
+                        a.deleted = 0 AND a.flow_status IN ( 1, 2 ) AND a.apply_type = 'qualification'
+                        <if test="params.applyResult != null">
+                            and a.apply_result = #{params.applyResult}
+                        </if>
+                        <if test="params.applyDateStart != null">
+                            and a.apply_date >= #{params.applyDateStart}
+                        </if>
+                        <if test="params.applyDateEnd != null">
+                            and a.apply_date &lt;= #{params.applyDateEnd}
+                        </if>
+                        <if test="params.orgId != null">
+                            and a.org_id = #{params.orgId}
+                        </if>
+                        <if test="params.orgName != null and params.orgName != ''">
+                            and a.org_name like concat('%', #{params.orgName}, '%')
+                        </if>
+                    ) t
+                GROUP BY t.id
+                LIMIT #{pageIdx}, #{pageSize}
+            ) c ON c.id = a.id
+        ORDER BY c.`status`, a.id DESC
+    </select>
+
+    <select id="pageV2" resultType="cn.qbs.wa.train.allowance.pojo.apply.ApplyPageResponse">
+        SELECT DISTINCT
+            a.id,a.org_name,a.contact_person,a.contact_number,a.apply_date,a.apply_result,a.flow_code,
+            a.create_by,a.contact_email,a.create_time,a.process_no,a.flow_status,a.org_category,
+            a.legal_person,a.legal_number,a.legal_email,a.apply_status, n.`status`, IF(n.`status` = 11, n.id, NULL) AS curNodeId
+        FROM
+            `apply` a
+            INNER JOIN workflow_instance_node n ON a.process_no = n.process_no AND n.`status` = #{params.status}
+            AND n.manager_ref IN
+            <foreach collection="params.roles" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            WHERE
+                a.deleted = 0 AND a.flow_status IN ( 1, 2 ) AND a.apply_type = 'qualification'
+                <if test="params.applyResult != null">
+                    and a.apply_result = #{params.applyResult}
+                </if>
+                <if test="params.applyDateStart != null">
+                    and a.apply_date >= #{params.applyDateStart}
+                </if>
+                <if test="params.applyDateEnd != null">
+                    and a.apply_date &lt;= #{params.applyDateEnd}
+                </if>
+                <if test="params.orgId != null">
+                    and a.org_id = #{params.orgId}
+                </if>
+                <if test="params.orgName != null and params.orgName != ''">
+                    and a.org_name like concat('%', #{params.orgName}, '%')
+                </if>
+    </select>
+
+</mapper>
+

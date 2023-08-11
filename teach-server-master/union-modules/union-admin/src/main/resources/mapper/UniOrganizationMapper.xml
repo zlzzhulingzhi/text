@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.union.admin.mapper.UniOrganizationMapper">
+
+    <resultMap type="cn.qbs.wa.union.admin.entity.UniOrganization" id="UniOrganizationMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="category" column="category" jdbcType="VARCHAR"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="intro" column="intro" jdbcType="VARCHAR"/>
+        <result property="address" column="address" jdbcType="VARCHAR"/>
+        <result property="creditCode" column="credit_code" jdbcType="VARCHAR"/>
+        <result property="contactPerson" column="contact_person" jdbcType="VARCHAR"/>
+        <result property="contactNumber" column="contact_number" jdbcType="VARCHAR"/>
+        <result property="contactEmail" column="contact_email" jdbcType="VARCHAR"/>
+        <result property="legalPerson" column="legal_person" jdbcType="VARCHAR"/>
+        <result property="legalNumber" column="legal_number" jdbcType="VARCHAR"/>
+        <result property="plan" column="plan" jdbcType="INTEGER"/>
+        <result property="enabled" column="enabled" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="page" resultType="cn.qbs.wa.union.admin.pojo.uniorganization.UniOrganizationPageResponse">
+        select id, category, `name`, address, credit_code, contact_person, contact_number, contact_email, legal_person, legal_number, plan, enabled
+        from uni_organization
+        <where>
+            <if test="params.category != null and params.category != ''">
+                and category = #{params.category}
+            </if>
+            <if test="params.plan != null">
+                and plan = #{params.plan}
+            </if>
+            <if test="params.enabled != null">
+                and enabled = #{params.enabled}
+            </if>
+            <if test="params.name != null and params.name != '' ">
+                and `name` like concat('%', #{params.name}, '%')
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.union.admin.pojo.uniorganization.UniOrganizationDetailResponse">
+        select id, category, `name`, intro, address, credit_code, contact_person, contact_number, contact_email, legal_person, legal_number, plan, enabled
+        from uni_organization
+        where id = #{id}
+    </select>
+</mapper>
+

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.CourseStudentStudySnapshotMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.CourseStudentStudySnapshot" id="CourseStudentStudySnapshotMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="courseId" column="course_id" jdbcType="INTEGER"/>
+        <result property="lessonId" column="lesson_id" jdbcType="INTEGER"/>
+        <result property="componentId" column="component_id" jdbcType="INTEGER"/>
+        <result property="playbackPosition" column="playback_position" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="getStudyLesson" resultType="cn.qbs.wa.teach.course.standard.pojo.dto.StudySnapshotDTO">
+        SELECT
+            c.id AS courseId, c.course_name, c.cover_url, cl.lesson_name AS lastStudyLesson,
+            cos.user_id, cos.student_id, cos.last_study_time, cos.learning_rate
+        FROM
+            course c
+            LEFT JOIN course_student cos ON c.id = cos.course_id AND cos.user_id = #{userId}
+            LEFT JOIN course_student_study_snapshot csss ON c.id = csss.course_id AND csss.user_id = #{userId}
+            LEFT JOIN course_lesson cl ON cl.id = csss.lesson_id
+        WHERE
+            c.id IN
+            <foreach collection="courseIdList" item="courseId" separator="," open="(" close=")">
+                #{courseId}
+            </foreach>
+    </select>
+
+</mapper>
+

@@ -1,0 +1,14 @@
+# 基础镜像
+FROM nginx
+# author
+MAINTAINER qbs
+
+# 创建目录
+RUN mkdir -p /mydata/nginx/cert
+RUN mkdir -p /mydata/nginx/dist
+# 挂载目录
+VOLUME /mydata/nginx
+# 指定路径
+WORKDIR /mydata/nginx
+# 复制html文件到路径
+COPY ./dist /mydata/nginx/dist

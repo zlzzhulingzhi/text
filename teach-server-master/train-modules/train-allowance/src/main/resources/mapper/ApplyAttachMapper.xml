@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.allowance.mapper.ApplyAttachMapper">
+
+    <resultMap type="cn.qbs.wa.train.allowance.entity.ApplyAttach" id="ApplyAttachMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="applyId" column="apply_id" jdbcType="INTEGER"/>
+        <result property="applyType" column="apply_type" jdbcType="VARCHAR"/>
+        <result property="section" column="section" jdbcType="VARCHAR"/>
+        <result property="attachCode" column="attach_code" jdbcType="VARCHAR"/>
+        <result property="attachName" column="attach_name" jdbcType="VARCHAR"/>
+        <result property="attachUrl" column="attach_url" jdbcType="VARCHAR"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <insert id="copyByApplyId">
+        INSERT INTO apply_attach(`apply_id`, `apply_type`, `section`, `attach_code`, `attach_name`, `attach_url`, `sort`, `create_by`, `create_time`)
+        SELECT #{targetApplyId}, `apply_type`, `section`, `attach_code`, `attach_name`, `attach_url`, `sort`, `create_by`, NOW()
+        FROM apply_attach
+        WHERE `apply_id` = #{sourceApplyId} AND `section` = #{section}
+    </insert>
+
+</mapper>
+

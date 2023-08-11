@@ -1,0 +1,7 @@
+export * from './modules/admin'
+export * from './modules/auth'
+export * from './modules/basic'
+export * from './modules/cos'
+export * from './modules/course'
+export * from './modules/logistics'
+export * from './modules/train'

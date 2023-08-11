@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.basic.mapper.UserInfoMapper">
+
+    <resultMap type="cn.qbs.wa.teach.basic.entity.UserInfo" id="UserInfoMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="nation" column="nation" jdbcType="VARCHAR"/>
+        <result property="nativePlace" column="native_place" jdbcType="VARCHAR"/>
+        <result property="birthDate" column="birth_date" jdbcType="VARCHAR"/>
+        <result property="major" column="major" jdbcType="VARCHAR"/>
+        <result property="graduateMonth" column="graduate_month" jdbcType="VARCHAR"/>
+        <result property="graduateSchoolName" column="graduate_school_name" jdbcType="VARCHAR"/>
+        <result property="highestDegree" column="highest_degree" jdbcType="VARCHAR"/>
+        <result property="politicalStatus" column="political_status" jdbcType="VARCHAR"/>
+        <result property="workDate" column="work_date" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into user_info(user_id, nation, native_place, birth_date, major, graduate_month, graduate_school_name, highest_degree, political_status, work_date, create_time, update_time, phone)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.userId}, #{entity.nation}, #{entity.nativePlace}, #{entity.birthDate}, #{entity.major}, #{entity.graduateMonth}, #{entity.graduateSchoolName}, #{entity.highestDegree}, #{entity.politicalStatus}, #{entity.workDate}, #{entity.createTime}, #{entity.updateTime}, #{entity.phone})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into user_info(user_id, nation, native_place, birth_date, major, graduate_month, graduate_school_name, highest_degree, political_status, work_date, create_time, update_time, phone)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.userId}, #{entity.nation}, #{entity.nativePlace}, #{entity.birthDate}, #{entity.major}, #{entity.graduateMonth}, #{entity.graduateSchoolName}, #{entity.highestDegree}, #{entity.politicalStatus}, #{entity.workDate}, #{entity.createTime}, #{entity.updateTime}, #{entity.phone})
+        </foreach>
+        on duplicate key update
+        user_id = values(user_id) , nation = values(nation) , native_place = values(native_place) , birth_date = values(birth_date) , major = values(major) , graduate_month = values(graduate_month) , graduate_school_name = values(graduate_school_name) , highest_degree = values(highest_degree) , political_status = values(political_status) , work_date = values(work_date) , create_time = values(create_time) , update_time = values(update_time) , phone = values(phone)         $empty
+    </insert>
+
+</mapper>
+

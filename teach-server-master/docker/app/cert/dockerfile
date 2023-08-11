@@ -1,0 +1,17 @@
+# 基础镜像
+FROM amazoncorretto:11.0.16
+# resourceor
+MAINTAINER qbs
+
+# 挂载目录
+VOLUME /mydata/app
+# 创建目录
+RUN mkdir -p /mydata/app
+# 指定路径
+WORKDIR /mydata/app
+# 复制jar文件到路径
+COPY ./jar/teach-cert.jar /mydata/app/teach-cert.jar
+# 复制微信支付证书文件到路径
+COPY ./other/pingfangsr.ttf /mydata/app/pingfangsr.ttf
+# 启动认证服务
+ENTRYPOINT ["java","-jar","-Dspring.profiles.active=prod","-Dspring.cloud.nacos.discovery.server-addr=${nacos_address}","-Dspring.cloud.nacos.discovery.namespace=${nacos_namespace}","-Dspring.cloud.nacos.config.server-addr=${nacos_address}","-Dspring.cloud.nacos.config.namespace=${nacos_namespace}","-Xms500m", "-Xmx1000m","teach-cert.jar"]

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.allowance.mapper.ApplyQualificationProjectMapper">
+
+    <resultMap type="cn.qbs.wa.train.allowance.entity.ApplyQualificationProject" id="ApplyQualificationProjectMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="qualificationId" column="qualification_id" jdbcType="INTEGER"/>
+        <result property="projectName" column="project_name" jdbcType="VARCHAR"/>
+        <result property="totalLesson" column="total_lesson" jdbcType="INTEGER"/>
+        <result property="scale" column="scale" jdbcType="VARCHAR"/>
+        <result property="startDate" column="start_date" jdbcType="TIMESTAMP"/>
+        <result property="endDate" column="end_date" jdbcType="TIMESTAMP"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <resultMap type="cn.qbs.wa.train.allowance.pojo.apply.QualificationProjectResponse" id="qualificationProjectInfoMap">
+        <id property="id" column="id"/>
+        <result property="qualificationId" column="qualification_id"/>
+        <result property="projectName" column="project_name"/>
+        <result property="totalLesson" column="total_lesson"/>
+        <result property="scale" column="scale"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <collection property="courseList" ofType="cn.qbs.wa.train.allowance.pojo.apply.QualificationCourseResponse">
+            <id property="id" column="qualification_course_id"/>
+            <result property="projectId" column="id"/>
+            <result property="courseId" column="course_id"/>
+            <result property="courseName" column="course_name"/>
+            <result property="trainObject" column="train_object"/>
+            <result property="trainContent" column="train_content"/>
+            <result property="lecturerId" column="lecturer_id"/>
+            <result property="lecturerName" column="lecturer_name"/>
+        </collection>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_allowance.apply_qualification_project(org_id, qualification_id, project_name, total_lesson, scale, start_date, end_date, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.qualificationId}, #{entity.projectName}, #{entity.totalLesson}, #{entity.scale}, #{entity.startDate}, #{entity.endDate}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+    </insert>
+    
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_allowance.apply_qualification_project(org_id, qualification_id, project_name, total_lesson, scale, start_date, end_date, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.qualificationId}, #{entity.projectName}, #{entity.totalLesson}, #{entity.scale}, #{entity.startDate}, #{entity.endDate}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , qualification_id = values(qualification_id) , project_name = values(project_name) , total_lesson = values(total_lesson) , scale = values(scale) , start_date = values(start_date) , end_date = values(end_date) , create_by = values(create_by) , create_time = values(create_time)         $empty
+    </insert>
+
+    <select id="listProjectInfoByQualId" resultMap="qualificationProjectInfoMap">
+        SELECT
+            aqp.id, aqp.qualification_id, aqp.project_name, aqp.total_lesson, aqp.`scale`, aqp.start_date, aqp.end_date,
+            aqc.id AS qualification_course_id, aqc.course_id, aqc.course_name, aqc.train_object, aqc.train_content, aqc.lecturer_id, aqc.lecturer_name
+        FROM
+            apply_qualification_project aqp
+            LEFT JOIN apply_qualification_course aqc ON aqc.project_id = aqp.id
+        WHERE aqp.qualification_id = #{qualificationId}
+    </select>
+</mapper>
+

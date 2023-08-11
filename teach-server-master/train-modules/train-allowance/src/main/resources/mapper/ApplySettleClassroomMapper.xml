@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.allowance.mapper.ApplySettleClassroomMapper">
+
+    <resultMap type="cn.qbs.wa.train.allowance.entity.ApplySettleClassroom" id="ApplySettleClassroomMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="applySettleId" column="apply_settle_id" jdbcType="INTEGER"/>
+        <result property="useDateStart" column="use_date_start" jdbcType="TIMESTAMP"/>
+        <result property="useDateEnd" column="use_date_end" jdbcType="TIMESTAMP"/>
+        <result property="classroomId" column="classroom_id" jdbcType="INTEGER"/>
+        <result property="building" column="building" jdbcType="VARCHAR"/>
+        <result property="floor" column="floor" jdbcType="VARCHAR"/>
+        <result property="roomNo" column="room_no" jdbcType="VARCHAR"/>
+        <result property="roomType" column="room_type" jdbcType="VARCHAR"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
+    <select id="page" resultType="cn.qbs.wa.train.allowance.pojo.approve.ApplySettleClassroomPageResponse">
+        SELECT c.*,a.org_name,a.apply_date
+        FROM apply_settle_classroom c
+        left join apply_settle s on c.apply_settle_id=s.id
+        left join apply a on s.apply_id=a.id
+        <where>
+            a.apply_result=1
+            <if test="params.applyDateStart != null">
+                and c.use_date_start >= #{params.applyDateStart}
+            </if>
+            <if test="params.applyDateEnd != null">
+                and c.use_date_end &lt;= #{params.applyDateEnd}
+            </if>
+        </where>
+    </select>
+
+    <select id="detail" resultType="cn.qbs.wa.train.allowance.pojo.approve.ApplySettleClassroomDetailResponse">
+        SELECT c.*,a.org_name,a.apply_date,a.create_time
+        FROM apply_settle_classroom c
+        left join apply_settle s on c.apply_settle_id=s.id
+        left join apply a on s.apply_id=a.id
+        <where>
+            c.id=#{id}
+        </where>
+    </select>
+
+    <insert id="copyByApplyId">
+        INSERT INTO apply_settle_classroom(apply_settle_id, use_date_start, use_date_end, classroom_id, building, floor, room_no, room_type, remark,use_period)
+        SELECT #{targetSettleId}, use_date_start, use_date_end, classroom_id, building, floor, room_no, room_type, remark,use_period
+        FROM apply_settle_classroom
+        WHERE `apply_settle_id` = #{sourceSettleId}
+    </insert>
+
+</mapper>
+

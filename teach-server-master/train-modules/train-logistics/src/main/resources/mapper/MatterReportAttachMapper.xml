@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.MatterReportAttachMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.MatterReportAttach" id="MatterReportAttachMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="matterReportId" column="matter_report_id" jdbcType="INTEGER"/>
+        <result property="fileType" column="file_type" jdbcType="VARCHAR"/>
+        <result property="fileUrl" column="file_url" jdbcType="VARCHAR"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_logistics.matter_report_attach(matter_report_id, file_type, file_url, sort, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.matterReportId}, #{entity.fileType}, #{entity.fileUrl}, #{entity.sort}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+    </insert>
+    
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into train_logistics.matter_report_attach(matter_report_id, file_type, file_url, sort, create_by, create_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.matterReportId}, #{entity.fileType}, #{entity.fileUrl}, #{entity.sort}, #{entity.createBy}, #{entity.createTime})
+        </foreach>
+        on duplicate key update
+        matter_report_id = values(matter_report_id) , file_type = values(file_type) , file_url = values(file_url) , sort = values(sort) , create_by = values(create_by) , create_time = values(create_time)         $empty
+    </insert>
+
+</mapper>
+

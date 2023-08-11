@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.allowance.mapper.StatCourseRecordMapper">
+
+    <select id="summaryOrgMonthly" resultType="cn.qbs.wa.train.allowance.entity.StatAllowanceMonthly">
+        SELECT
+            org_id, YEAR(submit_date) `year`, MONTH(submit_date) `month`,
+            SUM(total_student_num) total_student_num,
+            SUM(total_lesson_num) total_lesson_num,
+            SUM(total_fund_fee) total_course_Fee,
+            SUM(site_fund_fee) site_fund_fee,
+            SUM(meal_fund_fee) meal_fund_fee,
+            SUM(room_fund_fee) room_fund_fee,
+            SUM(traffic_fund_fee) traffic_fund_fee,
+            SUM(study_fund_fee) study_fund_fee
+        FROM stat_course_record
+        GROUP BY org_id, YEAR(submit_date), MONTH(submit_date)
+    </select>
+</mapper>
+

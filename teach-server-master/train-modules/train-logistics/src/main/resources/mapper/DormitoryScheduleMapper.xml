@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.train.logistics.mapper.DormitoryScheduleMapper">
+
+    <resultMap type="cn.qbs.wa.train.logistics.entity.DormitorySchedule" id="DormitoryScheduleMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="dormitoryId" column="dormitory_id" jdbcType="INTEGER"/>
+        <result property="useDate" column="use_date" jdbcType="TIMESTAMP"/>
+        <result property="useState" column="use_state" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="orgName" column="org_name" jdbcType="VARCHAR"/>
+        <result property="applyId" column="apply_id" jdbcType="INTEGER"/>
+        <result property="building" column="building" jdbcType="VARCHAR"/>
+        <result property="floor" column="floor" jdbcType="VARCHAR"/>
+        <result property="roomNo" column="room_no" jdbcType="VARCHAR"/>
+        <result property="roomType" column="room_type" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into dormitory_schedule(org_id, dormitory_id, use_date, use_state, create_by,
+        create_time, update_by, update_time, org_name, apply_id, building, floor, room_no, room_type)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.dormitoryId}, #{entity.useDate}, #{entity.useState}, #{entity.createBy},
+            #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime}, #{entity.orgName}, #{entity.applyId},
+            #{entity.building}, #{entity.floor}, #{entity.roomNo}, #{entity.roomType})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into dormitory_schedule(org_id, dormitory_id, use_date, use_state, create_by,
+        create_time, update_by, update_time, org_name, apply_id, building, floor, room_no, room_type)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.dormitoryId}, #{entity.useDate}, #{entity.useState}, #{entity.createBy},
+            #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime}, #{entity.orgName}, #{entity.applyId},
+            #{entity.building}, #{entity.floor}, #{entity.roomNo}, #{entity.roomType})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , dormitory_id = values(dormitory_id) , use_date = values(use_date) , use_state =
+        values(use_state) , create_by = values(create_by) , create_time = values(create_time) , update_by =
+        values(update_by) , update_time = values(update_time) , org_name = values(org_name) , apply_id =
+        values(apply_id) , building = values(building) , floor = values(floor) , room_no = values(room_no) , room_type =
+        values(room_type) $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.train.logistics.pojo.dormitoryschedule.DormitorySchedulePageResponse">
+        select *
+        from dormitory_schedule
+        <where>
+            <if test="params.useDate != null">
+                use_date = #{params.useDate}
+            </if>
+            <if test="params.roomType != null and params.roomType != '' ">
+                and room_type = #{params.roomType}
+            </if>
+            <if test="params.orgName != null and params.orgName != '' ">
+                and org_name like concat('%', #{params.orgName}, '%')
+            </if>
+            <if test="params.building != null and params.building != '' ">
+                and building = #{params.building}
+            </if>
+            <if test="params.floor != null and params.floor != '' ">
+                and floor = #{params.floor}
+            </if>
+            <if test="params.roomNo != null and params.roomNo != '' ">
+                and room_no = #{params.roomNo}
+            </if>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById"
+            resultType="cn.qbs.wa.train.logistics.pojo.dormitoryschedule.DormitoryScheduleDetailResponse">
+        select *
+        from dormitory_schedule
+        where id = #{id}
+    </select>
+
+    <select id="pageCount" resultType="cn.qbs.wa.train.logistics.pojo.dormitoryschedule.UseDateStateCount">
+        select room_type,count(id) as useNum
+        from dormitory_schedule
+        where use_date = #{params.startDate}
+        group by room_type
+    </select>
+</mapper>
+

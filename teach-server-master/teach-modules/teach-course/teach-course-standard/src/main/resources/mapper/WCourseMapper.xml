@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.WCourseMapper">
+
+    <resultMap type="cn.qbs.wa.teach.course.common.entity.WCourse" id="WCourseMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into w_course(org_id, sort, create_time, create_by)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.orgId}, #{entity.sort}, #{entity.createTime}, #{entity.createBy})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into w_course(org_id, sort, create_time, create_by)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.orgId}, #{entity.sort}, #{entity.createTime}, #{entity.createBy})
+        </foreach>
+        on duplicate key update
+        org_id = values(org_id) , sort = values(sort) , create_time = values(create_time) , create_by = values(create_by)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.teach.course.standard.pojo.wcourse.WCoursePageResponse">
+        SELECT
+        wc.*,
+        co.cover_url,co.org_id,co.id AS courseId, co.course_name, co.plan, ci.sign_up_limit,IFNULL(cso.sign_up_num, 0) sign_up_num
+        FROM
+        w_course wc
+        INNER JOIN course co ON wc.id = co.id
+        INNER JOIN course_info ci ON ci.course_id = co.id
+        LEFT JOIN course_statistic_overview cso ON cso.course_id = co.id
+        <where>
+            co.deleted = 0
+            <if test="params.orgId != null">
+                AND co.org_id = #{params.orgId}
+            </if>
+            <if test="params.idList != null and params.idList.size() != 0">
+                AND co.id IN
+                <foreach collection="params.idList" item="id" open="(" close=")" separator=",">
+                    #{id, jdbcType=BIGINT}
+                </foreach>
+            </if>
+
+            <if test="params.courseName != null and params.courseName != '' ">
+                AND co.course_name like concat('%', #{params.courseName}, '%')
+
+            </if>
+
+            <if test="params.gooded!=null">
+                AND wc.gooded  =#{params.gooded}
+            </if>
+
+            <if test="params.courseFeeType!=null">
+                <choose>
+                    <when test="params.courseFeeType==1">
+                        and  ci.course_price=0
+                    </when>
+                    <when test="params.courseFeeType==2">
+                        and wc.gooded=1
+                    </when>
+                    <otherwise>
+                        and  ci.course_price=0   and wc.gooded=1
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="params.courseType!=null and params.courseType!='' ">
+                AND co.course_type=#{params.courseType}
+            </if>
+            <if test="params.shelfStatus!=null">
+                AND co.shelf_status  =#{params.shelfStatus}
+            </if>
+
+
+
+        </where>
+        ORDER BY wc.sort,wc.id desc
+
+
+    </select>
+
+    <select id="pageByLecturer" resultType="cn.qbs.wa.teach.course.standard.pojo.wcourse.WCoursePageResponse">
+        SELECT
+        wc.*,
+        co.cover_url,co.org_id,co.id AS courseId, co.course_name, co.plan, ci.sign_up_limit,IFNULL(cso.sign_up_num, 0) sign_up_num
+        FROM
+        w_course wc
+        INNER JOIN course co ON wc.id = co.id
+        INNER JOIN course_info ci ON ci.course_id = co.id
+        INNER JOIN course_lecturer cl ON cl.course_id = co.id
+        LEFT JOIN course_statistic_overview cso ON cso.course_id = co.id
+        <where>
+            co.deleted = 0
+            <if test="params.lecturerName != null and params.lecturerName != '' ">
+                AND cl.lecturer_name like concat('%', #{params.lecturerName}, '%')
+            </if>
+            <if test="params.orgId != null">
+                AND co.org_id = #{params.orgId}
+            </if>
+            <if test="params.idList != null and params.idList.size() != 0">
+                AND co.id IN
+                <foreach collection="params.idList" item="id" open="(" close=")" separator=",">
+                    #{id, jdbcType=BIGINT}
+                </foreach>
+            </if>
+
+            <if test="params.courseName != null and params.courseName != '' ">
+                AND co.course_name like concat('%', #{params.courseName}, '%')
+
+            </if>
+
+            <if test="params.gooded!=null">
+                AND wc.gooded  =#{params.gooded}
+            </if>
+
+            <if test="params.courseFeeType!=null">
+                <choose>
+                    <when test="params.courseFeeType==1">
+                        and  ci.course_price=0
+                    </when>
+                    <when test="params.courseFeeType==2">
+                        and wc.gooded=1
+                    </when>
+                    <otherwise>
+                        and  ci.course_price=0   and wc.gooded=1
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="params.courseType!=null and params.courseType!='' ">
+                AND co.course_type=#{params.courseType}
+            </if>
+            <if test="params.shelfStatus!=null">
+                AND co.shelf_status  =#{params.shelfStatus}
+            </if>
+
+
+
+        </where>
+        ORDER BY wc.sort,wc.id desc
+
+
+    </select>
+
+    <select id="search" resultType="cn.qbs.wa.teach.course.standard.pojo.wcourse.WCoursePageResponse">
+        SELECT
+            wc.*, co.id AS courseId, co.course_name, co.course_type
+        FROM
+            w_course wc
+            INNER JOIN course co ON wc.id = co.id
+        <where>
+            <if test="params.courseName != null and params.courseName != '' ">
+                AND co.course_name like concat('%', #{params.courseName}, '%')
+            </if>
+            <if test="params.courseType!=null and params.courseType!='' ">
+                AND co.course_type = #{params.courseType}
+            </if>
+        </where>
+        ORDER BY wc.sort, wc.create_time DESC
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.teach.course.standard.pojo.wcourse.WCourseDetailResponse">
+        select *
+        from w_course
+        where id = #{id}
+    </select>
+    <select id="pageByChild" resultType="cn.qbs.wa.teach.course.standard.pojo.wcourse.WCoursePageByChildResponse">
+        SELECT
+            c.*,
+            c.id as courseId,
+            cc.id AS componentId
+        FROM
+            w_course wc
+                INNER JOIN course_component cc ON cc.course_id = wc.id
+                INNER JOIN course c ON c.id = cc.course_id
+       <where>
+           <if test="params.idList != null and params.idList.size() != 0">
+               AND cc.id IN
+               <foreach collection="params.idList" item="id" open="(" close=")" separator=",">
+                   #{id, jdbcType=BIGINT}
+               </foreach>
+           </if>
+       </where>
+
+
+    </select>
+
+</mapper>
+

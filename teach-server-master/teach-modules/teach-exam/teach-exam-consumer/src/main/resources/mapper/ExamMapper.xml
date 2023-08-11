@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.exam.consumer.mapper.ExamMapper">
+
+    <resultMap type="cn.qbs.wa.teach.exam.common.entity.Exam" id="ExamMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orgId" column="org_id" jdbcType="INTEGER"/>
+        <result property="examName" column="exam_name" jdbcType="VARCHAR"/>
+        <result property="paperId" column="paper_id" jdbcType="INTEGER"/>
+        <result property="paperScore" column="paper_score" jdbcType="NUMERIC"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="shelfStatus" column="shelf_status" jdbcType="INTEGER"/>
+        <result property="edited" column="edited" jdbcType="INTEGER"/>
+        <result property="startTime" column="start_time" jdbcType="TIMESTAMP"/>
+        <result property="endTime" column="end_time" jdbcType="TIMESTAMP"/>
+        <result property="difficulty" column="difficulty" jdbcType="INTEGER"/>
+        <result property="duration" column="duration" jdbcType="INTEGER"/>
+        <result property="limitCount" column="limit_count" jdbcType="INTEGER"/>
+        <result property="introduction" column="introduction" jdbcType="VARCHAR"/>
+        <result property="releaseMode" column="release_mode" jdbcType="INTEGER"/>
+        <result property="passScore" column="pass_score" jdbcType="VARCHAR"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="admissionStartTime" column="admission_start_time"/>
+        <result property="admissionEndTime" column="admission_end_time"/>
+    </resultMap>
+
+    <select id="selectHasRule" resultType="java.lang.Boolean">
+        select if(r.id is not null, 1, 0)
+        from exam e
+                 left join exam_rule er on e.id = er.exam_id
+                 left join rule r on er.rule_id = r.id
+        where e.id = #{examId}
+          and r.`code` = #{ruleCode};
+    </select>
+
+    <select id="selectCertRuleByExamineeId" resultMap="ExamAndCertMap">
+        SELECT e.*, tc.*, er.score, ex.user_id, ex.student_id
+        FROM exam e
+                 LEFT JOIN examinee ex on e.id = ex.exam_id
+                 LEFT JOIN examinee_record er on er.examinee_id = ex.id and er.calculated = 1 and er.enabled = 1
+                 LEFT JOIN t_cert t on e.id = t.exam_id
+                 LEFT JOIN t_cert_rule tc on tc.id = t.id
+        where ex.id = #{examineeId}
+          and t.deleted = 0
+    </select>
+    <resultMap id="ExamAndCertMap" type="cn.qbs.wa.teach.exam.common.pojo.ExamAndCertDetailResponse">
+        <id property="id" column="id"/>
+        <result property="orgId" column="org_id" jdbcType="BIGINT"/>
+        <result property="studentId" column="student_id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="BIGINT"/>
+        <result property="examName" column="exam_name" jdbcType="BIGINT"/>
+        <result property="passScore" column="pass_score" jdbcType="DECIMAL"/>
+        <result property="score" column="score" jdbcType="DECIMAL"/>
+
+        <collection property="tCertRuleDetailResponseList"
+                    ofType="cn.qbs.wa.teach.exam.common.pojo.TCertRuleDetailResponse">
+            <result property="certId" column="cert_id"/>
+            <result property="ruleCode" column="rule_code"/>
+            <result property="ruleValue" column="rule_value"/>
+        </collection>
+    </resultMap>
+</mapper>
+

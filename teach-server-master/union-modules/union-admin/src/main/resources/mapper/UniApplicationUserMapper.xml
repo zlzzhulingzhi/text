@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.union.admin.mapper.UniApplicationUserMapper">
+
+    <resultMap type="cn.qbs.wa.union.admin.entity.UniApplicationUser" id="UniApplicationUserMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="systemUserId" column="system_user_id" jdbcType="INTEGER"/>
+        <result property="uniAppId" column="uni_app_id" jdbcType="INTEGER"/>
+        <result property="sort" column="sort" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="updateBy" column="update_by" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 批量插入 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into uni_application_user(system_user_id, uni_app_id, sort, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+        (#{entity.systemUserId}, #{entity.uniAppId}, #{entity.sort}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+    </insert>
+
+    <!-- 批量插入或按主键更新 -->
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into uni_application_user(system_user_id, uni_app_id, sort, create_by, create_time, update_by, update_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.systemUserId}, #{entity.uniAppId}, #{entity.sort}, #{entity.createBy}, #{entity.createTime}, #{entity.updateBy}, #{entity.updateTime})
+        </foreach>
+        on duplicate key update
+        system_user_id = values(system_user_id) , uni_app_id = values(uni_app_id) , sort = values(sort) , create_by = values(create_by) , create_time = values(create_time) , update_by = values(update_by) , update_time = values(update_time)         $empty
+    </insert>
+
+    <select id="page" resultType="cn.qbs.wa.union.admin.pojo.uniapplicationuser.UniApplicationUserPageResponse">
+        select *
+        from uni_application_user
+        <where>
+            <!-- 示例代码，自行修改 -->
+            <!--
+            <if test="params.name != null and params.name != '' ">
+                and name like concat('%', #{params.name}, '%')
+            </if>
+            -->
+        </where>
+    </select>
+
+    <select id="selectDetailById" resultType="cn.qbs.wa.union.admin.pojo.uniapplicationuser.UniApplicationUserDetailResponse">
+        select *
+        from uni_application_user
+        where id = #{id}
+    </select>
+    <select id="getMineApplication"
+            resultType="cn.qbs.wa.union.admin.pojo.uniapplicationuser.UniApplicationUserDetailResponse">
+        SELECT
+            au.id as applicationUserId,
+            ua.*
+        FROM
+            uni_application ua
+            LEFT JOIN uni_application_user au ON au.uni_app_id = ua.id and au.system_user_id=#{userId}
+        ORDER BY
+            ua.sort
+
+    </select>
+    <select id="getMineListApplication"
+            resultType="cn.qbs.wa.union.admin.pojo.uniapplicationuser.UniApplicationUserDetailResponse">
+        SELECT
+            ua.*
+        FROM
+            uni_application ua
+                INNER JOIN uni_application_user au ON au.uni_app_id = ua.id
+        where
+            au.system_user_id=#{userId}
+        ORDER BY
+            ua.sort
+
+    </select>
+</mapper>
+

@@ -1,0 +1,13 @@
+# 基础镜像
+FROM  elasticsearch:7.17.2
+# gatewayor
+MAINTAINER qbs
+# 拷贝分词器
+COPY elasticsearch-analysis-ik-7.17.2.zip .
+# 解压分词器压缩包
+RUN unzip elasticsearch-analysis-ik-7.17.2.zip -d /usr/share/elasticsearch/plugins/ik
+# 删除分词器压缩包
+RUN rm elasticsearch-analysis-ik-7.17.2.zip
+# 文件赋权限
+RUN chmod 777 /usr/share/elasticsearch/plugins/ik -R
+

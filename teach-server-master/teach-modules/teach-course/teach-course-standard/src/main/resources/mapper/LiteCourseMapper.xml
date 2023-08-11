@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.qbs.wa.teach.course.standard.mapper.LiteCourseMapper">
+
+    <resultMap id="courseContentResultMap" type="cn.qbs.wa.teach.course.standard.pojo.dto.CourseChapterDTO">
+        <id column="id" property="chapterId" />
+        <result column="course_id" property="courseId" />
+        <result column="chapter_name" property="chapterName" />
+        <result column="chapter_introduction" property="introduction" />
+        <result column="lesson_num" property="lessonNum" />
+        <result column="chapter_sort" property="sort" />
+        <collection property="lessonList" ofType="cn.qbs.wa.teach.course.standard.pojo.dto.CourseLessonDTO">
+            <id column="lesson_id" property="lessonId" />
+            <result column="lesson_name" property="lessonName" />
+            <result column="lesson_introduction" property="introduction" />
+            <result column="lesson_sort" property="sort" />
+            <result column="chapter_id" property="chapterId" />
+            <collection property="componentList" ofType="cn.qbs.wa.teach.course.standard.pojo.dto.CourseComponentDTO">
+                <id column="component_id" property="componentId"/>
+                <result column="comp_lesson_id" property="lessonId" />
+                <result column="component_name" property="componentName" />
+                <result column="component_type_code" property="componentTypeCode" />
+                <result column="comp_sort" property="sort" />
+                <result column="resource_file_id" property="resourceFileId" />
+                <result column="resource_file_name" property="resourceFileName" />
+                <result column="resource_file_path" property="resourceFilePath" />
+                <result column="resource_file_type" property="resourceFileType" />
+                <result column="resource_file_size" property="resourceFileSize" />
+                <result column="resource_file_duration" property="resourceFileDuration" />
+            </collection>
+        </collection>
+    </resultMap>
+
+    <resultMap id="courseDetailResultMap" type="cn.qbs.wa.teach.course.standard.pojo.dto.lite.CourseInfoDTO">
+        <result column="id" property="courseId" />
+        <result column="org_id" property="orgId" />
+        <result column="course_name" property="courseName" />
+        <result column="cover_url" property="coverUrl" />
+        <result column="introduction" property="introduction" />
+        <result column="shelf_status" property="shelfStatus" />
+        <result column="shelf_time" property="shelfTime" />
+        <collection property="lecturers" ofType="cn.qbs.wa.teach.course.standard.pojo.dto.CourseLecturerDTO">
+            <id column="course_lecturer_id" property="id" />
+            <result column="lecturer_id" property="lecturerId" />
+        </collection>
+    </resultMap>
+
+    <select id="selectDetailById" resultMap="courseDetailResultMap">
+        SELECT
+            co.id, co.org_id, co.course_name, co.introduction, co.cover_url, co.shelf_status, co.shelf_time,
+            cl.id AS course_lecturer_id, cl.lecturer_id
+        FROM
+            course co
+            LEFT JOIN course_lecturer cl ON cl.course_id = co.id
+        where co.id = #{id} and co.deleted = 0
+    </select>
+
+    <select id="selectContentById" resultMap="courseContentResultMap">
+        SELECT
+            chapter.id, chapter.course_id, chapter.chapter_name, chapter.sort AS chapter_sort, chapter.introduction AS chapter_introduction, chapter.lesson_num,
+            lesson.chapter_id, lesson.lesson_name, lesson.sort AS lesson_sort, lesson.introduction AS lesson_introduction, lesson.id AS lesson_id,
+            comp.lesson_id AS comp_lesson_id, comp.component_name, attach.component_id, attach.resource_file_id, attach.resource_file_path, attach.resource_file_name,
+            attach.resource_file_type, attach.resource_file_size, attach.resource_file_duration, comp.component_type_code, comp.sort AS comp_sort
+        FROM
+            course_chapter chapter
+            LEFT JOIN course_lesson lesson ON lesson.chapter_id = chapter.id
+            LEFT JOIN course_component comp ON comp.lesson_id = lesson.id
+            LEFT JOIN course_component_attachment attach ON attach.component_id = comp.id
+        WHERE chapter.course_id = #{courseId, jdbcType=BIGINT}
+        order by comp_sort
+    </select>
+
+    <select id="pageCourse" resultType="cn.qbs.wa.teach.course.standard.pojo.dto.lite.PageCourseVO">
+        SELECT
+            co.id, co.org_id, co.course_name, co.cover_url, co.shelf_time, co.create_time
+        FROM
+            w_course wc
+            INNER JOIN course co ON wc.id = co.id
+        <where>
+            co.deleted = 0 AND co.shelf_status = 1
+            <if test="params.courseName != null and params.courseName != '' ">
+                AND co.course_name LIKE concat('%', #{params.courseName}, '%')
+            </if>
+            <if test="params.orgId != null">
+                AND co.org_id = #{params.orgId}
+            </if>
+        </where>
+        ORDER BY wc.sort,co.shelf_time DESC, wc.id DESC
+    </select>
+
+    <select id="pageMyCourse" resultType="cn.qbs.wa.teach.course.standard.pojo.dto.lite.MyCoursePageResponse">
+        SELECT
+            co.id, co.org_id, co.course_name, co.cover_url, co.shelf_time, co.create_time
+        FROM (
+            SELECT tcs.course_id FROM t_course_student tcs WHERE tcs.member_id = #{params.memberId}
+            UNION
+            SELECT cos.course_id FROM course_student cos
+            WHERE cos.user_id = #{params.memberId}
+        ) t
+        INNER JOIN course co ON co.id = t.course_id AND co.deleted = 0
+        ORDER BY co.id DESC
+    </select>
+
+    <select id="orgPageCourse" resultType="cn.qbs.wa.teach.course.standard.pojo.dto.lite.PageCourseVO">
+        SELECT
+            co.id, co.org_id, co.course_name, co.cover_url, co.shelf_time
+        FROM
+            course co
+        <where>
+            co.deleted = 0 AND co.shelf_status = 1
+            <if test="params.courseName != null and params.courseName != '' ">
+                AND co.course_name LIKE concat('%', #{params.courseName}, '%')
+            </if>
+        </where>
+        ORDER BY co.shelf_time DESC, co.id DESC
+    </select>
+
+    <select id="listCourseLecturer" resultMap="courseDetailResultMap">
+        SELECT
+            co.id, cl.id AS course_lecturer_id, cl.lecturer_id
+        FROM
+            course co
+            INNER JOIN course_lecturer cl ON cl.course_id = co.id
+        WHERE co.id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+</mapper>
+
